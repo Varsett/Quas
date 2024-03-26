@@ -1,18 +1,21 @@
 # Quas - QUest ADB Scripts
 QUest ADB Scripts - Quas
-Description of work and functional capabilities
+##Description of work and functional capabilities
 
-*Description of work:*
+####**Description of work:**
 The Quas program is designed, in particular, to help solve problems with Meta Quest headsets, as well as to simplify the use of many standard commands and actions, both documented and not very. In fact, this is a multitool, a Swiss knife for enthusiasts and owners of Quest headsets.
+
 The program is written in cmd with some inserts of scripts from other languages: JS, VSH, VBS, etc.
+
 Packed into an exe file using Quick Batch File Compiler. Contains additional freeware tools: wget, devcon, 7z, adb, aapt, etc.
+
 The principle of working with the program is very simple: select a menu item and then follow either the prompts or the next item. Many options contain detailed instructions and explanations.
 The program does not need to be installed, just run the quas.vX.X.X.exe file, wait a couple of seconds, and you can use it. You can also use some startup keys (see built-in help, item H). Each time Quas is started, it displays a table with the most important data on the Main screen.
 
-Functional capabilities:
-Update management: Allows you to turn off and on updates on the headset itself or the Oculus Home program.
-Sending a text string to the headset: Sending any text from the computer to the input field on the headset, for example, an address in a browser, a key to a VPN client, or a login/password in the corresponding fields.
-Show hidden settings: Display of hidden advanced settings on the headset.
+###Functional capabilities:
+*Update management: Allows you to turn off and on updates on the headset itself or the Oculus Home program.
+*Sending a text string to the headset: Sending any text from the computer to the input field on the headset, for example, an address in a browser, a key to a VPN client, or a login/password in the corresponding fields.
+*Show hidden settings: Display of hidden advanced settings on the headset.
 Reboot into different modes and information about the current one: Reboot into Sideload modes (two options), Fastboot, Bootloader, Recovery, and standard Reboot. Also allows you to determine which mode the headset is in at the moment.
 Creating screenshots of the headset display: Creating screenshots of the headset in three different variations: Single, Series of screenshots (each screenshot by pressing a key), and Automatic, with a certain interval. The interval between screenshots can be set manually.
 Copying screenshots from the headset to the PC: Copying all the screenshots available on the headset to the PC in a folder on the Desktop.
