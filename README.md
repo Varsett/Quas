@@ -11,7 +11,7 @@ Packed into an exe file using Quick Batch File Compiler. Contains additional fre
 The principle of working with the program is very simple: select a menu item and then follow either the prompts or the next item. Many options contain detailed instructions and explanations.
 The program does not need to be installed, just run the quas.vX.X.X.exe file, wait a couple of seconds, and you can use it. You can also use some startup keys (see built-in help, item H). Each time Quas is started, it displays a table with the most important data on the Main screen.
 
-#### Functional capabilities:
+### Functional capabilities:
 * **Update management:** Allows you to turn off and on updates on the headset itself or the Oculus Home program.
 * **Sending a text string to the headset:** Sending any text from the computer to the input field on the headset, for example, an address in a browser, a key to a VPN client, or a login/password in the corresponding fields.
 * **Show hidden settings:** Display of hidden advanced settings on the headset.
@@ -24,22 +24,22 @@ The program does not need to be installed, just run the quas.vX.X.X.exe file, wa
 * **Fixing the OpenSSL SHA Crash Bug error:** On Intel processors, starting with the 10th generation, there is a bug due to which many games on some versions of the Unreal Engine crash or do not start. This option fixes the bug.
 * **Restarting the Oculus service on the PC:** Sometimes it is necessary to restart all services, and to avoid running around the Windows settings, you can use this option.
 
-#### Solutions to various problems with the shell, dark screen, etc:
-* **Restart the headset shell:** Solves the problem of the dark screen
-* **Restart the headset shell (second option):** Alternative option to the previous item
-* **Wi-Fi management on the headset:** Disables and enables Wi-Fi on the headset
+* **Solutions to various problems with the shell, dark screen, etc:**
+    * **Restart the headset shell:** Solves the problem of the dark screen
+    * **Restart the headset shell (second option):** Alternative option to the previous item
+    * **Wi-Fi management on the headset:** Disables and enables Wi-Fi on the headset
 * **Force start of the headset home environment:** Allows you to exit the Home (Virtual) environment in case of a dark screen.
-Security System Management: Disables and enables the security system (temporarily)
-Proximity sensor management: Disables and enables the proximity sensor
-Fix the volume button restart problem (remove KeyMapper): Removes the KeyMapper program, which cannot be removed in the usual way.
-Restart the ADB server on the PC: Restarts the ADB server on the computer.
-Open VPN settings on the headset: Opens VPN settings on the headset.
+* **Security System Management:** Disables and enables the security system (temporarily)
+* **Proximity sensor management:** Disables and enables the proximity sensor
+* **Fix the volume button restart problem (remove KeyMapper):** Removes the KeyMapper program, which cannot be removed in the usual way.
+* **Restart the ADB server on the PC:** Restarts the ADB server on the computer.
+* **Open VPN settings on the headset:** Opens VPN settings on the headset.
 
-Testing, diagnostics, and system information:
-Restore screen timeout settings (screen timeout): Restores the default settings
-Work with dumpsys: saving a full dump or list of services, searching by dump.
-Load monitoring and component diagnostics: Monitoring the temperature of the CPU, GPU, case, battery. Display of fan speed, health and status, CPU/GPU working levels and CPU load
-Display all headset properties (getprop)
+* **Testing, diagnostics, and system information:**
+* **Restore screen timeout settings (screen timeout):** Restores the default settings
+*    **Work with dumpsys:** saving a full dump or list of services, searching by dump.
+*     **Load monitoring and component diagnostics:** Monitoring the temperature of the CPU, GPU, case, battery. Display of fan speed, health and status, CPU/GPU working levels and CPU load
+*     **Display all headset properties (getprop)**
 Show headset IP address: Displays the current IP address of the headset
 Save a list of installed packages (packages names): Saved in a brief and full format in text files.
 Show headset serial number: Shows the headset serial number
