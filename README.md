@@ -2,7 +2,7 @@
 QUest ADB Scripts - Quas
 Description of work and functional capabilities
 
-Description of work:
+*Description of work:*
 The Quas program is designed, in particular, to help solve problems with Meta Quest headsets, as well as to simplify the use of many standard commands and actions, both documented and not very. In fact, this is a multitool, a Swiss knife for enthusiasts and owners of Quest headsets.
 The program is written in cmd with some inserts of scripts from other languages: JS, VSH, VBS, etc.
 Packed into an exe file using Quick Batch File Compiler. Contains additional freeware tools: wget, devcon, 7z, adb, aapt, etc.
