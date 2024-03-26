@@ -38,31 +38,32 @@ The program does not need to be installed, just run the quas.vX.X.X.exe file, wa
     * **Work with dumpsys:** saving a full dump or list of services, searching by dump.
     * **Load monitoring and component diagnostics:** Monitoring the temperature of the CPU, GPU, case, battery. Display of fan speed, health and status, CPU/GPU working levels and CPU load
     * **Display all headset properties (getprop)**
-Show headset IP address: Displays the current IP address of the headset
-Save a list of installed packages (packages names): Saved in a brief and full format in text files.
-Show headset serial number: Shows the headset serial number
-Headset system settings (setting list system/global/security): Saves to file
-Work with Logcat: Saving Logcat for a selected time or selected volume, can be set manually. Logcat search.
-Embed ADB and utility package into the system, as well as remove all this junk from it: Copies several files to the system directory to work with adb without specifying the current directory
-Battery information: Displays remaining, lost, learned, and nominal capacity. Shows battery degradation percentage, status, and health. Additional data is saved to file.
-Creating a shared resource on a PC: Allows you to automate the process of creating a shared directory on a computer, for access from the headset to this network resource
-Extracting a bug report: Extracts a bug report
-View CPU-intensive applications: Displays a list of the most resource-intensive applications
-List of files/directories and their size: Displays a list of available files and directories with their size.
-Show the amount of occupied space: Shows the total memory volume, as well as how much is occupied, free, and the percentage of filling.
-USB device connection and disconnection log: Saves Windows events to a file when a USB cable is disconnected and connected, with the date and time of the events specified.
-Cable health check: USB cable test from PC to headset with test results output for each pass and data transfer rate for this cable.
-Camera health check (Quest 2 only): Displays the temperature of the four external headset cameras. The temperature difference between them can determine the malfunction of any of them.
-Wi-Fi speed measurement between headset and PC: The built-in Wireless Connect Tester utility is launched - Wi-Fi speed testing. Displays headset and PC IP addresses, allows you to specify your IP address for the PC if it is incorrect. You can specify the interval between checks (in milliseconds) and the duration of the check (in seconds). Two tests are conducted - direct and reverse. The results are saved in a text file.
-Network connection statistics (netstat): Displays complete network connection statistics for the headset
-Display update information: Displays information about which updates were installed after resetting the headset to factory settings and initial setup.
-Save all system information wholesale to one archive: Saving complete information about the headset - system, global, security, bugreport, dumpsys, etc.
-
-Firmware update and firmware information:
-Fully automatic firmware: The headset firmware update is fully automated, just place the firmware file next to the program with any name. Developer Mode is required.
-Button automatic firmware: Semi-automatic firmware option. Everything is the same as in the previous item, but before flashing, you should boot the headset into Bootloader mode. Developer mode is not required.
-Extract the firmware link from the headset: Extracts links (if there are several) to firmware from the headset, saves them to a text file, and downloads the firmware itself.
-Download various firmware versions: Opens a browser with the address of the site where you can get the latest firmware versions
+    * **Show headset IP address:** Displays the current IP address of the headset
+    * **Save a list of installed packages (packages names):** Saved in a brief and full format in text files.
+    * **Show headset serial number:** Shows the headset serial number
+    * **Headset system settings (setting list system/global/security):** Saves to file
+    * **Work with Logcat:** Saving Logcat for a selected time or selected volume, can be set manually. Logcat search.
+    * **Embed ADB and utility package into the system, as well as remove all this junk from it:** Copies several files to the system directory to work with adb without specifying the current directory
+    * **Battery information:** Displays remaining, lost, learned, and nominal capacity. Shows battery degradation percentage, status, and health. Additional data is saved to file.
+    * **Creating a shared resource on a PC:** Allows you to automate the process of creating a shared directory on a computer, for access from the headset to this network resource
+    * **Extracting a bug report:** Extracts a bug report
+    * **View CPU-intensive applications:** Displays a list of the most resource-intensive applications
+    * **List of files/directories and their size:** Displays a list of available files and directories with their size.
+    * **Show the amount of occupied space:** Shows the total memory volume, as well as how much is occupied, free, and the percentage of filling.
+    * **USB device connection and disconnection log:** Saves Windows events to a file when a USB cable is disconnected and connected, with the date and time of the events specified.
+    * **Cable health check:** USB cable test from PC to headset with test results output for each pass and data transfer rate for this cable.
+    * **Camera health check (Quest 2 only):** Displays the temperature of the four external headset cameras. The temperature difference between them can determine the malfunction of any of them.
+    * **Wi-Fi speed measurement between headset and PC:** The built-in Wireless Connect Tester utility is launched - Wi-Fi speed testing. Displays headset and PC IP addresses, allows you to specify your IP address 
+    for the PC if it is incorrect. You can specify the interval between checks (in milliseconds) and the duration of the check (in seconds). Two tests are conducted - direct and reverse. The results are saved in a 
+    text file.
+    * **Network connection statistics (netstat):** Displays complete network connection statistics for the headset
+    * **Display update information:** Displays information about which updates were installed after resetting the headset to factory settings and initial setup.
+    * **Save all system information wholesale to one archive:** Saving complete information about the headset - system, global, security, bugreport, dumpsys, etc.
+* **Firmware update and firmware information:**
+    * **Fully automatic firmware:** The headset firmware update is fully automated, just place the firmware file next to the program with any name. Developer Mode is required.
+    * **Button automatic firmware:** Semi-automatic firmware option. Everything is the same as in the previous item, but before flashing, you should boot the headset into Bootloader mode. Developer mode is not required.
+    * **Extract the firmware link from the headset:** Extracts links (if there are several) to firmware from the headset, saves them to a text file, and downloads the firmware itself.
+    * **Download various firmware versions:** Opens a browser with the address of the site where you can get the latest firmware versions
 Show current headset firmware version and check for updates: Displays the current headset firmware version and if this version is not current, will display a message.
 Firmware Analyzer: checks the firmware file for correctness and compatibility. Allows you to find out all the information about the firmware file: full or incremental, in the latter case, it will report the firmware version for which the increment is intended. It will show the environment version, firmware version, headset model, check the file for integrity, and also for compatibility with the current headset firmware version. As a result, it issues a summary of whether this file will be flashed. For a complete analysis, the computer must have access to the Internet. Otherwise, the information will be limited only to the firmware environment version.
 Additional explanations about incremental firmware
