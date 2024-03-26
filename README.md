@@ -13,7 +13,9 @@ The program does not need to be installed, just run the quas.vX.X.X.exe file, wa
 
 ### Functional capabilities:
 * **Update management:** Allows you to turn off and on updates on the headset itself or the Oculus Home program.
+* 
 * **Sending a text string to the headset:** Sending any text from the computer to the input field on the headset, for example, an address in a browser, a key to a VPN client, or a login/password in the corresponding fields.
+* 
 * **Show hidden settings:** Display of hidden advanced settings on the headset.
 * **Reboot into different modes and information about the current one:** Reboot into Sideload modes (two options), Fastboot, Bootloader, Recovery, and standard Reboot. Also allows you to determine which mode the headset is in at the moment.
 * **Creating screenshots of the headset display:** Creating screenshots of the headset in three different variations: Single, Series of screenshots (each screenshot by pressing a key), and Automatic, with a certain interval. The interval between screenshots can be set manually.
