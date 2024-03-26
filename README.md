@@ -13,18 +13,26 @@ The program does not need to be installed, just run the quas.vX.X.X.exe file, wa
 
 ### Functional capabilities:
 * **Update management:** Allows you to turn off and on updates on the headset itself or the Oculus Home program.
-* 
+ 
 * **Sending a text string to the headset:** Sending any text from the computer to the input field on the headset, for example, an address in a browser, a key to a VPN client, or a login/password in the corresponding fields.
-* 
+ 
 * **Show hidden settings:** Display of hidden advanced settings on the headset.
+ 
 * **Reboot into different modes and information about the current one:** Reboot into Sideload modes (two options), Fastboot, Bootloader, Recovery, and standard Reboot. Also allows you to determine which mode the headset is in at the moment.
+ 
 * **Creating screenshots of the headset display:** Creating screenshots of the headset in three different variations: Single, Series of screenshots (each screenshot by pressing a key), and Automatic, with a certain interval. The interval between screenshots can be set manually.
+ 
 * **Copying screenshots from the headset to the PC:** Copying all the screenshots available on the headset to the PC in a folder on the Desktop.
+
 * **Connecting the headset "ADB over Wi-Fi":** In this mode, you can use ADB commands or the same Quas, without using a USB cable.
+
 * **Reconnecting the headset "ADB over cable":** Switching to using ADB over cable, for example, for copying large files.
+
 * **Connecting the headset as a removable disk:** In some cases, the PC does not connect the headset as a removable disk. The option allows you to forcibly resolve this issue.
+
 * **Fixing the OpenSSL SHA Crash Bug error:** On Intel processors, starting with the 10th generation, there is a bug due to which many games on some versions of the Unreal Engine crash or do not start. This option fixes the bug.
 * **Restarting the Oculus service on the PC:** Sometimes it is necessary to restart all services, and to avoid running around the Windows settings, you can use this option.
+
 * **Solutions to various problems with the shell, dark screen, etc:**
     * **Restart the headset shell:** Solves the problem of the dark screen
     * **Restart the headset shell (second option):** Alternative option to the previous item
@@ -35,6 +43,7 @@ The program does not need to be installed, just run the quas.vX.X.X.exe file, wa
     * **Fix the volume button restart problem (remove KeyMapper):** Removes the KeyMapper program, which cannot be removed in the usual way.
     * **Restart the ADB server on the PC:** Restarts the ADB server on the computer.
     * **Open VPN settings on the headset:** Opens VPN settings on the headset.
+
 * **Testing, diagnostics, and system information:**
     * **Restore screen timeout settings (screen timeout):** Restores the default settings
     * **Work with dumpsys:** saving a full dump or list of services, searching by dump.
@@ -61,6 +70,7 @@ text file.
     * **Network connection statistics (netstat):** Displays complete network connection statistics for the headset
     * **Display update information:** Displays information about which updates were installed after resetting the headset to factory settings and initial setup.
     * **Save all system information wholesale to one archive:** Saving complete information about the headset - system, global, security, bugreport, dumpsys, etc.
+
 * **Firmware update and firmware information:**
     * **Fully automatic firmware:** The headset firmware update is fully automated, just place the firmware file next to the program with any name. Developer Mode is required.
     * **Button automatic firmware:** Semi-automatic firmware option. Everything is the same as in the previous item, but before flashing, you should boot the headset into Bootloader mode. Developer mode is not required.
@@ -69,8 +79,11 @@ text file.
     * **Show current headset firmware version and check for updates:** Displays the current headset firmware version and if this version is not current, will display a message.
     * **Firmware Analyzer:** checks the firmware file for correctness and compatibility. Allows you to find out all the information about the firmware file: full or incremental, in the latter case, it will report the firmware version for which the increment is intended. It will show the environment version, firmware version, headset model, check the file for integrity, and also for compatibility with the current headset firmware version. As a result, it issues a summary of whether this file will be flashed. For a complete analysis, the computer must have access to the Internet. Otherwise, the information will be limited only to the firmware environment version.
     * **Additional explanations about incremental firmware**
+
 * **List of additional commands and parameters (Help):** Restart as a user, restart as an administrator with a UAC request, restart as an administrator without a UAC request, accelerated Quas startup - without a table and checks, additional explanation about incremental firmware, enable installation with downgrade capability, enable display installation details, enable installation log file writing, headset partition table and their size in bytes and gigabytes.
+
 * **Download/update progress, DNS setup:** View download progress with manual or automatic interval; checking with three search modules, sequential (by pressing a key) DNS server recording in the headset, automatic DNS selection for downloading updates (after each DNS check for access to servers for downloading), reset of the specified DNS server to default, installation of DNS internet blocker.
+
 * **Application management:**
     * **Launch Quest Install Director application installation utility:** a comprehensive utility for installing applications both singly and in bulk - by files and directories
     * **Run applications on the headset:** launch some applications: VPN clients, etc.
@@ -79,14 +92,25 @@ text file.
     * **VPN client and Oculus driver installation:** installs several VPN clients and Oculus drivers for Win7 and Win10
     * **Media application installation:** Installing media players, online cinemas, and torrent clients for online viewing.
     * **Application installation:** installs several applications: file managers, browsers, etc.
+
 * **Setting of CPU/GPU levels:** setting seven levels of CPU/GPU performance and displaying the current levels.
+
 * **Setting the native RefreshRate and display resolution:** allows you to set a higher resolution than the default display resolution to increase image clarity. It also allows you to change the refresh rate.
+
 * **Oculus Link/Airlink management:** commands to enable and disable Link and AirLink, fix problem Airlink connection (delete *.pem files)
+
 * **Creating shortcuts for file copying and application installation:** Launches the Quest Context Tool program, which allows you to install "Send" shortcuts for copying and installing applications to the context menu. After that, simply right-click on the file and install it or copy it to any of the headset directories - Movies, Download, OBB, or the root. It can install applications using the install.txt scenario, which is usually located in the game directory. And standard installation - apk and obb. Batch installation is also available - if you right-click on the games directory, all of them will be installed in turn. A detailed and understandable installation or copying log will be displayed during installation or copying. Contains built-in usage guide.
+
 * **Set high priority to Oculus services:** Setting high priority to Oculus services.
+
 * **Adjusting the date, time, and time zone on the headset:** the function checks the correctness of the set time, date, and time zone and, if necessary, will set the correct values.
+
 * **Application data backup (Only Meta Quest 1/2):** saves all information from the Android/data directory and copies the archive to the PC
+
 * **PC video streaming:** Works on the scrcpy program and contains five streaming modes from the headset to the PC - four preset and one manual. The manual mode can be configured independently using seven parameters - Bitrate, FPS, file recording, sound output, proximity sensor, and video codec. The subprogram can work with preinstalled profiles and contains six integrated profiles - minimum, light, balanced, demonstration, quality, maximum. Any of these profiles can be selected and the streaming can be started with it immediately. There is also the ability to configure your own profiles - up to four. They will be written to a separate file and can be loaded in the same way as integrated ones. In manual mode, there is also the ability to save the scrcpy launch line and edit it according to your preferences. Contains a built-in usage guide.
+
 * **Open cmd console:** opens the Windows command line console in a separate window.
+
 * **Open adb shell console:** opens the console for accessing the headset
+
 * **Help with problem solving:** opens websites in the browser where you can get help or read instructions for solving various problems
