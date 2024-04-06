@@ -4,12 +4,12 @@
 ### Description of work:
 The Quas program is designed, in particular, to help solve problems with Meta Quest headsets, as well as to simplify the use of many standard commands and actions, both documented and not very. In fact, this is a multitool, a Swiss knife for enthusiasts and owners of Quest headsets.
 
-The program is written in cmd with some inserts of scripts from other languages: JS, VSH, VBS, etc.
+The program is written in **cmd** with some inserts of scripts from other languages: JS, VSH, VBS, etc.
 
 Packed into an exe file using Quick Batch File Compiler. Contains additional freeware tools: wget, devcon, 7z, adb, aapt, etc.
 
 The principle of working with the program is very simple: select a menu item and then follow either the prompts or the next item. Many options contain detailed instructions and explanations.
-The program does not need to be installed, just run the quas.vX.X.X.exe file, wait a couple of seconds, and you can use it. You can also use some startup keys (see built-in help, item H). Each time Quas is started, it displays a table with the most important data on the Main screen.
+The program does not need to be installed, just run the **quas.vX.X.X.exe** file, wait a couple of seconds, and you can use it. You can also use some startup keys (see built-in help, item **H**). Each time Quas is started, it displays a table with the most important data on the Main screen.
 
 ### Functional capabilities:
 * **Update management:** Allows you to turn off and on updates on the headset itself or the Oculus Home program.
