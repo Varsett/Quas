@@ -16,8 +16,6 @@ The program does not need to be installed, just run the **quas.vX.X.X.exe** file
  
 * **Sending a text string to the headset:** Sending any text from the computer to the input field on the headset, for example, an address in a browser, a key to a VPN client, or a login/password in the corresponding fields.
  
-* **Show hidden settings:** Display of hidden advanced settings on the headset.
- 
 * **Reboot into different modes and information about the current one:** Reboot into Sideload modes (two options), Fastboot, Bootloader, Recovery, and standard Reboot. Also allows you to determine which mode the headset is in at the moment.
  
 * **Creating screenshots of the headset display:** Creating screenshots of the headset in three different variations: Single, Series of screenshots (each screenshot by pressing a key), and Automatic, with a certain interval. The interval between screenshots can be set manually.
@@ -29,23 +27,7 @@ The program does not need to be installed, just run the **quas.vX.X.X.exe** file
 * **Reconnecting the headset "ADB over cable":** Switching to using ADB over cable, for example, for copying large files.
 
 * **Connecting the headset as a removable disk:** In some cases, the PC does not connect the headset as a removable disk. The option allows you to forcibly resolve this issue.
-
-* **Fixing the OpenSSL SHA Crash Bug error:** On Intel processors, starting with the 10th generation, there is a bug due to which many games on some versions of the Unreal Engine crash or do not start. This option fixes the bug.
-* **Restarting the Oculus service on the PC:** Sometimes it is necessary to restart all services, and to avoid running around the Windows settings, you can use this option.
-
-* **Solutions to various problems with the shell, dark screen, etc:**
-    * **Restart the headset shell:** Solves the problem of the dark screen
-    * **Restart the headset shell (second option):** Alternative option to the previous item
-    * **Wi-Fi management on the headset:** Disables and enables Wi-Fi on the headset
-    * **Force start of the headset home environment:** Allows you to exit the Home (Virtual) environment in case of a dark screen.
-    * **Security System Management:** Disables and enables the security system (temporarily)
-    * **Proximity sensor management:** Disables and enables the proximity sensor
-    * **Fix the volume button restart problem (remove KeyMapper):** Removes the KeyMapper program, which cannot be removed in the usual way.
-    * **Restart the ADB server on the PC:** Restarts the ADB server on the computer.
-    * **Open VPN settings on the headset:** Opens VPN settings on the headset.
-
-* **Testing, diagnostics, and system information:**
-    * **Restore screen timeout settings (screen timeout):** Restores the default settings
+* **System information**
     * **Work with dumpsys:** saving a full dump or list of services, searching by dump.
     * **Load monitoring and component diagnostics:** Monitoring the temperature of the CPU, GPU, case, battery. Display of fan speed, health and status, CPU/GPU working levels and CPU load
     * **Display all headset properties (getprop)**
@@ -54,22 +36,43 @@ The program does not need to be installed, just run the **quas.vX.X.X.exe** file
     * **Show headset serial number:** Shows the headset serial number
     * **Headset system settings (setting list system/global/security):** Saves to file
     * **Work with Logcat:** Saving Logcat for a selected time or selected volume, can be set manually. Logcat search.
-    * **Embed ADB and utility package into the system, as well as remove all this junk from it:** Copies several files to the system directory to work with adb without specifying the current directory
     * **Battery information:** Displays remaining, lost, learned, and nominal capacity. Shows battery degradation percentage, status, and health. Additional data is saved to file.
-    * **Creating a shared resource on a PC:** Allows you to automate the process of creating a shared directory on a computer, for access from the headset to this network resource
     * **Extracting a bug report:** Extracts a bug report
     * **View CPU-intensive applications:** Displays a list of the most resource-intensive applications
     * **List of files/directories and their size:** Displays a list of available files and directories with their size.
     * **Show the amount of occupied space:** Shows the total memory volume, as well as how much is occupied, free, and the percentage of filling.
     * **USB device connection and disconnection log:** Saves Windows events to a file when a USB cable is disconnected and connected, with the date and time of the events specified.
-    * **Cable health check:** USB cable test from PC to headset with test results output for each pass and data transfer rate for this cable.
-    * **Camera health check (Quest 2 only):** Displays the temperature of the four external headset cameras. The temperature difference between them can determine the malfunction of any of them.
-    * **Wi-Fi speed measurement between headset and PC:** The built-in Wireless Connect Tester utility is launched - Wi-Fi speed testing. Displays headset and PC IP addresses, allows you to specify your IP address 
-for the PC if it is incorrect. You can specify the interval between checks (in milliseconds) and the duration of the check (in seconds). Two tests are conducted - direct and reverse. The results are saved in a 
-text file.
-    * **Network connection statistics (netstat):** Displays complete network connection statistics for the headset
     * **Display update information:** Displays information about which updates were installed after resetting the headset to factory settings and initial setup.
     * **Save all system information wholesale to one archive:** Saving complete information about the headset - system, global, security, bugreport, dumpsys, etc.
+
+* **Testing, diagnostics, resolving various issues:**
+    * **Restart the headset shell:** Solves the problem of the dark screen
+    * **Restart the headset shell (second option):** Alternative option to the previous item
+    * **Wi-Fi management on the headset:** Disables and enables Wi-Fi on the headset
+    * **Force start of the headset home environment:** Allows you to exit the Home (Virtual) environment in case of a dark screen.
+    * **Managing the Guardian:** Disables and enables the security system (temporarily)
+    * **Proximity sensor management:** Disables and enables the proximity sensor
+    * **Fix the volume button restart problem (remove KeyMapper):** Removes the KeyMapper program, which cannot be removed in the usual way.
+    * **Restart the ADB server on the PC:** Restarts the ADB server on the computer.
+    * **Embed ADB and utility package into the system, as well as remove all this junk from it:** Copies several files to the system directory to work with adb without specifying the current directory
+    * **Restore screen timeout settings (screen timeout):** Restores the default settings
+    * **Creating a shared resource on a PC:** Allows you to automate the process of creating a shared directory on a computer, for access from the headset to this network resource
+    * **Cable health check:** USB cable test from PC to headset with test results output for each pass and data transfer rate for this cable.
+    * **Camera health check (Quest 2 only):** Displays the temperature of the four external headset cameras. The temperature difference between them can determine the malfunction of any of them.
+    * **Wi-Fi speed measurement between headset and PC:** The built-in Wireless Connect Tester utility is launched - Wi-Fi speed testing. Displays headset and PC IP addresses, allows you to specify your IP address for the PC if it is incorrect. You can specify the interval between checks (in milliseconds) and the duration of the check (in seconds). Two tests are conducted - direct and reverse. The results are saved in a text file.
+    * **Network connection statistics (netstat):** Displays complete network connection statistics for the headset
+    * **Display diagnostic:** Headset display testing
+    * **Management parameters Hardaware Acceleration and Game Mode:** Enable and disable parameters on PC
+
+  * **Additional options:**
+    * **Change global username:** Change username on headset
+    * **Show hidden settings:** Display of hidden advanced settings on the headset.
+    * **Fixing the OpenSSL SHA Crash Bug error:** On Intel processors, starting with the 10th generation, there is a bug due to which many games on some versions of the Unreal Engine crash or do not start. This option fixes the bug.
+    * **Restarting the Oculus service on the PC:** Sometimes it is necessary to restart all services, and to avoid running around the Windows settings, you can use this option.
+    * **Open VPN settings on the headset:** Opens VPN settings on the headset.
+    * **Set high priority to Oculus services:** Setting high priority to Oculus services.
+    * **Oculus Wireless ADB app complex installation:** App for controlling the headset via ADB directly inside the headset, without using a computer.
+    * **Managing registry keys for application startup:** Added the ability to save program launch keys to the registry. Currently, only one key is available - "Bypass". It allows skipping the initial check when launching the program and also not displaying the information table, which saves a significant amount of time on program startup - approximately one and a half seconds. The key can be removed from the registry at any time or added again. If the key is set, instead of the full check and table, a small status indication of the headset will be displayed in the top left corner of the program: Red label - headset not connected, Green label - headset connected
 
 * **Firmware update and firmware information:**
     * **Fully automatic firmware:** The headset firmware update is fully automated, just place the firmware file next to the program with any name. Developer Mode is required.
@@ -101,13 +104,13 @@ text file.
 
 * **Creating shortcuts for file copying and application installation:** Launches the Quest Context Tool program, which allows you to install "Send" shortcuts for copying and installing applications to the context menu. After that, simply right-click on the file and install it or copy it to any of the headset directories - Movies, Download, OBB, or the root. It can install applications using the install.txt scenario, which is usually located in the game directory. And standard installation - apk and obb. Batch installation is also available - if you right-click on the games directory, all of them will be installed in turn. A detailed and understandable installation or copying log will be displayed during installation or copying. Contains built-in usage guide.
 
-* **Set high priority to Oculus services:** Setting high priority to Oculus services.
-
 * **Adjusting the date, time, and time zone on the headset:** the function checks the correctness of the set time, date, and time zone and, if necessary, will set the correct values.
 
 * **Application data backup (Only Meta Quest 1/2):** saves all information from the Android/data directory and copies the archive to the PC
 
 * **PC video streaming:** Works on the scrcpy program and contains five streaming modes from the headset to the PC - four preset and one manual. The manual mode can be configured independently using seven parameters - Bitrate, FPS, file recording, sound output, proximity sensor, and video codec. The subprogram can work with preinstalled profiles and contains six integrated profiles - minimum, light, balanced, demonstration, quality, maximum. Any of these profiles can be selected and the streaming can be started with it immediately. There is also the ability to configure your own profiles - up to four. They will be written to a separate file and can be loaded in the same way as integrated ones. In manual mode, there is also the ability to save the scrcpy launch line and edit it according to your preferences. Contains a built-in usage guide.
+
+* **Contact the author:** Option for connection to author and feedback
 
 * **Open cmd console:** opens the Windows command line console in a separate window.
 
