@@ -1,6 +1,11 @@
-@echo off
+
+if /i [%1]==[v] (set "verbecho=echo on") else (set "verbecho=echo off")
+@%verbecho%
+:_NormalStart
+rem @echo off
+
 rem @set myfiles=d:\Quest2\adb
-@set myfiles=%~dp0Source
+rem @set myfiles=%~dp0Source
 @mode con:cols=100 lines=52
 @color 07
 
@@ -19,46 +24,27 @@ rem @echo ADB is starting..
 rem EndEngTextBlock
 @echo.
 
-rem goto _beginn
-
-call :_CheckRegisterKeys
-if /i [%1]==[b]  call :_colorsetlite && goto _beginn
+rem call :_CheckInitialStatusKey
 if /i [%1]==[a] set right=1 && goto _adminright
 if /i [%1]==[u] set right=2 && goto _userright 
 if /i [%1]==[c] set right=3 && goto _uacright
 if /i [%1]==[h]  call :_ShowAllUndocCommands
-if [%1]==[] goto :_begin0
-
-
-:::_begin00
-
-:_begin0
-::@call :_CheckUserAdmin
-call :_cdcbnoreg
-@call :_CheckSideloadMode
-@call :_CheckBootloaderMode
-@call :_CheckCableMode
-@call :_CheckWiFiMode
-@call :_CheckDoubleOrNoDeviceMode
-@call :_CheckDevMode
-@call :_CheckAfterWiFiCheckMode
-@call :_CheckSideloadMode
-@call :_CheckBootloaderMode
-
-:_begin1
-rem @echo.
-rem @echo ADB запускается...
+if /i [%1]==[b] set s=NO&& goto _beginn
+rem (call :_CheckInitialStatusKey) else (call :_CheckInitialStatusKey)
+call :_CheckInitialStatusKey
+if [%1]==[] goto :_tabBegin
 
 :_tabBegin
-@call :_tabGeneral
-goto _tabMenu
+goto _tabGeneral
 
 :_beginn
-@call :_hat
+call :_hat
 
-:_tabMenu
+:_tabReturn
+
+rem :_tabMenu
 rem @color 07
-@echo off
+@%verbecho%
 @echo.
 @echo.
 rem StartRusTextBlock
@@ -83,9 +69,7 @@ rem StartRusTextBlock
 @echo      M.  Управление Oculus Link/Airlink
 @echo      N.  Создание ярлыков для копирования файлов и установки приложений
 @echo      P.  Корректировка даты, времени и таймзоны в шлеме
-@echo      Q.  Резервирование данных приложений
 @echo      R.  Стрим видеотрансляции на ПК
-
 @echo.
 @echo      H.  Список расширенных команд и параметров
 @echo      W.  Связь с автором
@@ -115,7 +99,6 @@ rem @echo      L.  Setting native RefreshRate and display resolution
 rem @echo      M.  Oculus Link/Airlink management
 rem @echo      N.  Creating shortcuts for copying files and installing applications
 rem @echo      P.  Adjusting date, time, and timezone on the headset
-rem @echo      Q.  App data backup
 rem @echo      R.  Stream video casting to PC
 rem @echo.
 rem @echo      H.  List of advanced commands and parameters
@@ -135,7 +118,8 @@ if /i "%choice%"=="2" (GOTO _sendtext)
 if /i "%choice%"=="4" (GOTO _menurestart)
 if /i "%choice%"=="5" (GOTO _screenshotmenu)
 if /i "%choice%"=="6" (GOTO _scrshcopy)
-if /i "%choice%"=="7" (GOTO _adbwifi)
+if /i "%choice%"=="7" (GOTO _adbwifimenu)
+if /i "%choice%"=="77" (GOTO _ConnectRandomPort)
 if /i "%choice%"=="8" (GOTO _reconnect)
 if /i "%choice%"=="9" (GOTO _usbflash)
 if /i "%choice%"=="c" (GOTO _syscommenu)
@@ -151,7 +135,7 @@ if /i "%choice%"=="l" (GOTO _resolutionfix)
 if /i "%choice%"=="m" (GOTO _oculuslink)
 if /i "%choice%"=="n" (GOTO _qctprocedure)
 if /i "%choice%"=="p" (GOTO _datetime)
-if /i "%choice%"=="q" (GOTO _backupdatamenu)
+if /i "%choice%"=="pt" (cls && GOTO _WiFiTestCSVAnalyzer)
 if /i "%choice%"=="r" (GOTO _streamingmenu)
 if /i "%choice%"=="s" (GOTO _moreview)
 if /i "%choice%"=="w" (GOTO _contactauthor)
@@ -230,13 +214,15 @@ rem StartRusTextBlock
 @echo 	u	= Перезапустить от имени пользователя
 @echo 	c	= Перезапустить от админа с запросом UAC
 @echo 	a	= Перезапустить от админа без запроса UAC
-@echo 	b	= Ускоренный старт Quas: без таблицы и проверок
+rem rem @echo 	b	= Ускоренный старт Quas: без таблицы и проверок
 @echo 	G-FF	= Дополнительное пояснение об инкрементальных прошивках
 @echo 	J-A-d	= Включить установку с возможностью downgrade
 @echo 	J-A-v	= Включить отображение подробностей установки
 @echo 	J-A-l	= Включить запись в файл лога установки
 @echo 	449	= Таблица разделов шлема и их размер в байтах и гигабайтах
 @echo 	103	= Таблица разделов шлема и их размер в байтах и гигабайтах
+@echo 	77	= Подключение к шлему по случайному порту (аналог пунктов F-G-D)
+@echo 	pt	= Отобразить результаты теста Wi-Fi из меню Диагностики или из Главного меню
 @echo.
 @echo  ПОЯСНЕНИЕ:
 @echo.
@@ -255,7 +241,7 @@ rem @echo 	h		= This window (can be chosen in the Main menu)
 rem @echo 	u		= Restart as user
 rem @echo 	c		= Restart as admin with UAC prompt
 rem @echo 	a		= Restart as admin without UAC prompt
-rem @echo 	b		= Quick start Quas: without table and checks (bypass)
+rem rem @echo 	b		= Quick start Quas: without table and checks (bypass)
 rem @echo 	G-^>FF		= Additional explanation about incremental firmware updates
 rem @echo 	J-^>A-^>d		= Enable installation with downgrade capability
 rem @echo 	J-^>A-^>v		= Enable installation details display (verbose)
@@ -272,10 +258,12 @@ rem @echo   The keys u, c, a, b can be used as parameters when starting the Quas
 rem @echo   quas_v3.2.0.rus.exe b
 rem EndEngTextBlock
 call :_ColorTest
-@echo.
+rem @echo.
 @echo.
 @echo  -------------
-goto _returnmenu
+call :_exitwindow
+exit /b
+rem goto _returnmenu
 
 :_shellmenu
 cls
@@ -303,6 +291,7 @@ rem StartRusTextBlock
 @echo    S.  Управление параметрами Планирование GPU, Аппаратное ускорение и Игровой режим
 @echo    T.  Проверка статуса загрузки шлема
 @echo    U.  Мониторинг нагрузки и диагностика компонентов	[EXP]
+@echo    V.  Принудительный старт нижней панели приложений
 @echo.
 @echo    X.  Открыть консоль cmd
 @echo    Z.  Помощь в решении проблем.
@@ -328,6 +317,7 @@ rem @echo    R.  Display diagnostics
 rem @echo    S.  Management parameters Hardaware Acceleration and Game Mode
 rem @echo    T.  Check boot status
 rem @echo    U.  Load monitoring and component diagnostics [EXP]
+rem @echo    V.  Force start of the bottom application bar
 rem @echo.
 rem @echo    X.  Open cmd console
 rem EndEngTextBlock
@@ -354,16 +344,31 @@ if /i "%choice%"=="l" (GOTO _setshare)
 if /i "%choice%"=="n" (GOTO _TestVrUsvCopy)
 if /i "%choice%"=="o" (GOTO _camtest)
 if /i "%choice%"=="p" (GOTO _iperftest)
+if /i "%choice%"=="pt" (cls && GOTO _WiFiTestCSVAnalyzer)
 if /i "%choice%"=="q" (GOTO _shownetstatall)
 if /i "%choice%"=="r" (GOTO _displaydiagmain)
 if /i "%choice%"=="s" (GOTO _hwagamecontrol)
 if /i "%choice%"=="t" (GOTO _bootstatusviewermenu)
 if /i "%choice%"=="u" (GOTO _alltempmenu)
-
+if /i "%choice%"=="v" (GOTO _StartApplicationsPanel)
 if /i "%choice%"=="x" (GOTO _opencmd)
 rem if /i "%choice%"=="z" (GOTO _helplinksmenu)
 @cls
 goto _shellmenu
+
+:_StartApplicationsPanel
+@%MYFILES%\adb shell monkey -p com.oculus.panelapp.kiosk -c android.intent.category.LAUNCHER 1 1>nul 2>nul
+call :_erlvl
+@echo ========================================
+rem StartRusTextBlock
+@echo  Панель приложений запущена
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  The application panel is launched
+rem EndEngTextBlock
+call :_prevmenu
+@goto _shellmenu
+
 
 :_FastbootCommandList
 cls
@@ -394,10 +399,10 @@ rem StartEngTextBlock
 rem @echo    A.  Fasboot devices                  : Check device availability
 rem @echo    B.  Fastboot oem device-info         : Collect and save device OEM information
 rem @echo    C.  Fastboot getvar all              : Collect and save all possible device information
-rem @echo    D.  Fastboot continue                : Continue helmet boot
-rem @echo    E.  Fastboot reboot-fastboot         : Reboot helmet into Fastboot mode
-rem @echo    F.  Fastboot reboot-recovery         : Reboot helmet into Recovery mode
-rem @echo    G.  Fastboot reboot-bootloader       : Reboot helmet into Bootloader mode
+rem @echo    D.  Fastboot continue                : Continue headset boot
+rem @echo    E.  Fastboot reboot-fastboot         : Reboot headset into Fastboot mode
+rem @echo    F.  Fastboot reboot-recovery         : Reboot headset into Recovery mode
+rem @echo    G.  Fastboot reboot-bootloader       : Reboot headset into Bootloader mode
 rem @echo.
 rem @echo.
 rem @echo.
@@ -434,7 +439,7 @@ rem StartRusTextBlock
 @%MYFILES%\fastboot devices | findstr /i /c:"fastboot" || @echo ======================================== ^ & @echo +++ Шлем не отвечает на команды fastboot +++ & call :_prevmenu & goto _FastbootCommandList
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @%MYFILES%\fastboot devices | findstr /i /c:"fastboot" || @echo ======================================== ^ & @echo +++ Helmet is not responding to fastboot commands +++ & call :_prevmenu & goto _FastbootCommandList
+rem @%MYFILES%\fastboot devices | findstr /i /c:"fastboot" || @echo ======================================== ^ & @echo +++ Headset is not responding to fastboot commands +++ & call :_prevmenu & goto _FastbootCommandList
 rem EndEngTextBlock
 
 
@@ -595,7 +600,7 @@ rem @echo
 @echo     Повторить эту операцию трижды.
 @echo.
 @echo  3. Из Главного меню этой программы выберит пункт Е - Тестирование, диагностика...
-@echo     В этом мекню пробуйте пункты A, B, D.
+@echo     В этом меню пробуйте пункты A, B, D.
 @echo     Если не поможет, пробуйте:
 @echo     Пункт E - отключите Защитную систему
 @echo     Пункт F - отключите датчик приближения
@@ -782,8 +787,6 @@ rem StartRusTextBlock
 @echo    G.  Комплексная установка приложения Oculus Wireless ADB
 @echo    H.  Управление ключами реестра для запуска Quas
 @echo    I.  Управление приложения Социальной платформы
-rem 
-rem 
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    A.  Change global username
@@ -795,7 +798,6 @@ rem @echo    F.  Set high priority for Oculus services
 rem @echo    G.  Oculus Wireless ADB complex	[EXP]
 rem @echo    H.  Managing registry keys for application startup
 rem @echo    I.  Social Platform management
-rem @echo.
 rem EndEngTextBlock
 @echo.    
 @echo.
@@ -854,7 +856,7 @@ rem @echo        - groups in these apps
 rem @echo        - messages in these apps
 rem @echo.
 rem @echo    After disabling, a message about the unavailability of the Social Platform 
-rem @echo    will be displayed during helmet loading.
+rem @echo    will be displayed during headset loading.
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -901,11 +903,13 @@ call :_hat
 rem StartRusTextBlock
 @echo		0. Выход из программы
 @echo		M. Выход в меню
+@echo.
 @echo	    Enter. Подтвердить сброс настроек
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo		0. Exit program
 rem @echo		M. Exit menu
+rem @echo.
 rem @echo	    Enter. Confirm reset settings
 rem EndEngTextBlock
 @echo.
@@ -919,7 +923,7 @@ rem StartRusTextBlock
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   IMPORTANT:
-@echo.
+rem @echo.
 rem @echo     Resetting will restart Oculus services 
 rem @echo     and deleted all settings in the registry key HKCU\SOFTWARE\Oculus\RemoteHeadset
 rem EndEngTextBlock
@@ -976,40 +980,69 @@ call :_hatmenu
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo    A. Установить ключ "Bypass" в реестр
-@echo    B. Удалить ключ "Bypass" из реестра
-@echo    C. Проверить наличие ключа в реестре
+@echo    A. Установить ключ "Bypass Info Table" в реестр
+@echo    B. Установить ключ "Bypass Wireless Warning" в реестр
+@echo    C. Установить ключ "Bypass Initial Status" в реестр
+@echo.
+@echo    G. Удалить ключ "Bypass Info table" из реестра
+@echo    H. Удалить ключ "Bypass Wireless Warning" из реестра
+@echo    I. Удалить ключ "Bypass Initial Status" из реестра
+@echo.
+@echo    T. Проверить наличие ключей в реестре
+@echo.
+@echo    X. Удалить ветвь реестра Quas со всеми ключами (старыми и новыми)
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo    A. Set the "Bypass" key in the registry
-rem @echo    B. Remove the "Bypass" key from the registry
-rem @echo    C. Check the presence of a key in the registry
+rem @echo    A. Set the "Bypass Info Table" key in the registry
+rem @echo    B. Set the "Bypass Wireless Warning" key in the registry
+rem @echo    C. Set the "Bypass Initial Status" key in the registry
+rem @echo.
+rem @echo    G. Remove the "Bypass Info Table" key from the registry
+rem @echo    H. Remove the "Bypass Wireless Warning" key from the registry
+rem @echo    I. Remove the "Bypass Initial Status" key from the registry
+rem @echo.
+rem @echo    T. Check for the presence of keys in the registry
+rem @echo.
+rem @echo    X. Remove the Quas registry branch with all keys (old and new)
 rem EndEngTextBlock
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo  Ключ "Bypass" позволяет не отображать информационную таблицу,и, соответственно, 
-@echo  пропустить начальные проверки шлема. Его можно установить в пункте A.
+@echo  Ключ "Bypass Info Table" позволяет не отображать информационную таблицу, и, соответственно,
+@echo  пропустить некоторые начальные проверки шлема. Его можно установить в пункте A.
 @echo.
 @echo  Это существенно ускорит запуск программы Quas, ориентировочно на полторы секунды.
 @echo  Вместо всего этого информационного барахла в левом верхнем углу программы
-@echo  будет отображены цветовые и буквенные индикаторы.
-@echo  Зачения индикаторов можно узнать из Главного меню, пункт H.
+@echo  будет отображен буквенно-цветовой индикатор режима или статуса шлема.
 @echo.
-@echo  В любой момент с помощью меню можно удалить ключ из реестра и программа
-@echo  станет работать как обычно, с показом начальной информации.
+@echo  Ключ "Bypass Wireless Warning" позволит убрать предупреждающее окно, 
+@echo  когда подключение установлено по Wi-Fi. 
+@echo.
+@echo  Ключ "Bypass Initial Status" полностью убирает все первичные проверки статуса шлема.
+@echo  Программа стартует сразу. В этом режиме отсутствует информационная таблица,
+@echo  а буквенно-цветовой индикатор будет таким: [NO]
+@echo.
+@echo  Зачения индикаторов в любой момент можно узнать из Главного меню, пункт H.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  The "Bypass" key allows you not to display the information table, and, accordingly, 
-rem @echo  skip the initial checks of the headset. It can be installed at point A.
+rem @echo  The "Bypass Info Table" key allows skipping the display of the information table
+rem @echo  and the initial headset checks. It can be set in section A.
 rem @echo.
-rem @echo  This will significantly speed up the launch of the Quas program, approximately
-rem @echo  by one and a half seconds. Instead of all this informational clutter in the 
-rem @echo  top left corner of the program, color and letter indicators will be displayed.
-rem @echo  Indicator values can be found in the Main menu, item H.
+rem @echo  This speeds up the launch of the Quas program, approximately by one and a half seconds.
+rem @echo  Instead of all this informational clutter, a letter-color indicator of the mode or status
+rem @echo  of the headset will be displayed in the upper left corner of the program.
+rem @echo.
+rem @echo  The "Bypass Wireless Warning" key will remove the warning window
+rem @echo  when the connection is established via Wi-Fi.
+rem @echo.
+rem @echo  The "Bypass Initial Status" key removes all initial headset status checks.
+rem @echo  The program starts immediately. In this mode, the information table is absent,
+rem @echo  and the letter-color indicator will be as follows: [NO]
+rem @echo.
+rem @echo  The meanings of the indicators can be found at any time from the Main Menu, section H.
 rem @echo.
 rem @echo  At any time, you can use the menu to remove the key from the registry, and the program
-rem @echo  will work as usual, showing the initial information.
+rem @echo  will work as usual, displaying the initial information.
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -1018,54 +1051,131 @@ call :_MenuChoiceEnter
 if not defined choice goto _RegistryKeysSettings
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
-if /i "%choice%"=="a" (GOTO _setbypasskey)
-if /i "%choice%"=="b" (GOTO _delbypasskey)
-if /i "%choice%"=="c" (GOTO _checkbypasskey)
+if /i "%choice%"=="a" (GOTO _setbypassinfokey)
+if /i "%choice%"=="b" (GOTO _setbypasswfattkey)
+if /i "%choice%"=="c" (GOTO _setbypassinistatuskey)
+if /i "%choice%"=="g" (GOTO _delbypassinfokey)
+if /i "%choice%"=="h" (GOTO _delbypasswfattkey)
+if /i "%choice%"=="i" (GOTO _delbypassinistatuskey)
+if /i "%choice%"=="t" (GOTO _checkbypasskey)
+if /i "%choice%"=="x" (GOTO _deletehivequas)
 goto _RegistryKeysSettings
 
 
-:_setbypasskey
-reg add "HKEY_CURRENT_USER\Software\Quas" /v Bypass /t REG_DWORD /d 0xb /f 1>nul 2>nul
+:_setbypassinfokey
+reg add "HKEY_CURRENT_USER\Software\Quas" /v BypassInfoTable /t REG_DWORD /d 0xb /f 1>nul 2>nul
 @echo -----------------------------------------------------
 rem StartRusTextBlock
-@echo Ключ "Bypass" записан в реестр
+@echo Ключ "Bypass Info Table" записан в реестр
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo The "Bypass" key is written to the registry
+rem @echo The "Bypass Info Table" key is written to the registry
 rem EndEngTextBlock
-
-
 call :_prevmenu
 goto _RegistryKeysSettings
 
-:_delbypasskey
-@reg delete "HKEY_CURRENT_USER\Software\Quas" /v Bypass /f 1>nul 2>nul
+:_setbypasswfattkey
+reg add "HKEY_CURRENT_USER\Software\Quas" /v BypassWLWarning /t REG_DWORD /d 0xb /f 1>nul 2>nul
 @echo -----------------------------------------------------
 rem StartRusTextBlock
-@echo Ключ "Bypass" удален из реестра
+@echo Ключ "Bypass Wireless Warning" записан в реестр
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo The "Bypass" key has been removed from the registry
+rem @echo The "Bypass Info Table" key is written to the registry
+rem EndEngTextBlock
+call :_prevmenu
+goto _RegistryKeysSettings
+
+:_setbypassinistatuskey
+reg add "HKEY_CURRENT_USER\Software\Quas" /v BypassInitialStatus /t REG_DWORD /d 0xb /f 1>nul 2>nul
+@echo -----------------------------------------------------
+rem StartRusTextBlock
+@echo Ключ "Bypass Initial Status" записан в реестр
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo The "Bypass Initial Status" key is written to the registry
+rem EndEngTextBlock
+call :_prevmenu
+goto _RegistryKeysSettings
+
+
+:_delbypassinfokey
+@reg delete "HKEY_CURRENT_USER\Software\Quas" /v BypassInfoTable /f 1>nul 2>nul
+@echo -----------------------------------------------------
+rem StartRusTextBlock
+@echo Ключ "Bypass Info Table" удален из реестра
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo The "Bypass Info Table" key has been removed from the registry
+rem EndEngTextBlock
+call :_prevmenu
+goto _RegistryKeysSettings
+
+:_delbypasswfattkey
+@reg delete "HKEY_CURRENT_USER\Software\Quas" /v BypassWLWarning /f 1>nul 2>nul
+@echo -----------------------------------------------------
+rem StartRusTextBlock
+@echo Ключ "Bypass Wireless Warning" удален из реестра
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo The "Bypass Wireless Warning"" key has been removed from the registry
+rem EndEngTextBlock
+call :_prevmenu
+goto _RegistryKeysSettings
+
+:_delbypassinistatuskey
+@reg delete "HKEY_CURRENT_USER\Software\Quas" /v BypassInitialStatus /f 1>nul 2>nul
+@echo -----------------------------------------------------
+rem StartRusTextBlock
+@echo Ключ "Bypass Initial Status" удален из реестра
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo The "Bypass Initial Status" key has been removed from the registry
 rem EndEngTextBlock
 call :_prevmenu
 goto _RegistryKeysSettings
 
 
 :_checkbypasskey
-set bpstatus=
-For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v Bypass 2^>nul') do set bpstatus=%%a
+set bpinfotable=
+set bpwfatt=
+set bpinitialstatus=
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassInfoTable 2^>nul') do set bpinfotable=%%a
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassWLWarning 2^>nul') do set bpwfatt=%%a
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassInitialStatus 2^>nul') do set bpinitialstatus=%%a
 @echo -----------------------------------------------------
 rem StartRusTextBlock
-@if [%bpstatus%]==[] (@echo Ключ отсутствует в реестре && call :_prevmenu && goto _RegistryKeysSettings)
-@if %bpstatus%==0xb (@echo Ключ найден в реестре && call :_prevmenu && goto _RegistryKeysSettings)
+@if [%bpinfotable%]==[] set "keyinfomess=Не установлен"
+@if [%bpinfotable%]==[0xb] set "keyinfomess=Записан в реестре"
+@if [%bpwfatt%]==[] set "keywfattmess=Не установлен"
+@if [%bpwfatt%]==[0xb] set "keywfattmess=Записан в реестре"
+@if [%bpinitialstatus%]==[] set "keyinistatus=Не установлен"
+@if [%bpinitialstatus%]==[0xb] set "keyinistatus=Записан в реестре"
+@echo Ключ Bypass Info Table		: %keyinfomess%
+@echo Ключ Bypass Wireless Warning	: %keywfattmess%
+@echo Ключ Bypass Initial Status	: %keyinistatus%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @if [%bpstatus%]==[] (@echo The "Bypass" key is missing from registry && call :_prevmenu && goto _RegistryKeysSettings)
-rem @if %bpstatus%==0xb (@echo "Bypass" key found in registry && call :_prevmenu && goto _RegistryKeysSettings)
+rem @if [%bpinfotable%]==[] set "keyinfomess=Not set"
+rem @if [%bpinfotable%]==[0xb] set "keyinfomess=Written to registry"
+rem @if [%bpwfatt%]==[] set "keywfattmess=Not set"
+rem @if [%bpwfatt%]==[0xb] set "keywfattmess=Written to registry"
+rem @if [%bpinitialstatus%]==[] set "keyinistatus=Not set"
+rem @if [%bpinitialstatus%]==[0xb] set "keyinistatus=Written to registry"
+rem @echo Bypass Info Table key          : %keyinfomess%
+rem @echo Bypass Wireless Warning key     : %keywfattmess%
+rem @echo Bypass Initial Status key      : %keyinistatus%
 rem EndEngTextBlock
 call :_prevmenu
 goto _RegistryKeysSettings
 
+:_deletehivequas
+@reg delete "HKEY_CURRENT_USER\Software\Quas" /f 1>nul 2>nul
+@echo ---------------------------------------------
+@echo.
+@echo Ветвь HKEY_CURRENT_USER\Software\Quas удалена из реестра
+call :_prevmenu
+goto _RegistryKeysSettings
 
 :_OculusWirelessADBcomplex
 cls
@@ -1081,7 +1191,6 @@ rem StartRusTextBlock
 @echo    E. Показать все соединения
 @echo    F. Отключить все беспроводные соединения
 @echo    G. Ввести IP и порт подключения вручную
-
 @echo.
 @echo    H. Дополнительная информация
 rem EndRusTextBlock
@@ -1203,20 +1312,20 @@ rem если устройство в offline то errorlevel равен 0
 @For /f "tokens=*" %%a in ('%myfiles%\AndroidMdnsDiscover.exe') do set randipport=%%a
 @if "%randipport%"=="No devices found" goto _nodevfoundconnect
 %myfiles%\adb connect %randipport%
-rem  1>nul 2>nul
-rem if %errorlevel% NEQ 1 (
+rem rem  1>nul 2>nul
+rem rem if %errorlevel% NEQ 1 (
 rem rem StartRusTextBlock
 rem rem @echo Подключено: %randipport%
 rem rem EndRusTextBlock
 rem rem StartEngTextBlock
-rem @echo Connected to : %randipport%
+rem rem @echo Connected to : %randipport%
 rem rem EndEngTextBlock
-rem ) else (
+rem rem ) else (
 rem rem StartRusTextBlock
 rem rem @echo Подключение не удалось. Попробуйте еще раз
 rem rem EndRusTextBlock
 rem rem StartEngTextBlock
-rem @echo Connection failed. Try once more.
+rem rem @echo Connection failed. Try once more.
 rem rem EndEngTextBlock
 rem )
 call :_prevmenu
@@ -1369,12 +1478,12 @@ rem EndEngTextBlock
 @echo.
 call :_prevmenu
 goto _OculusWirelessADBcomplex
-rem rem StartRusTextBlock
+:: StartRusTextBlock
 rem rem @start cmd /k "type dophelp.txt && @echo Для закрытия окна нажмите любую кнопку && @pause 1>nul && exit"
-rem rem EndRusTextBlock
-rem rem StartEngTextBlock
+:: rem EndRusTextBlock
+:: rem StartEngTextBlock
 rem @start cmd /k "type dophelp.txt && @echo Press any key to close the window && @pause >nul && exit"
-rem rem EndEngTextBlock
+:: rem EndEngTextBlock
 rem @ping localhost -n 2 2>nul 1>nul
 rem @del dophelp.txt /f /q 2>nul 1>nul
 
@@ -1653,7 +1762,7 @@ goto _menugpucpu
 call :_cdc
 call :_hat
 @echo.
-@echo off
+@%verbecho%
 rem StartRusTextBlock
 @echo      ----------------------------
 @echo       ВЫБЕРИТЕ УРОВЕНЬ РАБОТЫ CPU
@@ -1684,8 +1793,6 @@ rem @echo    2.  Medium
 rem @echo    3.  High
 rem @echo    4.  Ultra
 rem @echo    5.  Maximum
-@echo    6
-@echo    7
 rem @echo    A.  Аuto
 rem EndEngTextBlock
 @echo.
@@ -1720,7 +1827,7 @@ cls
 call :_cdc
 call :_hat
 @echo.
-@echo off
+@%verbecho%
 rem StartRusTextBlock
 @echo      ----------------------------
 @echo       ВЫБЕРИТЕ УРОВЕНЬ РАБОТЫ GPU
@@ -1806,7 +1913,7 @@ rem EndEngTextBlock
 :_setpriority
 call :_hat
 @echo.
-@echo off
+@%verbecho%
 rem StartRusTextBlock
 @echo  Cледующим процессам будет установлен приоритет Высокий:
 @echo.
@@ -1868,7 +1975,7 @@ rem EndEngTextBlock
 call :_hat
 @echo.
 @echo.
-@echo off
+@%verbecho%
 rem StartRusTextBlock
 @echo  Установите курсор в шлеме на поле, в которое хотите вставить текст
 @echo  [ например, в адресной строке браузера или в поле ввода ключа/пароля ]
@@ -1916,8 +2023,8 @@ call :_hat
 call :_hatmenu
 @echo.
 @echo.
-@echo.
-@echo.
+rem @echo.
+rem @echo.
 rem StartRusTextBlock
 @echo    A.  Возобновление загрузки шлема из режима Bootloader
 @echo    C.  Стандартная/штатная перезагрузка шлема.
@@ -2259,7 +2366,7 @@ call :_MenuChoiceEnter
 if not defined choice goto _sideloadmode
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
-if /i "%choice%"=="f" (GOTO _CheckFWfileExist)
+if /i "%choice%"=="f" (call :_CheckFWfileExist && goto _FirmwareUpload)
 if /i "%choice%"=="r" (GOTO _menurestart)
 cls
 goto _sideloadmode
@@ -2475,6 +2582,76 @@ rem EndEngTextBlock
 @ping localhost >nul
 @explorer %userprofile%\Desktop\QuestMedia >nul
 @goto _returnmenu
+
+
+:_adbwifimenu
+call :_hat
+call :_hatmenu
+@echo.
+rem StartRusTextBlock
+@echo.
+@echo    A.  Подключиться по Wi-Fi стандартно
+@echo    B.  Подключиться по Wi-Fi через случайный порт
+@echo.
+@echo.
+@echo   ВНИМАНИЕ:
+@echo.
+@echo   =============================================================
+@echo   ^|  ЕСЛИ НА ШЛЕМЕ ЗАПУЩЕНо ПРИЛОЖЕНИЕ QUEST GAMEs OPTIMIZER, ^|
+@echo   ^|    СТАНДАРТНОЕ Wi-Fi ПОДКЛЮЧЕНИЕ НАРУШИТ ЕГО РАБОТУ.      ^|
+@echo   ^|     Если это случилось, просто перезагрузите шлем.        ^|
+@echo   =============================================================
+@echo.
+@echo     Стандартное Wi-Fi подключение несовместимо с программой Quest Games Optimizer^!
+@echo     Если вы используете эту программу, выбирайте опцию подключения по случайному порту.
+@echo     В ином случае могут быть установлены сразу ДВА беспроводных подключения, что вызовет ошибки
+@echo.
+@echo     Если программа Quest Games Optimizer не используется или не была запущена, 
+@echo     выбирайте стандартное подключение.
+@echo     Но помните, что оно будет разорвано после запуска рограммы Quest Games Optimizer.
+@echo     В этом случае для повторного подключения по беспроводу используйте опцию подключения
+@echo     по случайному порту.
+@echo.
+@echo     Примечание: Подключение по случайному порту не будет работать без приложения
+@echo     Quest Games Optimizer или комплекса Oculus Wireless ADB (пункты F-G-A)
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    A.  Connect via standard Wi-Fi
+rem @echo    B.  Connect via Wi-Fi using a random port
+rem @echo.
+rem @echo.
+rem @echo   ATTENTION:
+rem @echo.
+rem @echo   =============================================================
+rem @echo   ^|    IF QUEST GAMES OPTIMIZER IS RUNNING ON THE HEADSET,    ^|
+rem @echo   ^|    STANDARD Wi-Fi CONNECTION WILL DISRUPT ITS OPERATION!  ^|
+rem @echo   ^|        If this happens, simply reboot the headset.        ^|
+rem @echo   =============================================================
+rem @echo.
+rem @echo     Standard Wi-Fi connection is incompatible with Quest Games Optimizer!
+rem @echo     If you are using this program, choose the connection option via a random port.
+rem @echo.
+rem @echo     If Quest Games Optimizer is not being used or was not launched, 
+rem @echo     choose the standard connection.
+rem @echo     However, be aware that it will be disconnected if Quest Games Optimizer is launched.
+rem @echo     In that case, to reconnect wirelessly, use the connection option via a random port.
+rem @echo.
+rem @echo     Note: Connection via a random port will not work without the Quest Games Optimizer 
+rem @echo     app or the Oculus Wireless ADB suite (options F-G-A)
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+call :_MenuChoiceEnter
+@echo.
+if not defined choice goto _adbwifimenu
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="a" (GOTO _adbwifi)
+if /i "%choice%"=="b" (GOTO _ConnectRandomPort)
+rem if /i "%choice%"=="f" (GOTO _wifirestart)
+@cls
+goto _adbwifimenu
 
 :_adbwifi
 call :_cdc
@@ -2806,12 +2983,12 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  ADB is starting...
 rem EndEngTextBlock
-@call :_SetFirmwareFileName
+call :_SetFirmwareFileName
 
 setlocal enableextensions enabledelayedexpansion
 
-@call :_CheckSideloadMode
-@call :_CheckBootloaderMode
+call :_CheckSideloadMode
+call :_CheckBootloaderMode
 ::@call :_CheckCableMode
 ::@call :_CheckWiFiMode
 ::@call :_CheckDoubleOrNoDeviceMode
@@ -2820,7 +2997,7 @@ setlocal enableextensions enabledelayedexpansion
 :: Меню прошивки
 :_fwmenuskip
 @cls
-@echo off
+@%verbecho%
 call :_hatqut
 call :_hatmenu
 @echo.
@@ -2848,7 +3025,6 @@ rem StartRusTextBlock
 @echo.       
 @echo    I. Дополнительные пояснения про инкрементальные прошивки
 @echo.
-rem @echo    G.  Открыть сайт с прошивками
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    A.  Fully automatic firmware flashing
@@ -2857,10 +3033,10 @@ rem @echo.
 rem @echo    B.  Button-triggered automatic firmware flashing
 rem @echo        [developer mode not required, but ensure the headset is in Bootloader mode]
 rem @echo.
-rem @echo    C.  Extract firmware links from helmet and download firmware files   [EXP]
+rem @echo    C.  Extract firmware links from headeset and download firmware files   [EXP]
 rem @echo        [ firmware links will be saved to link.txt and downloading will start ]
 rem @echo.
-rem @echo    CC. Only extract firmware links from helmet without downloading firmware files   [EXP]
+rem @echo    CC. Only extract firmware links from headset without downloading firmware files   [EXP]
 rem @echo        [ firmware links will be saved to link.txt ]
 rem @echo.
 rem @echo    D.  Open the website with firmware versions
@@ -2886,7 +3062,7 @@ if /i "%choice%"=="cc" (GOTO _fwdownload)
 if /i "%choice%"=="d" (GOTO _fwsitelink)
 if /i "%choice%"=="e" (GOTO _fwtxtcompare)
 if /i "%choice%"=="f" (GOTO _CheckFirmwareUpdate)
-if /i "%choice%"=="ff" (GOTO _DopHelp)
+if /i "%choice%"=="i" (GOTO _DopHelp)
 if /i "%choice%"=="h" (call :_fwhelp)
 if /i "%choice%"=="ftp" (GOTO _ftpmenu)
 
@@ -2906,12 +3082,12 @@ goto :_fwmenuskip
 rem StartRusTextBlock
 @echo    ee	: Сравнить версии, если новее, записать в fw.txt и выгрузить
 @echo    ff	: Дополнительный help по инкрементным прошивкам
-@echo    ftp	: Загрузить/выгрузить файлы fw и alllinks
+@echo    ftp	: Загрузить/выгрузить файлы fw и allfwlinks
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    ee	: Compare versions, if newer, write to fw.txt and download
 rem @echo    ff	: Additional help on incremental firmware updates
-rem @echo    ftp	: Upload/download fw and alllinks files
+rem @echo    ftp	: Upload/download fw and allfwlinks files
 rem EndEngTextBlock
 @echo ----------------------------------------------------------------------
 @echo.
@@ -2944,9 +3120,9 @@ rem StartRusTextBlock
 @echo    B3.  Залить fw3.txt на FTP
 @echo    BP.  Залить fwp.txt на FTP
 @echo.
-@echo    C.  Скачать allinls.txt
-@echo    D.  Залить alllinks.txt на FTP
-@echo    E.  Скачать alllinks.txt, удалить дубли строк и залить на FTP
+@echo    C.  Скачать allfwlinks.txt
+@echo    D.  Залить allfwlinks.txt на FTP
+@echo    E.  Скачать allfwlinks.txt, удалить дубли строк и залить на FTP
 @echo.
 @echo    F.  Меню прошивки
 @echo    G.  Скачать и забэкапить все файлы
@@ -2969,9 +3145,9 @@ rem @echo    B2.  Upload fw2.txt to FTP
 rem @echo    B3.  Upload fw3.txt to FTP
 rem @echo    BP.  Upload fwp.txt to FTP
 rem @echo.
-rem @echo    C.  Download allinls.txt
-rem @echo    D.  Upload alllinks.txt to FTP
-rem @echo    E.  Download alllinks.txt, remove duplicate lines, and upload to FTP
+rem @echo    C.  Download allfwlinks.txt
+rem @echo    D.  Upload allfwlinks.txt to FTP
+rem @echo    E.  Download allfwlinks.txt, remove duplicate lines, and upload to FTP
 rem @echo.
 rem @echo    F.  Firmware menu
 rem @echo    G.  Download and backup all files
@@ -3046,6 +3222,10 @@ call :_GetFTP
 set ftpfile=alllinks.txt
 call :_GetFTP
 @move %ftpfile% %~dp0\ftp\ 1>nul 2>nul
+set ftpfile=allfwlinks.txt
+call :_GetFTP
+@move %ftpfile% %~dp0\ftp\ 1>nul 2>nul
+
 @%myfiles%\7z.exe a -mx7 -t7z ftpfiles-%dt%.7z %~dp0\ftp
 @move ftpfiles-%dt%.7z d:\P\Dropbox\SecureWallet\HomeDevices\Quest\Backups\
 @rd /s /q %~dp0\ftp
@@ -3098,49 +3278,49 @@ exit /b
 
 ::FTPalllinks
 :_GetFTPalllinks
-set ftpfile=alllinks.txt
+set ftpfile=allfwlinks.txt
 call :_GetFTP
 @echo ---------------
 rem StartRusTextBlock
-@echo = alllinks.txt скачан
+@echo = allfwlinks.txt скачан
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = alllinks.txt downloaded
+rem @echo = allfwlinks.txt downloaded
 rem EndEngTextBlock
 @echo.
 call :_prevmenu
 exit /b
 
 :_PutFTPlllinks
-set ftpfile=alllinks.txt
+set ftpfile=allfwlinks.txt
 call :_PutFTP
 @echo ---------------
 rem StartRusTextBlock
-@echo = allinks.txt залит на FTP
+@echo = allfwlinks.txt залит на FTP
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = allinks.txt uploaded to FTP
+rem @echo = allfwlinks.txt uploaded to FTP
 rem EndEngTextBlock
 @echo.
 call :_prevmenu
 exit /b
 
 :_AlllinksNoDoubles
-set ftpfile=alllinks.txt
+set ftpfile=allfwlinks.txt
 call :_GetFTP
-ren alllinks.txt alllinksdoubles.txt
+ren allfwlinks.txt alllinksdoubles.txt
 @for /f "tokens=*" %%a in (alllinksdoubles.txt) do (
-@findstr /l /c:"%%a" alllinks.txt 1>nul 2>nul || @echo %%a>>alllinks.txt
+@findstr /l /c:"%%a" allfwlinks.txt 1>nul 2>nul || @echo %%a>>allfwlinks.txt
 )
 call :_PutFTP
-@del alllinks.txt /q /f 1>nul 2>nul
+@del allfwlinks.txt /q /f 1>nul 2>nul
 @del alllinksdoubles.txt /q /f 1>nul 2>nul
 @echo ---------------
 rem StartRusTextBlock
-@echo = allinks.txt очищен от дублирующих строк
+@echo = allfwlinks.txt очищен от дублирующих строк
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = alllinks.txt cleaned from duplicate lines
+rem @echo = allfwlinks.txt cleaned from duplicate lines
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -3156,7 +3336,7 @@ exit /b
 goto _ftpmenu
 
 :_CheckFirmwareUpdate
-@echo off
+@%verbecho%
 setlocal enableextensions enabledelayedexpansion
 :: Проверка на корректность файла прошивки
 ::if exist "%FirmwareFileName%.zip" ren "%FirmwareFileName%.zip" "%FirmwareFileName%"
@@ -3306,7 +3486,7 @@ set ftpfile=%fwtxt%
 call :_GetFTP
 
 :_fw
-@echo off
+@%verbecho%
 @For /F "tokens=1,2 delims= " %%a In (%fwtxt%) Do (
 @set fwpostbuildfile=%%a
 @set fwpostn=%%b
@@ -3718,7 +3898,7 @@ call :_SetFirmwareFileName
 call :_cdc
 call :_hat
 @echo.
-@echo off
+@%verbecho%
 call :_setfwtxt
 rem StartRusTextBlock
 if "%model%" EQU "Неизвестно" (
@@ -3766,6 +3946,7 @@ rem StartRusTextBlock
 @echo		M. Выход в Главное меню
 @echo		F. Выход в меню прошивки
 @echo		T. Проверить файл %FirmwareFileName% на совместимость
+@echo.
 @echo	    Enter. Начать прошивку
 @echo.
 @echo.
@@ -3785,6 +3966,7 @@ rem @echo		0. Exit the program
 rem @echo		M. Exit to Main Menu
 rem @echo		F. Exit to Firmware Menu
 rem @echo		T. Check %FirmwareFileName% file compatibility
+rem @echo.
 rem @echo	    Enter. Start device flashing
 rem @echo.
 rem @echo.
@@ -3794,7 +3976,7 @@ rem @echo  Press Enter to start device flashing
 rem @echo  or choose a menu item and then press Enter
 rem EndEngTextBlock
 :_fwmenu1
-@echo off
+@%verbecho%
 @set "choice="
 @Set "choice=1"
 @echo.
@@ -3892,8 +4074,8 @@ exit /b
 
 :_firmwarebutton
 endlocal
-@call :_SetFirmwareFileName
-@echo off
+call :_SetFirmwareFileName
+@%verbecho%
 @cls
 call :_hat
 @echo.
@@ -3928,6 +4110,7 @@ rem @echo.
 @echo		M. Выход в Главное меню 
 @echo		F. Выход в меню прошивки
 @echo		T. Проанализировать файл прошивки
+@echo.
 @echo	    Enter. Начать прошивку
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -3935,11 +4118,12 @@ rem @echo		0. Exit the program
 rem @echo		M. Exit to Main Menu
 rem @echo		F. Exit to Firmware Menu
 rem @echo		T. Analyze firmware file
+rem @echo.
 rem @echo	    Enter. Start flashing
 rem EndEngTextBlock
 
 :_fwmenu2
-@echo off
+@%verbecho%
 @set "choice="
 @Set "choice=1"
 @echo.
@@ -4015,7 +4199,7 @@ rem EndEngTextBlock
 goto _returnmenu
 
 :_nobootloader
-@echo off
+@%verbecho%
 @cls
 call :_hat
 @echo.
@@ -4054,7 +4238,7 @@ rem EndEngTextBlock
 goto _returnmenu
 
 :_bootloadermode
-@echo off
+@%verbecho%
 @cls
 call :_hat
 @echo.
@@ -4080,6 +4264,7 @@ rem StartRusTextBlock
 @echo      M. Выход в Главное меню
 @echo      R. Перезагрузка шлема
 @echo      F. Выход в общее прошивочное меню прошивки
+@echo.
 @echo  Enter. Перейти непосредственно к меню прошивки (Кнопочный режим)
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -4101,6 +4286,7 @@ rem @echo      0. Exit the program
 rem @echo      M. Exit to Main Menu 
 rem @echo      R. Reboot
 rem @echo      F. Exit to Firmware Menu
+rem @echo.
 rem @echo  Enter. Switch to button flashing mode
 rem EndEngTextBlock
 @echo.
@@ -4127,7 +4313,7 @@ goto _bootloadermode
 @%myfiles%\fastboot reboot  1>nul 2>nul& call :_rebootmessage & goto  _returnmenu
 
 :_NOTEXIST
-@echo off
+@%verbecho%
 @cls
 call :_hatqut
 @echo.
@@ -4154,7 +4340,7 @@ rem EndEngTextBlock
 goto _returnmenu
 
 :_FWWRONG
-@echo off
+@%verbecho%
 @cls
 call :_hatqut
 @echo.
@@ -4239,7 +4425,7 @@ rem EndEngTextBlock
 GOTO _returnmenu
 
 :_fwtxtcompare
-@echo off
+@%verbecho%
 rem StartRusTextBlock
 @echo Секунду, выдергиваем циферки...
 rem EndRusTextBlock
@@ -4362,6 +4548,30 @@ call :_ftpconnect
 @del ftp_%transfer%.txt /q /f  1>nul 2>nul
 exit /b
 
+rem :__GetFTP
+rem if %ftpfile%==fw2.txt set %ftpfile%=fwquest2
+rem if %ftpfile%==fw3.txt set %ftpfile%=fwquest3
+rem if %ftpfile%==fwp.txt set %ftpfile%=fwquestp
+rem if %ftpfile%==alllinks.txt set %ftpfile%=fwoldlinks
+rem if %ftpfile%==allfwlinks.txt set %ftpfile%=fwalllinks
+rem set %ftpfile%=fwquest1
+rem set rentryurlpage=%ftpfile%
+rem set rentryfilename=%rentryurlpage%.txt
+rem call %myfiles%\rentry.cmd --raw --url %rentryurlpage% --file "%rentryfilename%".txt
+
+rem :__PutFTP
+rem if %ftpfile%==fw2.txt set %ftpfile%=fwquest2
+rem if %ftpfile%==fw3.txt set %ftpfile%=fwquest3
+rem if %ftpfile%==fwp.txt set %ftpfile%=fwquestp
+rem if %ftpfile%==alllinks.txt set %ftpfile%=fwoldlinks
+rem if %ftpfile%==allfwlinks.txt set %ftpfile%=fwalllinks
+rem set %ftpfile%=fwquest1
+rem set rentryfileupload=%ftpfile%
+rem set rentryurlpage=%ftpfile%
+rem set rentrycodepage=%ftpfile%
+rem echo %ftpfile%
+rem call %myfiles%\rentry.cmd --edit --url %rentryurlpage% --edit-code %rentrycodepage% --file "%rentryfileupload%".txt
+
 :_PutFTP
 set transfer=put
 call :_ftpconnect
@@ -4382,7 +4592,7 @@ exit /b
 
 :_fwdownload
 call :_cdc
-@echo Off
+@%verbecho%
 @set arcpath=%myfiles%
 @echo ===============================================================
 rem StartRusTextBlock
@@ -4442,27 +4652,26 @@ if [%choice%]==[cc] goto _SaveLinkList
 
 @echo ---------------------------------------------------------------
 rem StartRusTextBlock
-@echo  = Извлечение завершено, начинаем скачивание прошивки....
-@echo    Ссылок может быть не одна, в этом случае скачиваться они будут по-очереди.
-@echo    Это может занять значительное время.
-@echo.
-@echo  = Файлы прошивок могут дублироваться, так как скачиваются из разных источников.
-@echo    Просто удалите второй файл с таким же названием - версией среды выполнения.
+@echo   = Извлечение завершено, начинаем скачивание прошивки....
+@echo     Ссылок может быть не одна, в этом случае скачиваться они будут по-очереди.
+@echo     Это может занять значительное время.
+rem @echo  = Файлы прошивок могут дублироваться, так как скачиваются из разных источников.
+rem @echo    Просто удалите второй файл с таким же названием - версией среды выполнения.
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  = Extraction completed, starting firmware download....
 rem @echo    There may be more than one link, in which case they will be downloaded sequentially.
 rem @echo    This may take a considerable amount of time.
-rem @echo.
-rem @echo  = Firmware files may be duplicated as they are downloaded from different sources.
-rem @echo    Simply delete the second file with the same name - runtime version.
+rem rem @echo.
+rem rem @echo  = Firmware files may be duplicated as they are downloaded from different sources.
+rem rem @echo    Simply delete the second file with the same name - runtime version.
 rem EndEngTextBlock
 @echo.
 @for /f "tokens=*" %%a in (link.txt) do (
 set "dlink=%%a"
-@echo ------
+@echo   --------------------------------------------
 rem StartRusTextBlock
-@echo = Скачивание прошивки...
+@echo   = Скачивание прошивки...
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  = Firmware download in progress...
@@ -4471,28 +4680,50 @@ call :_DownloadFirmware
 )
 @del metadata 2>nul 1>nul
 @del links.txt 2>nul 1>nul
+@del link.txt 2>nul 1>nul
 @del bugreport*.zip /q
 @rd %cd%\bugreport /Q /S
-@echo -----
 rem StartRusTextBlock
+@echo   --------------------------------------------
+@echo   = Проверка файлов прошивок на ошибки и дубли
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   = Checking firmware files for errors and duplicates
+rem EndEngTextBlock
+@echo.
+call :_CheckFWDoubleErrors
+@echo   --------------------------------------------
+rem StartRusTextBlock
+@echo   = Файлы проверены, дубли удалены.
+@echo     Если рядом с программой лежит файл fwerrors.txt, в нем перечислены
+@echo     имена прошивок, скачанных с ошибками. Их можно перекачать отдельно,
+@echo     используя ссылки в этом файле.
+@echo.
+@echo -----
 @echo = Готово. 
 @echo.
-@echo   Если скачивания не было, загляните в файл link.txt,
+@echo   Если скачивания не было, загляните в файл fwlinks.txt,
 @echo   созданный только что рядом с программой и вручную 
 @echo   скопируйте ссылку на прошивку (если она там есть) в браузер.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  = Done.
+rem @echo   = Files have been checked, duplicates removed.
+rem @echo     If there is a file named fwerrors.txt next to the program, 
+rem @echo     it lists the names of the firmware files that were downloaded with errors.
+rem @echo     You can re-download them separately using the links provided in this file.
 rem @echo.
-rem @echo   If the download did not occur, check the link.txt file,
-rem @echo   created just now next to the program, and manually
-rem @echo   copy the firmware link (if available) into your browser.
+rem @echo -----
+rem @echo = Done.
+rem @echo.
+rem @echo   If there was no download, check the fwlinks.txt file,
+rem @echo   which was just created next to the program. 
+rem @echo   Manually copy the firmware link (if available) into your browser.
 rem EndEngTextBlock
 goto _Sendlink
 
 :_hsfwversionextract
 For /F %%a In ('@%MYFILES%\adb shell getprop ro.build.version.incremental') Do set hsenvironment=%%a
-@FOR /F "tokens=1,2 delims==" %%a IN ('adb shell dumpsys package com.oculus.systemux ^| findstr /i /c:"VersionName"') DO (
+@FOR /F "tokens=1,2 delims==" %%a IN ('@%MYFILES%\adb shell dumpsys package com.oculus.systemux ^| findstr /i /c:"VersionName"') DO (
 @FOR /F "tokens=1,2,3,4 delims=." %%a IN ("%%b") DO set "fwnewhsversion=%%a.%%b.%%c.%%d"
 )
 set "hsversion=!fwnewhsversion!"
@@ -4500,12 +4731,20 @@ exit /b
 
 :_SaveLinkList
 rem StartRusTextBlock
-@echo ---------------------------------------------------------------
-@echo  = Готово, список ссылок сохранен в файл link.txt
+@echo   ---------------------------------------------------------------
+@echo   = Готово, список ссылок сохранен в файл link.txt
+@echo.
+@echo     Следует иметь в виду, что без скачивания прошивок
+@echo     невозможно проверить ссылки на доступность этих прошивок.
+@echo     Иными словами, некоторые ссылки могут быть просроченными.
 @echo.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  = Done, list of links created 
+rem @echo   = Done, the list of links has been saved to the link.txt file.
+rem @echo.
+rem @echo     Please note that without downloading the firmware,
+rem @echo     it is impossible to check the availability of these links.
+rem @echo     In other words, some links may be expired.
 rem @echo.
 rem EndEngTextBlock
 @del metadata 2>nul 1>nul
@@ -4537,13 +4776,13 @@ rem @echo   If yes - simply press Enter. If no - 0 and Enter.
 rem EndEngTextBlock
 @echo.
 @echo.
-@set "choice="
-@set "choice=s"
+@set "choicesend="
+@set "choicesend=s"
 @Set /p choice=">>> "
 @echo.
-if not defined choice goto _Sendlink
-if /i "%choice%"=="s" (GOTO _Savelink)
-if /i "%choice%"=="0" (GOTO _fwmenuskip)
+if not defined choicesend goto _Sendlink
+if /i "%choicesend%"=="s" (GOTO _Savelink)
+if /i "%choicesend%"=="0" (GOTO _fwmenuskip)
 cls
 goto _Sendlink
 
@@ -4555,14 +4794,25 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo Thank you for your help!
 rem EndEngTextBlock
-set ftpfile=alllinks.txt
-call :_GetFTP
-@for /f "tokens=*" %%a in (link.txt) do (
-set "savelinks=%%a"
-@echo !savelinks! >>alllinks.txt
+rem >>>>>>>>>>>>>>>
+if [%choice%]==[cc] (
+set fwlinks=link.txt
+set allfwlinks=fwoldlinks
+) else (
+set fwlinks=fwlinks.txt
+set allfwlinks=fwalllinks
 )
-set ftpfile=alllinks.txt
+rem >>>>>>>>>>>>>>
+set ftpfile=%allfwlinks%
+call :_GetFTP
+@for /f "tokens=*" %%a in (%fwlinks%) do (
+set "savelinks=%%a"
+@echo !savelinks! >>%allfwlinks%.txt
+)
+
+set ftpfile=%allfwlinks%.txt
 call :_PutFTP
+@del %allfwlinks%.txt /q /f 1>nul 2>nul
 @del alllinks.txt /q /f 1>nul 2>nul
 @echo.
 rem StartRusTextBlock
@@ -4574,6 +4824,8 @@ rem EndEngTextBlock
 @echo ------
 @echo.
 goto _returnmenu
+
+
 
 :_EmptyLinkTxt
 @del rezult.txt 2>nul 1>nul
@@ -4587,7 +4839,7 @@ rem StartRusTextBlock
 @echo  в багрепорте ее нет. Быть может, получится в другой раз.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  Unfortunately, the firmware link couldn't be extracted from the bug report. 
+rem @echo  Unfortunately, the firmware link couldn't be extracted from the bugreport. 
 rem @echo  Perhaps next time it will be possible.
 rem EndEngTextBlock
 @echo ---------------------------------------------------------------
@@ -4600,19 +4852,67 @@ goto _returnmenu
 set postbuild=
 @curl -LJko fwtempfile_%ti%.zip "%dlink%" -#
 %myfiles%\7z.exe e fwtempfile_%ti%.zip metadata -r -y 1>nul 2>nul
-@FOR /F "tokens=2 delims==" %%a IN ('@FINDstr /c:"post-build-incremental" metadata') DO @set postbuild=%%a
+if %errorlevel% NEQ 0 call :_FirmwareDownloadError & exit /b
+@FOR /F "tokens=2 delims==" %%a IN ('@FINDstr /c:"post-build-incremental" metadata 2^>nul') DO @set postbuild=%%a
 if [%postbuild%]==[] del fwtempfile_%ti%.zip /q 1>nul 2>nul
 @ren fwtempfile_%ti%.zip %postbuild%_%ti%.zip 1>nul 2>nul
 @del metadata /q 1>nul 2>nul
-@echo.
+@echo %postbuild% !dlink!>>fwlinks.txt
+rem >>>>>>>>>>>>>>>>>
+rem @echo %fmfilename% [%postbuild%](!dlink!^)>>rentryfwlinks.txt
+rem >>>>>>>>>>>>>>
 rem StartRusTextBlock
 @echo   = Файл прошивки сохранен с именем %postbuild%_%ti%.zip
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo The firmware file has been saved with the name %postbuild%_%ti%.zip
 rem EndEngTextBlock
-@echo.
+rem @echo.
 @timeout 1 1>nul
+exit /b
+
+:_CheckFWDoubleErrors
+setlocal enabledelayedexpansion
+set "fileNames="
+for /f "delims=" %%a in ('dir /b /a-d *.zip 2^>nul') do (
+@%myfiles%\7z.exe t %%a 2>fwerrors.txt 1>nul
+for /f "tokens=1 delims=_" %%b in ("%%~na") do (
+set "baseName=%%b"
+if defined fileNames[!baseName!] (
+set fn=%%a
+call :_DeleteSameFile
+) else (
+set "fileNames[!baseName!]=%%a"
+)
+)
+)
+endlocal
+@findstr "^" "fwerrors.txt"2>nul&& echo.|| @del /f /q fwerrors.txt 1>nul 2>nul
+exit /b
+
+:_DeleteSameFile
+%myfiles%\7z.exe e "%fn%" metadata -r -y 1>nul 2>nul
+@FOR /F "tokens=2 delims==" %%c IN ('@FINDstr /c:"post-build-incremental" metadata') DO @set postbuild=%%c
+if [%baseName%]==[%postbuild%] @del /q /f "%fn%"
+@del /q /f metadata
+exit /b
+
+
+:_FirmwareDownloadError
+@echo -----------------------------
+rem StartRusTextBlock
+@echo   === Ошибка скачивания ===
+@echo   Возможно ссылка просрочена и файл больше недоступен.
+@echo   Ссылка скопирована в файл fwbrokenlinks.txt, попробуйте скачать вручную.
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   === Download Error ===
+rem @echo   The link might be expired, and the file may no longer be available.
+rem @echo   The link has been copied to the fwbrokenlinks.txt file; please try downloading it manually.
+rem EndEngTextBlock
+@echo.
+@echo !dlink!>>fwbrokenlinks.txt
+@del /q /f fwtempfile_%ti%.zip 1>nul 2>nul
 exit /b
 
 :_SetOnlyTime
@@ -4629,7 +4929,7 @@ rem StartRusTextBlock
 @echo попробуйте еще раз через несколько минут.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo Failed to create the bug report archive, please try again in a few minutes.
+rem @echo Failed to create the bugreport archive, please try again in a few minutes.
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -4708,7 +5008,7 @@ exit/b
 
 :_bugreportextr
 call :_cdc
-@echo Off
+@%verbecho%
 @echo ===============================================================
 rem StartRusTextBlock
 @echo Создаем архив багрепорта, это займет 3-4 минуты
@@ -4719,7 +5019,7 @@ rem StartRusTextBlock
 @echo Если в течении минуты не появилась, закройте программу и запустите ее снова
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo Creating a bug report archive, this will take 3-4 minutes
+rem @echo Creating a bugreport archive, this will take 3-4 minutes
 rem @echo You should see the following line:
 rem @echo.
 rem @echo [  1%%%] generating bugreport-...
@@ -4737,12 +5037,11 @@ rem StartRusTextBlock
 @echo В браузере откроется вкладка, загрузите в нее архив.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo The bug report archive has been extracted and placed in the current directory
+rem @echo The bugreport archive has been extracted and placed in the current directory
 rem @echo A browser tab will open, upload the archive there.
 rem EndEngTextBlock
 @echo ---------------------------------------------------------------
 @ping localhost -t 3 1>nul 2>nul
-rem @start " " "https://bathist.online/"
 @start " " "https://bathist.ef.lc/"
 @echo.
 @echo.
@@ -4758,7 +5057,7 @@ rem StartRusTextBlock
 @echo +++ Не удалось извлечь багрепорт. Попробуйте зайти чуть позже +++
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo +++ Failed to extract the bug report. Try again later +++
+rem @echo +++ Failed to extract the bugreport. Try again later +++
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -4873,7 +5172,7 @@ goto :_timezonecorr
 
 :_datetime
 call :_cdc
-@echo off
+@%verbecho%
 @cls
 call :_hat
 call :_hatmenu
@@ -4965,7 +5264,7 @@ cls
 goto _datetime
 
 :_timezonecorr
-@echo off
+@%verbecho%
 rem @cls
 call :_hat
 @echo.
@@ -5155,7 +5454,7 @@ rem @echo    C.  Automatic selection of DNS for downloading updates    [EXP]
 rem @echo    D.  Reset headset DNS settings to default
 rem @echo    E.  Set up DNS Internet blocking        [EXP]
 rem @echo    F.  Checking for updates availability on PC           [EXP]
-rem @echo    G.  Checking for updates availability on helmet       [EXP]
+rem @echo    G.  Checking for updates availability on headset       [EXP]
 rem @echo.
 rem @echo.
 rem @echo    IMPORTANT:
@@ -5199,8 +5498,8 @@ if /i "%choice%"=="b" (GOTO _dnschangeonly)
 if /i "%choice%"=="c" (call :_dnschangeint && goto _dnslistfinished)
 if /i "%choice%"=="d" (GOTO _setdefault)
 if /i "%choice%"=="e" (GOTO _dnszaglushka)
-if /i "%choice%"=="f" (goto :_CheckUpdatesAccessPC)
-if /i "%choice%"=="g" (goto :_CheckUpdatesAccessHS)
+if /i "%choice%"=="f" (goto _CheckUpdatesAccessPC)
+if /i "%choice%"=="g" (goto _CheckUpdatesAccessHS)
 cls
 goto _todmenu
 
@@ -5208,7 +5507,7 @@ goto _todmenu
 call :_dnsintervalswitch
 
 :_UpdateProgressSearchB
-@echo off
+@%verbecho%
 set dnschangelist=0
 call :_DelSearchUpdateFiles
 @setlocal enableextensions enabledelayedexpansion
@@ -5329,8 +5628,8 @@ rem @echo.
 rem @echo  =======================================================================================
 rem @echo   Progress in percentage   : %gprgrs%%%%
 rem @echo   Task in progress         : %trrgrs%%trprgrs2%
-@echo   Search module           : %updatesearchstring%
-@echo   Current status          : %otastatus%
+rem @echo   Search module           : %updatesearchstring%
+rem @echo   Current status          : %otastatus%
 rem @echo  =======================================================================================
 rem @echo.
 rem @echo    At first it may seem like the progress is not changing, but it is not so.
@@ -5597,7 +5896,7 @@ rem EndEngTextBlock
 goto _todmenu
 
 :_CheckUpdatesAccessPC
-echo off
+@%verbecho%
 call :_SetColours
 @echo  ----------------------------------------------------------------------
 rem StartRusTextBlock
@@ -5651,7 +5950,6 @@ goto _todmenu
 
 
 rem :_CheckFirmwareAccessPC
-rem echo off
 rem call :_CreateFWfileCheck
 rem set linkUpdates=
 rem set listtxt=fwlist.txt
@@ -5670,14 +5968,15 @@ rem @echo  =====================================================================
 rem exit /b
 
 :_CheckUpdatesAccessHS
-@echo off
-call :_setcolours
+@%verbecho%
+call :_cdc
+call :_cdcbnoreg
 @echo  ======================================================================
 rem StartRusTextBlock
 @echo  ^| %_fBYellow%= Проверяем статус Wi-Fi и IP адрес шлема, ожидание 5 секунд...%_fReset%    ^|
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  ^| %_fBYellow%= Checking Wi-Fi status and helmet IP address, waiting 5 seconds...%_fReset%    ^|
+rem @echo  ^| %_fBYellow%= Checking Wi-Fi status and headset IP address, waiting 5 seconds...%_fReset%    ^|
 rem EndEngTextBlock
 @echo  ^|                                                                    ^|
 @echo  ----------------------------------------------------------------------
@@ -5746,7 +6045,6 @@ call :_prevmenu
 goto _todmenu
 
 rem :_CheckFirmwareAccessHS
-rem echo off
 rem call :_CreateFWfileCheck
 rem set linkUpdates=
 rem set toolname=wget
@@ -5776,7 +6074,7 @@ rem call :_prevmenu
 rem exit /b
 
 :_CheckIPaddress
-@echo off
+@%verbecho%
 set /a countip=0
 :_CheckIPaddressCounter
 rem @setlocal enableextensions enabledelayedexpansion
@@ -5973,7 +6271,7 @@ exit /b
 :_resolutionfix
 call :_hat
 @echo.
-@echo off
+@%verbecho%
 @echo      -----------------------------
 rem StartRusTextBlock
 @echo       ВЫБЕРИТЕ РАЗРЕШЕНИЕ ДИСПЛЕЯ
@@ -6224,7 +6522,7 @@ if /i "%choice%"=="g" (GOTO _InstallGamesApps)
 goto _installmenugen
 
 :_checkcurlexists
-@echo off
+@%verbecho%
 @curl.exe 1>nul 2>nul
 if %errorlevel%==2 exit /b
 rem StartRusTextBlock
@@ -6265,8 +6563,9 @@ rem EndEngTextBlock
 @echo    A.  = qLoader
 @echo    B.  = Rookie Sideloader
 @echo    C.  = ARMGDDN Browser
-@echo    D.  = VRP Essentials
+@echo    E.  = VRP Essentials
 @echo.
+@echo    I.  = ARMGDDN Autocracker
 @echo    J.  = Steam Auto Crack
 @echo    K.  = Steam Auto Crack GUI
 @echo    L.  = Quest Patcher for Beat Saber
@@ -6286,15 +6585,13 @@ if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _InstallqLoader)
 if /i "%choice%"=="b" (GOTO _InstallRookie)
-if /i "%choice%"=="c" (GOTO _InstallArmggdn)
-if /i "%choice%"=="d" (GOTO _InstalllVrpe)
+if /i "%choice%"=="c" (GOTO _InstallArmggdnz)
+if /i "%choice%"=="e" (GOTO _InstalllVrpe)
+if /i "%choice%"=="i" (GOTO _InstallAAC)
 if /i "%choice%"=="j" (GOTO _InstallSAC)
 if /i "%choice%"=="k" (GOTO _InstallSACGUI)
 if /i "%choice%"=="l" (GOTO _InstallQuestPatcher)
 if /i "%choice%"=="n" (GOTO _InstallAppid)
-rem if /i "%choice%"=="a" (GOTO _vrcomm)
-rem if /i "%choice%"=="a" (GOTO _vrcomm)
-rem if /i "%choice%"=="a" (GOTO _vrcomm)
 if /i "%choice%"=="h" (GOTO _GameAppsAdditionalInfo)
 @cls
 goto _InstallGamesApps
@@ -6305,7 +6602,11 @@ call :_cdcbnoreg
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo   = %_fBGreen%ARMGDDN Browser%_fReset%: %_fBYellow%Для скачивания PC и PCVR игр и приложений%_fReset%
+@echo   %_fBGreen%= qLoader:%_fReset% %_fBYellow%Для скачивания и установки пиратских игр и приложений%_fReset%
+@echo     %_fBCyan%Инструкция:%_fReset% следовать подсказкам по установке
+@echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://t.me/VRGamesRUS/16558%_fReset%
+@echo   ---
+@echo     %_fBGreen%= ARMGDDN Browser%_fReset%: %_fBYellow%Для скачивания PC и PCVR игр и приложений%_fReset%
 @echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика
 @echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://github.com/KaladinDMP/AGBrowser%_fReset%
 @echo   ---
@@ -6317,12 +6618,8 @@ rem StartRusTextBlock
 @echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика
 @echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://wiki.vrpirates.club/Howto/VRP-Essentials%_fReset%
 @echo   ---
-@echo   %_fBGreen%= qLoader:%_fReset% %_fBYellow%Для скачивания и установки пиратских игр и приложений%_fReset%
-@echo     %_fBCyan%Инструкция:%_fReset% следовать подсказкам по установке
-@echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://t.me/VRGamesRUS/16558%_fReset%
-@echo   ---
 @echo   %_fBGreen%= ARMGDDN Autocracker:%_fReset% %_fBYellow%Для отлома PC и PCVR игр от Steam%_fReset%
-@echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика
+@echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика или в файле readme.md в архиве
 @echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://github.com/KaladinDMP/ARMGDDN-Autocracker-OG-GSE/releases%_fReset%
 @echo   ---
 @echo   %_fBGreen%= SteamAutoCrack:%_fReset% %_fBYellow%Для отлома PC и PCVR игр от Steam%_fReset%
@@ -6512,10 +6809,10 @@ rem EndEngTextBlock
 @echo    G.  = Psiphon VPN
 @echo    H.  = Proton VPN
 @echo    I.  = Free VPN Planet
+@echo    J.  = ByeDPI
 @echo.
 rem StartRusTextBlock
 @echo    P.  Установить драйверы Oculus на ПК
-rem @echo    Q.  Установить драйверы Oculus на ПК  (Для Windows 10)
 @echo.
 @echo.
 @echo  ВАЖНОЕ:
@@ -6526,7 +6823,6 @@ rem @echo    Q.  Установить драйверы Oculus на ПК  (Для
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    P.  Install Oculus drivers on PC
-rem @echo    Q.  Install Oculus drivers on PC  (For Windows 10)
 rem @echo.
 rem @echo.
 rem @echo  IMPORTANT:
@@ -6547,12 +6843,13 @@ if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _ultrasurf)
 if /i "%choice%"=="b" (GOTO _winscribe)
 if /i "%choice%"=="c" (GOTO _openvpnc)
-if /i "%choice%"=="c" (GOTO _outline)
+if /i "%choice%"=="d" (GOTO _outline)
 if /i "%choice%"=="e" (GOTO _adguard)
 if /i "%choice%"=="f" (GOTO _shadowsocks)
 if /i "%choice%"=="g" (GOTO _psiphon)
 if /i "%choice%"=="h" (GOTO _proton)
 if /i "%choice%"=="i" (GOTO _freeplanet)
+if /i "%choice%"=="j" (GOTO _byedpi)
 if /i "%choice%"=="p" (GOTO _setdrivers)
 if /i "%choice%"=="pp" (GOTO _setdriverexp)
 rem if /i "%choice%"=="q" (GOTO _setdrivers10)
@@ -6571,7 +6868,6 @@ rem StartRusTextBlock
 @echo.
 @echo   1. Отобразить и сохранить списки выбранных пакетов
 @echo   2. Отобразить и сохранить список выбранных пакетов с именами приложений
-rem @echo   3. Управление выбранными приложениями
 @echo.
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -6580,7 +6876,6 @@ rem @echo   M. Return to the main menu
 rem @echo.
 rem @echo   1. Save applications list
 rem @echo   2. Save applications list with label application 
-rem @echo   3. Applications management
 rem EndEngTextBlock
 set cmdsel=
 @echo.
@@ -6675,18 +6970,14 @@ exit /b
 
 
 :_AppsInstalledList
-@echo off
-rem 
+@%verbecho%
 rem goto _testconv
 :_AppsInstallMenu
 @cls
 call :_hatapps
-rem @echo.
+@echo.
 rem StartRusTextBlock
 call :_hatmenu
-rem @echo    0. Выход из программы
-rem @echo    M. Выход в главное меню
-@echo.
 @echo.
 @echo.
 @echo     1. Все приложения
@@ -6704,7 +6995,6 @@ rem @echo    M. Выход в главное меню
 @echo     Выберите категорию для отображения соответствующего списка приложений.
 @echo     Вероятнее всего вам требуется категория 3 - Неофициальные приложения.
 @echo.
-if [%cmdsel%] == [1] call :_CmdSelMenuText
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   0. Exit the program
@@ -6723,6 +7013,7 @@ rem @echo.
 rem @echo     Internet access is required on the PC to use this function.
 rem @echo     Processing the list will take approximately one minute.
 rem EndEngTextBlock
+if [%cmdsel%] == [1] call :_CmdSelMenuText
 @echo.
 @echo.
 @echo.
@@ -7016,7 +7307,7 @@ exit /b
 
 
 :_installqid
-@echo off
+@%verbecho%
 @setlocal enableextensions enabledelayedexpansion
 
 set hidefrstp=1^>NUL
@@ -7283,7 +7574,7 @@ exit /b
 
 :_SingleApkInstall
 call :_cdc
-@echo off
+@%verbecho%
 @cls
 call :_hat
 @echo.
@@ -7467,7 +7758,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @Set /p wipedata="Press Enter to clear data or 0 to exit to the menu >>> "
 rem EndEngTextBlock
-if %wipedata%==0 (goto _InstallMenu)
+if %wipedata%==0 (goto _InstallMenugen)
 @Set "apkname=%wipedata%"
 @For %%v In (!apkname!) Do Set "PathIncludePathGame=%%~dpv"
 for /f "tokens=*" %%a in ('%myfiles%\aapt2 dump packagename !apkname!') do set pkgname=%%a
@@ -7559,10 +7850,8 @@ rem StartEngTextBlock
 rem @echo    Launch applications on the headset:
 rem EndEngTextBlock
 @echo.
-rem rem @echo    A.  = Pi Launcher Next Fix 3            = [EXP]
 @echo    B.  = LightningLauncher                 = [EXP]
 @echo    C.  = File Manager+                     = [EXP]
-rem rem @echo    D.  = Wolvic browser                    = [EXP]
 @echo    E.  = Ultrasurf                         = [EXP]
 @echo    F.  = Winscribe                         = [EXP]
 @echo    G.  = OpenVPN Connect                   = [EXP]
@@ -7579,10 +7868,8 @@ call :_MenuChoiceEnter
 if not defined choice goto _StartingApps
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
-rem if /i "%choice%"=="a" (GOTO _startpifix)
 if /i "%choice%"=="b" (GOTO _startll)
 if /i "%choice%"=="c" (GOTO _startfm)
-::if /i "%choice%"=="d" (GOTO _startwv)
 if /i "%choice%"=="e" (GOTO _startus)
 if /i "%choice%"=="f" (GOTO _startws)
 if /i "%choice%"=="g" (GOTO _startovpn)
@@ -7818,9 +8105,9 @@ rem @echo   Package name:
 rem @echo     %pckgname%
 rem @echo  ---
 rem @echo   Application launch string:
-@echo     adb shell am start %pckgname%/%launchact%
+rem @echo     adb shell am start %pckgname%/%launchact%
 rem @echo     %launchstring%
-@echo adb shell am start %pckgname%/%launchact% | clip
+rem @echo adb shell am start %pckgname%/%launchact% | clip
 rem @echo.
 rem @echo =============================================================================================
 rem @echo Launch string copied to clipboard, you can paste it into a text file or console window.
@@ -7867,8 +8154,8 @@ call :_dlwingamesapps
 call :_prevmenu
 goto _InstallGamesApps
 
-:_InstallArmggdn
-set curllink=https://github.com/KaladinDMP/AGBrowser/releases/download/5.10.24/SETUP.7z
+:_InstallArmggdnz
+rem set curllink=https://github.com/KaladinDMP/AGBrowser/releases/download/v5.5.0/SETUP.7z
 rem StartRusTextBlock
 set "instmess=  Распакуйте архив SETUP.7z, запустите файл install.bat ^ & @echo   и следуйте дальнейшим подсказкам по установке"
 rem EndRusTextBlock
@@ -7886,6 +8173,30 @@ set "instmess=  Запустите файл VRPE-Installer.exe и следуйт
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem set "instmess=  Run the file VRPE-Installer.exe and follow the further installation prompts"
+rem EndEngTextBlock
+call :_dlwingamesapps
+call :_prevmenu
+goto _InstallGamesApps
+
+rem :_InstallArmggdnftp
+rem set curllink=https://dl.dropboxusercontent.com/scl/fi/6sgm21kc2pz4v8xqsc03/ARMGDDN.Zilla-FTP.7z?rlkey=zmwppr7x3edra31wlgdnk966c
+rem rem StartRusTextBlock
+rem rem set "instmess=  Распакуйте архив ARMGDDN.Zilla - FTP.7z, (пароль: ARMGDDNGames) ^ & @echo   запустите файл FileZillaPortable.exe"
+rem rem EndRusTextBlock
+rem rem StartEngTextBlock
+rem rem set "instmess=  Unpack the archive ARMGDDN.Zilla - FTP.7z, (password: ARMGDDNGames)  ^ & @echo   and runun the file FileZillaPortable.exe"
+rem rem EndEngTextBlock
+rem call :_dlwingamesapps
+rem call :_prevmenu
+rem goto _InstallGamesApps
+
+:_InstallAAC
+set curllink=https://www.dropbox.com/scl/fi/nsuj19j4u8wzppeeyjjql/ARMGDDN.Autocracker.v1.0.4.7z?rlkey=drdm8eegmx70ox2nn5omni5ne
+rem StartRusTextBlock
+set "instmess=  Распакуйте архив ARMGDDN.Autocracker.v1.0.4.7z и запустите файл ARMGDDN.Main.exe"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set "instmess=  Unpack the archive ARMGDDN.Autocracker.v1.0.4.7z and runun the file ARMGDDN.Main.exe"
 rem EndEngTextBlock
 call :_dlwingamesapps
 call :_prevmenu
@@ -8233,18 +8544,19 @@ call :_cdc
 set dlappl=outline.apk
 set curllink=https://www.dropbox.com/s/lpcrtqs93ia0jxb/outline.apk
 call :_dlinstall
+call :_outlinel
 call :_prevmenu
 goto _installmenugen
 
 :_outlinel
-rem @echo Через секунду откроется ссылка на страничку с помощью по настройке
-rem @start " " "https://4pda.to/forum/index.php?act=findpost&pid=113691944&anchor=Spoil-113691944-10"
-rem @echo А также в шлеме откроется браузер с сайтом, где можно бесплатно взять ключ
-@echo A browser will open on the headset with a website where you can get a free key.
-@%MYFILES%\adb shell am start -n "com.oculus.vrshell/.MainActivity" -d apk://com.oculus.browser -e uri https://outline.network/ 1>nul 2>nul
+@echo -----
+@echo Через секунду в шлеме откроется браузер с сайтом, где можно бесплатно взять ключ
+rem @echo A browser will open on the headset with a website where you can get a free key.
+@%MYFILES%\adb shell am start -n "com.oculus.vrshell/.MainActivity" -d apk://com.oculus.browser -e uri https://outlinekeys.com/ 1>nul 2>nul
 ::@%MYFILES%\adb shell am start -a android.intent.action.VIEW -d https://outline.network/  1>NUL
-call :_prevmenu
-goto _installmenugen
+exit /b
+rem call :_prevmenu
+rem goto _installmenugen
 
 :_adguard
 call :_cdc
@@ -8314,6 +8626,14 @@ goto _installmenugen
 rem @echo Через секунду откроется ссылка на страничку с помощью по настройке
 rem @start " " "https://support.freevpnplanet.com/hc/ru"
 rem call :_prevmenu
+goto _installmenugen
+
+:_byedpi
+call :_cdc
+set dlappl=byedpi-1.2.0.apk
+set curllink=https://www.dropbox.com/scl/fi/a8p7gi1m91wnjnmsuho8d/byedpi-1.2.0.apk?rlkey=b35bmnu7jo6xc050krgp6ubij
+call :_dlinstall
+call :_prevmenu
 goto _installmenugen
 
 :_setdrivers
@@ -8468,7 +8788,7 @@ exit /b
 
 :_qctprocedure
 
-@echo off
+@%verbecho%
 
 :_SendToMenu
 set sendtolnk=
@@ -8476,7 +8796,7 @@ set qtarget=
 set sendtofoldercmdfile=
 set sendtofolder=
 set sendtofoldercmdfolder=
-@echo off
+@%verbecho%
 cls
 call :_hatqct
 call :_hatmenuqct
@@ -8756,7 +9076,7 @@ goto :_SendToMenu
 :_CreateCmdForLink
 call :_SetVariableContext
 @del %sendtofoldercmdfolder%\%sendtofoldercmdfile% /q 1>nul 2>nul
-@echo @echo Off>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+@echo @echo off>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @chcp 65001 1^>nul 2^>nul>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @echo.>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 rem StartRusTextBlock
@@ -9017,7 +9337,7 @@ goto :_SendToMenu
 @exit /b
 
 :_hatmenuqct
-@echo off
+@%verbecho%
 @echo.
 @echo.
 rem StartRusTextBlock
@@ -9052,7 +9372,7 @@ rem @echo    B.  Disconnect Oculus Link
 rem @echo    C.  Enable AirLink
 rem @echo    D.  Disable AirLink
 rem @echo    E.  Fix AirLink connection issue
-rem @echo    F.  Fix AirLink connection issue
+rem @echo    F.  Backup AirLink parameters
 rem @echo    G.  Clean after remove Oculus Home Softtware
 rem @echo    H.  Calculate dynmaic birate
 rem @echo    I.  Reset Oculus Debug Tools to default
@@ -9136,11 +9456,13 @@ call :_hat
 rem StartRusTextBlock
 @echo		0. Выход из программы
 @echo		M. Выход в меню
+@echo.
 @echo	    Enter. Подтвердить удаление параметров сопряжения
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo		0. Exit program
 rem @echo		M. Exit menu
+rem @echo.
 rem @echo	    Enter. Confirm deleting pairing settings
 rem EndEngTextBlock
 @echo.
@@ -9217,7 +9539,6 @@ rem reg delete "HKCU\SOFTWARE\Oculus\RemoteHeadset\AirLinkPairing" /f
 rem  1>nul 2>nul
 reg delete "HKCU\SOFTWARE\Oculus\RemoteHeadset\AirLinkPairing_V55" /f
 rem 1>nul 2>nul
-pause
 @echo  ======================================== 
 rem StartRusTextBlock
 @echo  = Файл cert.pem удален
@@ -9240,7 +9561,7 @@ goto _returnmenu
 
 
 :_alinkbackupmenu
-@echo off
+@%verbecho%
 @cls
 call :_hat
 @echo.
@@ -9249,7 +9570,8 @@ call :_hat
 rem StartRusTextBlock
 @echo		0. Выход из программы
 @echo		M. Выход в меню
-@echo	    Enter. Подтвердить бэкап настроек
+@echo.
+@echo	Enter. Подтвердить бэкап настроек
 @echo.
 @echo.
 @echo.
@@ -9280,7 +9602,8 @@ rem @echo.
 rem @echo.
 rem @echo		0. Exit program
 rem @echo		M. Exit menu
-rem @echo	    Enter. Confirm backup pairing settings
+rem @echo.
+rem @echo	Enter. Confirm backup pairing settings
 rem @echo.
 rem @echo.
 rem @echo.
@@ -9347,7 +9670,7 @@ rem EndEngTextBlock
 @goto _returnmenu
 
 :_oculusclean
-@echo off
+@%verbecho%
 @cls
 call :_hat
 call :_hatmenu
@@ -9568,7 +9891,7 @@ cls
 goto _guardian
 
 :_guardoff
-@%MYFILES%\adb shell setprop debug.oculus.guardian_pause 0 1>nul 2>nul
+@%MYFILES%\adb shell setprop debug.oculus.guardian_pause 1 1>nul 2>nul
 call :_erlvl
 @echo ======================================== 
 rem StartRusTextBlock
@@ -9581,7 +9904,7 @@ call :_prevmenu
 @goto _shellmenu
 
 :_guardon
-@%MYFILES%\adb shell setprop debug.oculus.guardian_pause 1 1>nul 2>nul
+@%MYFILES%\adb shell setprop debug.oculus.guardian_pause 0 1>nul 2>nul
 call :_erlvl
 @echo ======================================== 
 rem StartRusTextBlock
@@ -9663,7 +9986,7 @@ call :_prevmenu
 ::>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 :_streamingmenu
-@echo off
+@%verbecho%
 setlocal enableextensions enabledelayedexpansion
 cls
 call :_settime
@@ -9855,7 +10178,7 @@ call :_RecordEnableSettings
 goto :_createvbs
 
 :_ManualTransSettings
-@echo off
+@%verbecho%
 cls
 set aa=
 set bb=
@@ -9913,20 +10236,20 @@ rem @echo    I.  Load settings from integrated profiles
 rem @echo.
 rem @echo.
 rem @echo.
-rem @echo   1. Bitrate     2. FPS     3. Session recording    4. Frame cropping    5. Sound output          
+rem @echo   1. Bitrate   2. FPS   3. Session record    4. Frame crop     5. Sound output          
 rem @echo  ------------------------------------------------------------------------------------------------
-rem @echo   1. 3          1. 24      1. With recording       1. Corner cropping   1. Sound on PC         [recorded]
-rem @echo   2. 5          2. 30      2. Without recording    2. No cropping       2. Sound on headset     [not recorded] 
-rem @echo   3. 10         3. 60                            3. Stereo mode        3. PC, microphone, headset  [recorded]
-rem @echo   4. 20         4. 90                            4. 1600x900	
+rem @echo   1. 3         1. 24    1. With record       1. Corner crop    1. Sound on PC              [rec]
+rem @echo   2. 5         2. 30    2. Without record    2. No cropp       2. Sound on headset     [not rec] 
+rem @echo   3. 10        3. 60                         3. Stereo mode    3. PC, microphone, headset  [rec]
+rem @echo   4. 20        4. 90                         4. 1600x900	
 rem @echo   5. 50
 rem @echo.
 rem @echo.
-rem @echo            6. Proximity sensor                     7. Video codec                                   
+rem @echo          6. Proximity sensor                      7. Video codec                                   
 rem @echo  ------------------------------------------------------------------------------------------------
 rem @echo          1. Disable                               1. h264 OMX.qcom.video.encoder.avc             
 rem @echo          2. Do not disable                        2. h265 OMX.qcom.video.encoder.hevc         
-rem @echo                                                     3. h265 OMX.qcom.video.encoder.hevc.cq	  
+rem @echo                                                   3. h265 OMX.qcom.video.encoder.hevc.cq	  
 rem @echo.
 rem @echo   Enter a six- or seven-digit number consisting of selected parameter options
 rem @echo   You can enter only six digits, then by default, this video codec will be used:
@@ -9976,6 +10299,7 @@ rem StartRusTextBlock
 @echo      R.  Повторить выбор настроек или загрузить из файла профилей
 @echo      S.  Сохранить настройки в файл профилей
 @echo      W.  Сохранить в файл строку запуска  scrcpy с выбранными параметрами
+@echo.
 @echo  Enter.  Начать трансляцию
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -9983,6 +10307,7 @@ rem @echo      C.  Cable transmission
 rem @echo      R.  Repeat settings selection or load from profile file
 rem @echo      S.  Save settings to profile file
 rem @echo      W.  Save the scrcpy command line with selected parameters to a file
+rem @echo.
 rem @echo  Enter.  Start transmission
 rem EndEngTextBlock
 @echo.
@@ -10001,7 +10326,7 @@ rem StartRusTextBlock
 @echo.  Вывод звука	: !amsg!
 @echo.  Датчик	: !proxmsg!
 @echo.  Видеокодек	: !vcodecmsg!
-@echo.  Аудиокодек	: !acodecmsg!
+rem @echo.  Аудиокодек	: !acodecmsg!
 @echo  ---------------------------------------------
 @echo   Профиль	: !profname!
 @echo.
@@ -10026,7 +10351,7 @@ rem @echo.  Frame cropping	: !cropmsg!
 rem @echo.  Sound output	: !amsg!
 rem @echo.  Sensor	: !proxmsg!
 rem @echo.  Video codec	: !vcodecmsg!
-@echo.  Audio codec	: !acodecmsg!
+rem rem @echo.  Audio codec	: !acodecmsg!
 rem @echo  ---------------------------------------------
 rem @echo   Profile	: !profname!
 rem @echo.
@@ -10595,7 +10920,7 @@ rem StartRusTextBlock
 @echo.%ee%|>nul findstr /rc:"[^1-3]"&&(set errorout=Вывод звука)&&(goto _seterror)
 @echo.%ff%|>nul findstr /rc:"[^1-2]"&&(set errorout=Датчик приближения)&&(goto _seterror)
 @echo.%gg%|>nul findstr /rc:"[^1-3]"&&(set errorout=Видеокодек)&&(goto _seterror)
-@echo.%hh%|>nul findstr /rc:"[^1-3]"&&(set errorout=Аудиокодек)&&(goto _seterror)
+rem @echo.%hh%|>nul findstr /rc:"[^1-3]"&&(set errorout=Аудиокодек)&&(goto _seterror)
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo.%aa%|>nul findstr /rc:"[^1-5]"&&(set errorout=Bitrate)&&(goto _seterror)
@@ -10623,12 +10948,14 @@ if %bb%==3 set setfps=60
 if %bb%==4 set setfps=90
 
 ::Record
-if %cc%==1 set recmsg=С записью & call :_RecordEnableSettings
 rem StartRusTextBlock
+if %cc%==1 set recmsg=С записью & call :_RecordEnableSettings
 if %cc%==2 set recfile= & set recmsg=Без записи
 rem EndRusTextBlock
+
 rem StartEngTextBlock
-rem if %cc%==2 set recfile= & set recmsg=Without recording
+rem if %cc%==1 set recmsg=With record & call :_RecordEnableSettings
+rem if %cc%==2 set recfile= & set recmsg=Without rec
 rem EndEngTextBlock
 
 ::Crop
@@ -10639,7 +10966,7 @@ if %dd%==3 set cropset=3664:1920:0:0 & set cropmsg=Режим стерео
 if %dd%==4 set cropset=1600:900:2017:510 & set cropmsg=1600x900
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem if %dd%==1 set cropset=1584:1440:1950:250 & set cropmsg=Corners cropping
+rem if %dd%==1 set cropset=1584:1440:1950:250 & set cropmsg=Corners crop
 rem if %dd%==2 set cropset=1832:1920:0:0 & set cropmsg=No cropping
 rem if %dd%==3 set cropset=3664:1920:0:0 & set cropmsg=Stereo mode
 rem if %dd%==4 set cropset=1600:900:2017:510 & set cropmsg=1600x900
@@ -10703,8 +11030,8 @@ rem @echo   Profile  !pn!	: !profname!					^| !profdata!
 rem @echo   --------------------------------------------------------------------------------------
 rem @echo.  Bitrate	: !bitrateset!		 ^| Sound output	: !amsg!
 rem @echo.  FPS		: !setfps!		 ^| Proximity sensor	: !proxmsg!
-rem @echo.  Session recording	: !recmsg!	 ^| Video codec	: !vcodecmsg!
-rem @echo.  Frame cropping	: !cropmsg!	 ^|
+rem @echo.  Session rec	: !recmsg!	 ^| Video codec	: !vcodecmsg!
+rem @echo.  Frame crop	: !cropmsg!	 ^|
 rem EndEngTextBlock
 exit /b
 
@@ -10721,9 +11048,9 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   Profile  !pnnew!	: !profnamenew!					^| !profdatanew!
 rem @echo   --------------------------------------------------------------------------------------
-rem @echo.  Bitrate	: !bitrateset!		 ^| Sound output	: !amsg!
+rem @echo.  Bitrate	: !bitrateset!		 ^| Sound output		: !amsg!
 rem @echo.  FPS		: !setfps!		 ^| Proximity sensor	: !proxmsg!
-rem @echo.  Session recording	: !recmsg!	 ^| Video codec	: !vcodecmsg!
+rem @echo.  Session recording	: !recmsg!	 ^| Video codec		: !vcodecmsg!
 rem @echo.  Frame cropping	: !cropmsg!	 ^|
 rem EndEngTextBlock
 exit /b
@@ -10735,7 +11062,7 @@ exit /b
 
 
 :_CheckWiFiMode
-@echo off
+@%verbecho%
 @%MYFILES%\adb devices 2>NUL | findstr ":" 2>nul 1>nul
 @IF %ERRORLEVEL% EQU 0 (
 @set /A wificheck=1
@@ -10799,7 +11126,7 @@ set recformat= --record-format=mkv
 exit /b
 
 :_CodecsHelp
-@echo off
+@%verbecho%
 @cls
 @echo.
 rem StartRusTextBlock
@@ -10927,7 +11254,7 @@ rem  /i "%choice%"=="t" (GOTO _testcablerun)
 rem goto _TestVrUsvCopy
 
 :_testcablerun
-@echo off
+@%verbecho%
 setlocal EnableDelayedExpansion
 set startTime=%time%
 
@@ -11006,7 +11333,7 @@ del /q _
 goto _beginn
 
 :_openshell
-@echo off
+@%verbecho%
 ::@start cmd /c @echo. & @adb shell
 @start cmd /c @%MYFILES%\adb shell
 goto _beginn
@@ -11018,15 +11345,18 @@ call :_hat
 call :_hatmenu
 @echo.
 rem StartRusTextBlock
-@echo    B.  Создать бэкап данных приложений   [EXP]
-@echo.
-@echo.
-@echo.
-@echo ОБРАТИТЕ ВНИМАНИЕ:
-@echo.
-@echo      Процесс может занять значительное время!
-@echo      Со шлема будет скопирован и запакован
-@echo      в один архив весь каталог /Android/data/
+rem @echo    A.  Архивация приложений   [EXP]
+rem @echo    B.  Восстановление приложений   [EXP]
+rem @echo    C.  Просмотр содержимого архивов .ab   [EXP]
+rem @echo    D.  Извлечение данных из архивов .ab   [EXP]
+rem @echo.
+rem @echo.
+rem @echo.
+rem @echo ОБРАТИТЕ ВНИМАНИЕ:
+rem @echo.
+rem @echo      Процесс может занять значительное время!
+rem @echo      Со шлема будет скопирован и запакован
+rem @echo      в один архив весь каталог /Android/data/
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    B.  Create an application data backup   [EXP]
@@ -11047,11 +11377,17 @@ call :_MenuChoiceEnter
 if not defined choice goto _backupdatamenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
-if /i "%choice%"=="b" (GOTO _backupdata)
+if /i "%choice%"=="a" (GOTO _backupdatamenuab)
+if /i "%choice%"=="b" (GOTO _restoredatamenuab)
+if /i "%choice%"=="c" (GOTO _viewcontentmenuab)
+if /i "%choice%"=="d" (GOTO _extractdatamenuab)
 cls
 goto _backupdatamenu
 
-:_backupdata
+
+
+
+:_backupdatamenuab
 call :_settime
 @echo ----------------------------------
 @echo.
@@ -11075,12 +11411,23 @@ rem EndEngTextBlock
 @goto _returnmenu
 
 
+rem :_restoredatamenuab
 
+rem :_viewcontentmenuab
+
+rem StartRusTextBlock
+rem @echo Поместите архивы аб в  каталогс программой и нажмите Энтер для просмотра содержимого
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo Place the ab archives in the directory with the program and press Enter to view the contents
+rem EndEngTextBlock
+
+rem :_extractdatamenuab
 
 :_helplinksmenu
 call :_hat
 @echo.
-@echo off
+@%verbecho%
 @echo      ----------------------------
 rem StartRusTextBlock
 @echo       ВЫБЕРИТЕ ИНТЕРЕСУЮЩУЮ ТЕМУ
@@ -11118,7 +11465,6 @@ rem @echo    0.  Exit the program
 rem @echo    M.  Return to the main menu
 rem @echo.
 rem @echo    I.  Website to check the availability of addresses (RU)
-rem @echo    K.  All about Oculus Quest: firmware, articles, programs, and much more (RU)
 rem @echo    L.  Author's portal about VR: vr419.ru (RU)
 rem @echo    N.  Download the latest version of Quas or leave a question/feedback/comment (RU)
 rem @echo    O.  Download firmware for Quest 1/2/3/Pro
@@ -11179,7 +11525,6 @@ rem StartRusTextBlock
 @echo    N.  Список файлов/каталогов и их объем    		[EXP]
 @echo    O.  Показать объем занятого места         		[EXP]
 @echo    P.  Журнал подключений и отключений USB устройств
-rem @echo    Q.  Отобразить информацию об обновлениях
 @echo.   R.  Сохранение всей системной информации оптом в один архив
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -11191,12 +11536,11 @@ rem @echo    F.  Show headset serial number
 rem @echo    G.  Save a list of system settings (system/global/security)
 rem @echo    H.  Work with Logcat
 rem @echo    I.  Battery information
-rem @echo    K.  Bug report extraction [EXP]
+rem @echo    K.  Bugreport extraction [EXP]
 rem @echo    L.  View CPU-intensive applications [EXP]
 rem @echo    N.  List of files/directories and their size [EXP]
 rem @echo    O.  Show the amount of occupied space [EXP]
 rem @echo    P.  USB device connection and disconnection log
-rem @echo    Q.  show information about updates
 rem @echo.   R.  Save all system information in bulk into one archive
 rem EndEngTextBlock
 
@@ -11238,7 +11582,7 @@ rem @echo =  Updates have been installed:
 rem EndEngTextBlock
 @echo.
 call :_settime
-@echo off
+@%verbecho%
 rem !!!!!!! Узнать как называется раздел в английском dumpsys !!!!!
 %myfiles%\adb shell dumpsys DumpsysProxy 'Ключевые мобильные сервисы Oculus (DumpsysLedger)' >dspo.txt
 
@@ -11335,7 +11679,7 @@ rem EndEngTextBlock
 @echo.
 @echo.
 call :_prevmenu
-goto _syscommenu
+goto _shellmenu
 
 
 :_sysnameall
@@ -11850,13 +12194,16 @@ set tempusb!usbnumb!=%%d
 )
 set /a usbnumb=!usbnumb!+1
 )
-rem echo !tempusb1:~0,2!
-rem echo !tempusb2:~0,2!
-rem echo !tempusb3:~0,2!
-rem echo !tempusb4:~0,2!
+if %IntProductName%==monterey set "tusb2=Only for Meta Quest 3/Pro" && set "tusb1=Only for Meta Quest 3/Pro"&&set "tusb3=Only for Meta Quest 3/Pro"&&set "tusb4=Only for Meta Quest 3/Pro"&& goto _ViewTempMonitoring
 
+if %IntProductName%==hollywood set "tusb2=Only for Meta Quest 3/Pro"&& set "tusb1=Only for Meta Quest 3/Pro"&&set "tusb3=Only for Meta Quest 3/Pro"&&set "tusb4=Only for Meta Quest 3/Pro"&& goto _ViewTempMonitoring
 
+set "tusb2=!tempusb2:~0,4!°"
+set "tusb1=!tempusb1:~0,4!°"
+set "tusb3=!tempusb3:~0,4!°"
+set "tusb4=!tempusb4:~0,4!°"
 
+:_ViewTempMonitoring
 cls
 call :_hat
 @echo.
@@ -11874,10 +12221,10 @@ rem StartRusTextBlock
 @echo  Температура GPU		: !gputemp:~1,4!°
 @echo  Температура батареи		: !battemp:~1,4!°
 @echo  Температура корпуса		: !skntemp:~1,4!°
-@echo  Температура USB Cached		: !tempusb2:~0,4!°
-@echo  Температура USB Cached conn	: !tempusb1:~0,4!°
-@echo  Температура USB HAL		: !tempusb3:~0,4!°
-@echo  Температура USB HAL conn	: !tempusb4:~0,4!°
+@echo  Температура USB Cached		: %tusb2%
+@echo  Температура USB Cached conn	: %tusb1%
+@echo  Температура USB HAL		: %tusb3%
+@echo  Температура USB HAL conn	: %tusb4%
 @echo.
 @echo  Уровень работы CPU		: !cpulevel!
 @echo  Уровень работы GPU		: !gpulevel!
@@ -11887,22 +12234,22 @@ rem StartEngTextBlock
 rem @echo  Monitoring load and component diagnostics
 rem @echo.
 rem @echo --------------------------------------------
-rem @echo  Fan status            : !fancheck:~11,-11!
-rem @echo  Fan speed             : !fansped:~1,3!
-rem @echo  Fan warnings          : !fancheck:~27!
+rem @echo  Fan status             : !fancheck:~11,-11!
+rem @echo  Fan speed              : !fansped:~1,3!
+rem @echo  Fan warnings           : !fancheck:~27!
 rem @echo.
-rem @echo  CPU Temperature       : !cputemp:~1,4!°
-rem @echo  GPU Temperature       : !gputemp:~1,4!°
-rem @echo  Battery Temperature   : !battemp:~1,4!°
-rem @echo  Case Temperature      : !skntemp:~1,4!°
-rem @echo  USB Cached temperature		: !tempusb2:~0,4!°
-rem @echo  USB Cached conn temperature	: !tempusb1:~0,4!°
-rem @echo  USB HAL temperature		: !tempusb3:~0,4!°
-rem @echo  USB HAL conn temperature	: !tempusb4:~0,4!°
+rem @echo  CPU Temperature        : !cputemp:~1,4!°
+rem @echo  GPU Temperature        : !gputemp:~1,4!°
+rem @echo  Battery Temperature    : !battemp:~1,4!°
+rem @echo  Case Temperature       : !skntemp:~1,4!°
+rem @echo  USB Cached temp	: !tempusb2:~0,4!°
+rem @echo  USB Cached conn temp 	: !tempusb1:~0,4!°
+rem @echo  USB HAL temp		: !tempusb3:~0,4!°
+rem @echo  USB HAL conn temp	: !tempusb4:~0,4!°
 rem @echo.
-rem @echo  CPU Work Level        : !cpulevel!
-rem @echo  GPU Work Level        : !gpulevel!
-rem @echo  CPU Load              : !cpuusagesum!%%%
+rem @echo  CPU Work Level         : !cpulevel!
+rem @echo  GPU Work Level         : !gpulevel!
+rem @echo  CPU Load               : !cpuusagesum!%%%
 rem @echo --------------------------------------------
 rem EndEngTextBlock
 @echo.
@@ -12011,7 +12358,7 @@ rem EndEngTextBlock
 
 :_cpuload
 call :_cdc
-@echo off
+@%verbecho%
 @echo ========================
 rem StartRusTextBlock
 @echo Снимаем дамп, секунду..
@@ -12096,7 +12443,7 @@ goto _sizecheckmenu
 
 :_sizecheck
 call :_cdc
-@echo off
+@%verbecho%
 @setlocal enableextensions enabledelayedexpansion
 
 @del ls.txt /q 2>nul 1>nul
@@ -12273,7 +12620,7 @@ rem  /sdcard/
 @goto _returnmenu
 
 :_USBConnectionsList
-@echo Off
+@%verbecho%
 cls
 call :_hat
 SetLocal EnableDelayedExpansion
@@ -12324,26 +12671,23 @@ rem EndEngTextBlock
 @goto _returnmenu
 
 :_iperftest
-call :_cdc
+rem call :_cdc
 cls
-@echo off
+@%verbecho%
 @call :_HeadsetIP
 @call :_GetIP ipaddr
 if not exist ipaddr.txt call :_CreateIPaddressTxt
 call :_ExtractIPaddress
-call :_hat
 if [%ipaddrtxt%]==[] goto :_IPaddrEmpty
+call :_hat
 rem @echo.
-@echo    --------------------------------------------------------------------------------
-@echo    ^|    +++       Wireless Connect Tester     +++    v1.7 - 23.05.24      +++     ^|
-@echo    --------------------------------------------------------------------------------
+@echo        ===========  Wireless Connect Tester   v1.8 - 13.08.24  ===========
 rem StartRusTextBlock
-rem @echo                   - благодарю satspace за подсказку - 
 call :_hatmenu
 @echo.
-@echo    S.  Запустить тестирование скорости Wi-Fi  [EXP]
+@echo    A.  Автотест скорости Wi-Fi со значениями по умолчанию [EXP]
+@echo    S.  Стандартный тест скорости Wi-Fi с выбором значений [EXP]
 @echo    T.  Проанализировать результаты тестирования  [EXP]
-@echo.
 @echo.
 @echo  ОБРАТИТЕ ВНИМАНИЕ:
 @echo.
@@ -12354,40 +12698,40 @@ call :_hatmenu
 @echo    Если IP адрес не соответствует вашей сетевой карте, выйдите из программы 
 @echo    и укажите его в файле ipaddr.txt, только что созданном рядом с программой.
 @echo.
-@echo    Для теста требуется подключтить кабель к ПК и шлему, а также включенный Режим разработчика.
+@echo    Для теста требуется подключить кабель к ПК и шлему, а также включенный Режим разработчика.
+@echo    Тестирование производится по сетевому протоколу TCP, ПК -- роутер -- шлем, поэтому:
+@echo    НЕ НУЖНО СПЕЦИАЛЬНО ПЕРЕКЛЮЧАТЬ ШЛЕМ НА БЕСПРОВОДНОЕ СОЕДИНЕНИЕ. ПОДКЛЮЧИТЕ ШЛЕМ К ПК КАБЕЛЕМ.
 @echo.
-@echo    После запуска введите количество одновременных потоков,
-@echo    или просто нажмите Enter для одного потока по умолчанию.
-@echo    Задайте интервал между проверками в миллисекундах:
-@echo    Минимальное значение интервала - 100, по умолчанию - 1000 (1 секунда)
-@echo    Для выявления просадок и потерь пакетов, рекемендуется интервал проверок поставить 100
-@echo    Также введите длительность проверки в секундах.По умолчанию - 180 секунд
-@echo    Запустится сервер на ПК и клиент в шлеме,по завершении тестов оба окна закроются.
+@echo    После запуска теста (пункт S) введите значения или нажмите Enter для значений по умолчанию:
+@echo      - Интервал между проверками в миллисекундах, от 100 до 1000:	(по умолчанию - 100)
+@echo      - Количество потоков, от 1 до 10: 					(по умолчанию - 1)
+@echo      - Длительность проверки в секундах, от 30 до 3600: 		(по умолчанию - 180)
+@echo    Для выявления просадок и потерь пакетов, рекемендуется интервал проверок оставить по умолчанию.
+@echo    Запустится сервер на ПК и клиент в шлеме,по завершении тестов окно сервера закроется.
 @echo.      
-@echo    Будет проведено два теста: прямой и реверсивный. Прямой тест - от шлема к ПК,
-@echo    реверсивный - от ПК к шлему. После завершения тестов рядом с программой появится лог-файл
-@echo    с именем WiFiConnectTest.txt. В нем будут записаны результаты тестов. В файлах *.csv
+@echo    Будет проведено два теста: Реверсивный - от ПК к шлему, и прямой - от шлема к ПК.
+@echo    После завершения тестов рядом с программой появятся лог-файлы WiFiConnectTestReverse и
+@echo    WiFiConnectTestDirect. В них будут лежать результаты тестов. В файлах *.csv
 @echo    содержатся данные, на основе которых можно построить диаграмму проверки и провести анализ.
 @echo.
 @echo    Если программа по какой-то причине отказывается работать и вылетает, смотрите текст ошибки
 @echo    в файле error.txt. При ошибке iperf3: unable to send control message: Bad file descriptor
 @echo    отключите файрволл на ПК на время тестирования.
 @echo.
-@echo    Чтоб прервать ввод данных и вернуться в меню, 
-@echo    вместо значений интервала, потоков или длительности, введите 0
+@echo    Чтоб прервать ввод данных и вернуться в меню, вместо значений введите 0
 @echo.
 @echo    После тестирования можно проанализировать результаты тестов с помощью пункта T этого меню.
-@echo    Там же будут пояснения по анализу результатов.
-
-
+@echo.
+@echo    Если лень читать мануал, стартуйте проверку с помощью Автотеста скорости (Пунтк A).
+@echo    В этом случае программа сама подставит значения по умолчанию, а после теста проанализирует
+@echo    результаты и покажет их. Также рядом с программой будет сохранена картинка с результатами.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo             - thank you user "satspace" for the advice - 
 rem call :_hatmenu
 rem @echo.
+rem @echo    A.  Auto Wi-Fi speed test with default values [EXP]
 rem @echo    S.  Run Wi-Fi speed test  [EXP]
 rem @echo    T.  Analyze test results  [EXP]
-rem @echo.
 rem @echo.
 rem @echo  NOTE:
 rem @echo.
@@ -12401,31 +12745,43 @@ rem @echo.
 rem @echo    For the test, a USB cable connected to the PC and the headset is required,
 rem @echo    as well as the Developer Mode turned on.
 rem @echo.
-rem @echo    After starting, enter the number of simultaneous threads,
-rem @echo    or simply press Enter for one thread by default.
-rem @echo    Set the interval between checks in milliseconds:
-rem @echo    The minimum interval value is 100, by default - 1000 (1 second)
-rem @echo    To detect drops and packet losses, it is recommended to set the check interval to 100
-rem @echo    Also enter the duration of the check in seconds. By default - 180 seconds
-rem @echo    The server will start on the PC and the client in the headset, 
-rem @echo    both windows will close after the tests are completed.
-rem @echo.      
-rem @echo    Two tests will be conducted: direct and reverse.
-rem @echo    Direct test - from the headset to the PC, reverse - from the PC to the headset.
-rem @echo    After completing the tests, a log file named
-rem @echo    WiFiConnectTest.txt will appear next to the program. 
-rem @echo    The results of the tests will be recorded in it.
+rem @echo    For the test, a USB cable connected to the PC and the headset is required, as well as the
+rem @echo    Developer Mode turned on. The testing is conducted via TCP protocol, PC - router - headset, so:
+rem @echo    DON'T SWITCH HEADSET TO WIRELESS CONNECTION. CONNECT HEADSET TO PC WITH A CABLE.
 rem @echo.
-rem @echo    If the program for some reason refuses to work
-rem @echo    and crashes, see the error text in the error.txt file
+rem @echo    After starting the test (option S), enter the values or press Enter to use the default values:
+rem @echo      - Interval between checks in milliseconds, from 100 to 1000:	(default - 100)
+rem @echo      - Number of threads, from 1 to 10: 				(default - 1)
+rem @echo      - Test duration in seconds, from 30 to 3600: 			(default - 180)
+rem @echo    To detect drops and packet losses, it is recommended to leave the interval between checks
+rem @echo    at the default value. A server will start on the PC and a client on the headset;
+rem @echo    after the tests are completed, the server window will close.
+rem @echo.
+rem @echo    Two tests will be conducted: Reverse - from the PC to the headset, and Direct - from the headset
+rem @echo    to the PC. After the tests are completed, log files named WiFiConnectTestReverse and
+rem @echo    WiFiConnectTestDirect will appear next to the program. These files will contain test results.
+rem @echo    The *.csv files contain data that can be used to create test diagrams and conduct analysis.
+rem @echo.
+rem @echo    If the program refuses to work and crashes for some reason, check the error text
+rem @echo    in the error.txt file. If you encounter the error "iperf3: unable to send control message:
+rem @echo    Bad file descriptor" disable the firewall on the PC during testing.
+rem @echo.
+rem @echo    To cancel data entry and return to the menu, enter 0 instead of values.
+rem @echo.
+rem @echo    After testing, you can analyze the test results using option T in this menu.
+rem @echo.
+rem @echo    If you're too lazy to read the manual, start the test using Auto Wi-Fi speed test (Option A).
+rem @echo    In this case, the program will automatically use the default values, analyze he results after
+rem @echo    test, and display them. Additionally, an image with the results will be saved next to program.
 rem EndEngTextBlock
-@echo  -----
-@echo.
+@echo  ---------
+rem @echo.
 call :_MenuChoiceEnter
 @echo.
 if not defined choice goto _iperftest
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="a" (GOTO _SetIperfAutoTesParameters)
 if /i "%choice%"=="s" (GOTO _iperftestrun)
 if /i "%choice%"=="t" (GOTO _WiFiTestCSVAnalyzer)
 cls
@@ -12438,19 +12794,24 @@ call :_cdc
 if not exist ipaddr.txt call :_CreateIPaddressTxt
 call :_ExtractIPaddress
 set iinterval=
+call :_SetIperTestInterval
+call :_IperfTestProcedure
+goto _iperftest
 
-:_setinterval
+
+:_SetIperTestInterval
 rem StartRusTextBlock
 @set /p iinterval="Введите интервал в миллисекундах и нажмите Enter: "
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @set /p iinterval="Enter the interval in milliseconds and press Enter (0 - Exit) : "
 rem EndEngTextBlock
-if [%iinterval%]==[] set iinterval=1000
+if [%iinterval%]==[] set iinterval=100
 if %iinterval%==0 goto _iperftest
 if %iinterval% LSS 100 goto _lssinterval
 set ointerval=%iinterval%
 call :_Division
+@echo %ointerval%
 @echo.
 @set qstreams=
 rem StartRusTextBlock
@@ -12461,6 +12822,7 @@ rem @set /p qstreams="Enter the number of streams and press Enter (0 - Exit) : "
 rem EndEngTextBlock
 if [%qstreams%]==[] set qstreams=1
 if %qstreams%==0 goto _iperftest
+@echo %qstreams%
 @echo.
 set itime=
 rem StartRusTextBlock
@@ -12471,23 +12833,38 @@ rem @set /p itime="Enter the duration of the check in seconds and press Enter (0
 rem EndEngTextBlock
 if [%itime%]==[] set itime=180
 if %itime%==0 goto _iperftest
+@echo %itime%
 @echo.
+exit /b
+
+:_IperfTestProcedure
 call :_settime
 set wfclogd=WiFiConnectTestDirect
 set wfclogdt=%wfclogd%-%dt%.txt
-
 @echo ------------------------------------------------------
 rem StartRusTextBlock
 @echo В окне сервера можно наблюдать процесс тестирования.
 @echo По завершению тестов окно сервера будет закрыто
 @echo.
-@echo  Результаты будут сохраненые в файле WiFiConnectTest.txt
+@echo  Результаты теста будут сохраненые в файлы:
+@echo    WiFiConnectTestDirect-%dt%.txt
+@echo    WiFiConnectTestReverse-%dt%.txt
+@echo.
+@echo  Анализ результатов производится на основе файлов:
+@echo    bitrate-direct-%dt%.csv
+@echo    bitrate-reverse-%dt%.csv
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo In the server window, you can observe the testing process.
 rem @echo After the tests are completed, the server window will be closed.
 rem @echo.
-rem @echo The results will be saved in the file WiFiConnectTest.txt.
+rem @echo The results of tests will be saved in the files:
+rem @echo   WiFiConnectTestDirect-%dt%.txt
+rem @echo   WiFiConnectTestReverse-%dt%.txt
+rem @echo.
+rem @echo  The analysis of the results is based on the following files:
+rem @echo    bitrate-direct-%dt%.csv
+rem @echo    bitrate-reverse-%dt%.csv
 rem EndEngTextBlock
 @echo.
 %MYFILES%\adb push %MYFILES%\iperf3.9 /data/local/tmp 1>nul 2>error.txt
@@ -12504,9 +12881,9 @@ rem StartRusTextBlock
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo  ===   Обычная проверка (от шлема к ПК)   === >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
-@echo  Интервал	: %ointerval% ms >>%wfclogdt%
-@echo  Потоки	: %qstreams% >>%wfclogdt%
-@echo  Длительность	: %itime% s >>%wfclogdt%
+@echo  Intervals	: %ointerval% ms >>%wfclogdt%
+@echo  Streams	: %qstreams% >>%wfclogdt%
+@echo  Duration	: %itime% s >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo. >>%wfclogdt%
 rem EndRusTextBlock
@@ -12540,9 +12917,9 @@ rem StartRusTextBlock
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo  === Реверсивная проверка (от ПК к шлему) === >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
-@echo  Интервал	: %ointerval% ms >>%wfclogdt%
-@echo  Потоки	: %qstreams% >>%wfclogdt%
-@echo  Длительность	: %itime% s >>%wfclogdt%
+@echo  Intervals	: %ointerval% ms >>%wfclogdt%
+@echo  Streams	: %qstreams% >>%wfclogdt%
+@echo  Duration	: %itime% s >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo. >>%wfclogdt%
 rem EndRusTextBlock
@@ -12570,9 +12947,9 @@ for %%A IN (%cd%\error.txt) DO (
 %MYFILES%\adb shell rm /data/local/tmp/iperf3.9 1>nul 2>nul
 
 setlocal enableextensions enabledelayedexpansion
-for /f "delims=" %%a in ('dir /b /a-d *.csv') do (
+for /f "delims=" %%a in ('dir /b /a-d *.csv 2^>nul 1^>nul') do (
 set csvfileforren=%%a
-ren !csvfileforren! !csvfileforren!.old
+@ren !csvfileforren! !csvfileforren!.old 1>nul 2>nul
 )
 
 For /F "skip=16 tokens=7 eol=- delims= " %%a In (%wfclogd%-%dt%.txt) Do (
@@ -12585,12 +12962,20 @@ set bitrater=%%a
 @echo !bitrater! >>bitrate-reverse-%dt%.csv
 )
 endlocal
-goto _iperftest
+exit /b
+rem goto _iperftest
+
+:_SetIperfAutoTesParameters
+set itime=180
+set iinterval=0.1
+set ointerval=100
+set qstreams=1
+call :_IperfTestProcedure
+rem goto :_WiFiTestCSVAnalyzer
 
 :_WiFiTestCSVAnalyzer
 setlocal enableextensions enabledelayedexpansion
 call :_cdcbnoreg
-
 if not exist *.csv goto _notestcsvfiles
 rem for /r "%cd%" %%i in (*.csv) do (
 rem set csvfile=%%i
@@ -12602,16 +12987,21 @@ rem StartRusTextBlock
 @echo !csvfile! | findstr /i /c:"reverse" 1>NUL 2>&1 && @set "vector=%_fBlack%%_bCyan%Результаты реверсивной проверки [от ПК к шлему]                                   %_fReset%" 1>NUL 2>&1
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo !csvfile! | findstr /i /c:"direct" > NUL 2>&1 && set "vector=%_fBlack%%_bCyan%Results of direct check [from helmet to PC]                                        %_fReset%"
-rem @echo !csvfile! | findstr /i /c:"reverse" > NUL 2>&1 && set "vector=%_fBlack%%_bCyan%Results of reverse check [from PC to helmet]                                   %_fReset%"
+rem @echo !csvfile! | findstr /i /c:"direct" > NUL 2>&1 && set "vector=%_fBlack%%_bCyan%Results of direct check [from headset to PC]                                        %_fReset%"
+rem @echo !csvfile! | findstr /i /c:"reverse" > NUL 2>&1 && set "vector=%_fBlack%%_bCyan%Results of reverse check [from PC to headset]                                   %_fReset%"
 rem EndEngTextBlock
 call :_WifiTestTableMax
 call :_WifiTestTableNumb
 call :_PercentChecksNumb
 call :_WifiTestTableView
+call :_WiFiTestParametersExtract
 )
-@echo ------------------------------------------------------------------------------------
-@echo.
+
+
+@echo ====================================================================================
+@echo  Длительность теста: %fduration%	: Потоки: %fstreams%	: Интервал: %fintervals%
+rem @echo  Длительность теста: 180 s	: Потоки: 1	: Интервал проверок: 100 ms
+@echo ====================================================================================
 rem StartRusTextBlock
 @echo  %_fBWhite%%_bBlack%ПОЯСНЕНИЕ К ТАБЛИЦЕ:%_fReset%
 @echo.
@@ -12636,9 +13026,23 @@ rem @echo  number is %_fBlack%%_fBGreen%!pnumb80!%prct%%_fReset%. The subrange i
 rem @echo  %_fBlack%%_fBGreen%!pnumb80!%_fReset% percent of the time between %_fBlack%%_fBGreen%!numb80!%_fReset% and %_fBlack%%_fBGreen%!numb90!%_fReset% Mbps. Thus, %_fBlack%%_fCyan%the higher percentage at high bitrates,
 rem @echo  the better the channel. The higher the percentage for low bitrates, the more severe the drops%_fReset%.
 rem EndEngTextBlock
-
 call :_prevmenu
+rem @timeout 1 1>nul
+call :_settime
+@%myfiles%\nircmdc.exe savescreenshotwin %cd%\WiFiTestRezult-%dt%.png 1>nul 2>nul
 goto _shellmenu
+
+:_WiFiTestParametersExtract
+if not exist WiFiConnectTestReverse*.txt exit /b
+for /f "delims=" %%a in ('dir /b /a-d WiFiConnectTestReverse*.txt') do set wftestfile=%%a
+for /f "tokens=1,2 delims=:" %%a in ('findstr /i /c:"Intervals" %wftestfile%') do set fintervals=%%b
+for /f "tokens=1,2 delims=:" %%a in ('findstr /i /c:"Streams" %wftestfile%') do set fstreams=%%b
+for /f "tokens=1,2 delims=:" %%a in ('findstr /i /c:"Duration" %wftestfile%') do set fduration=%%b
+rem @echo %fintervals%
+rem @echo %fstreams%
+rem @echo %fduration%
+)
+exit /b
 
 :_WifiTestTableMax
 set exnumb=0
@@ -12850,7 +13254,7 @@ rem StartRusTextBlock
 @echo  %_fBlack%%_fBRed%10.    0 - !numb10! мбит		: !pnumb0!    	: значит есть серьезные просадки.%_fReset%
 @echo  -----------------------------------------------------------------------------------
 @echo  Максимальный битрейт		: !maxnumb! мбит	: !rouqua!
-@echo  Всего проверок			: !qnumb!
+rem @echo  Всего проверок			: !qnumb!
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  Bitrate measurement subranges	: Checks, %prct%	: Note 
@@ -12867,7 +13271,7 @@ rem @echo  %_fBlack%%_fBRed%09.    !numb10! - !numb20! Mbps		: !pnumb10!   	: If
 rem @echo  %_fBlack%%_fBRed%10.    0 - !numb10! Mbps		: !pnumb0!    	: indicates severe dips.%_fReset%
 rem @echo  -----------------------------------------------------------------------------------
 rem @echo  Maximum bitrate		: !maxnumb! Mbps	: !rouqua!
-rem @echo  Total checks			: !qnumb!
+rem rem @echo  Total checks			: !qnumb!
 rem EndEngTextBlock
 exit /b
 
@@ -12896,7 +13300,7 @@ goto _shellmenu
 
 
 :_ExtractIPaddress
-@For /F "skip=1 tokens=1" %%a In (%cd%\ipaddr.txt) Do (
+@For /F "skip=1 tokens=1" %%a In (ipaddr.txt) Do (
 @set ipaddrtxt=%%a
 )
 exit /b
@@ -13003,7 +13407,7 @@ goto _setinterval
 rem exit /b
 
 :_shownetstatall
-@echo off
+@%verbecho%
 @cls
 rem call :_hat
 @echo.
@@ -13184,7 +13588,7 @@ set netstatstatus=
 goto _shellmenu
 
 :_hwagamecontrol
-@echo off
+@%verbecho%
 @setlocal enableextensions enabledelayedexpansion
 call :_hat
 call :_hatmenu
@@ -13270,8 +13674,7 @@ rem StartRusTextBlock
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @if [%hwadata%]==[] (set hwastatus=Parameter or value is not set && goto _GameModeCheck)
-rem @if %hwadata%==0x1 (set hwastatus=Disabled)
-rem @if %hwadata%==0x0 (set hwastatus=Enabled)
+rem @if %hwadata%==0x1 (set hwastatus=Disabled) else (set hwastatus=Enabled)
 rem EndEngTextBlock
 
 :_GameModeCheck
@@ -13282,8 +13685,7 @@ rem StartRusTextBlock
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @if [%gmdata%]==[] (set gmstatus=Parameter or value is not set && goto _parametersstatusview)
-rem @if %gmdata%==0x1 (set gmstatus=Enabled)
-rem @if %gmdata%==0x0 (set gmstatus=Disabled)
+rem @if %gmdata%==0x1 (set gmstatus=Enabled) else (set gmstatus=Disabled)
 rem EndEngTextBlock
 
 :_PlanningGPUCheck
@@ -13291,14 +13693,10 @@ rem EndEngTextBlock
 rem StartRusTextBlock
 @if [%gpuplandata%]==[] (set gpuplanstatus=Параметр не установлен  && goto _parametersstatusview)
 @if %gpuplandata%==0x2 (set gpuplanstatus=Включено) else (set gpuplanstatus=Отключено)
-rem cho%gpuplandata%
-rem cho %gpuplanstatus%
-rem pause
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @if [%gpuplandata%]==[] (set gmstatus=Parameter or value is not set && goto _parametersstatusview)
-rem @if %gpuplandata%==0x1 (set gpuplanstatus=Enabled)
-rem @if %gpuplandata%==0x0 (set gpuplanstatus=Disabled)
+rem @if %gpuplandata%==0x2 (set gpuplanstatus=Enabled) else (set gpuplanstatus=Disabled)
 rem EndEngTextBlock
 
 :_parametersstatusview
@@ -13312,7 +13710,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   Hardware accelerated	: %hwastatus%
 rem @echo   Game Mode		: %gmstatus%
-rem @echo   GPU Planning	: %gpuplanstatus%
+rem @echo   GPU Planning		: %gpuplanstatus%
 rem EndEngTextBlock
 rem @echo  ----------------------------------------------
 rem @echo.
@@ -13466,7 +13864,7 @@ goto _hwagamecontrol
 
 :_camtest
 call :_cdc
-@echo Off
+@%verbecho%
 call :_hat
 SetLocal EnableExtensions EnableDelayedExpansion
 @echo.
@@ -13566,7 +13964,7 @@ rem StartRusTextBlock
 @echo   ...через 10 секунд показания обновятся...
 @echo.
 @echo  Для прерывания и выхода в меню нажмите любую кнопку
-timeout 10| >nul findstr/e [^^0-9]0 ||  @echo ============================================== ^ & @echo        +++ Процедура прервана +++ ^ & @echo. ^ & call :_prevmenu & @goto _syscommenu
+timeout 10| >nul findstr/e [^^0-9]0 ||  @echo ============================================== ^ & @echo        +++ Процедура прервана +++ ^ & @echo. ^ & call :_prevmenu & @goto _shellmenu
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  Substantial differences in readings (by a degree or more)
@@ -13582,7 +13980,7 @@ rem @echo   ...the readings will be updated in 10 seconds...
 rem @echo.
 rem @echo  To interrupt and return to the menu, press any key
 rem @echo.
-rem timeout 10| >nul findstr/e [^^0-9]0 ||  @echo ============================================== ^ & @echo        +++ Procedure interrupted +++ ^ & @echo. ^ & call :_prevmenu & @goto _syscommenu
+rem timeout 10| >nul findstr/e [^^0-9]0 ||  @echo ============================================== ^ & @echo        +++ Procedure interrupted +++ ^ & @echo. ^ & call :_prevmenu & @goto _shellmenu
 rem EndEngTextBlock
 goto _camtest
 
@@ -14063,7 +14461,7 @@ rem StartEngTextBlock
 rem @echo  Headset in offline mode!
 rem @echo  Trying to solve the problem...
 rem EndEngTextBlock
-@%MYFILES%\adb kill-server
+@%MYFILES%\adb kill-server 1>nul 2>nul
 @%MYFILES%\adb start-server 1>nul 2>nul
 call :_cdc
 rem @%MYFILES%\adb devices | findstr 1WM 1>nul 2>nul
@@ -14086,23 +14484,39 @@ call :_hat
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo     ++++ Шлем не авторизован! ++++
+@echo       ++++ Шлем не авторизован! ++++
 @echo.
 @echo.
 @echo.
-@echo Наденьте гарнитуру и нажмите
-@echo [ Всегда разрешать для этого компьютера ]
-@echo Затем перезапустите эту программу
+@echo   Наденьте гарнитуру и нажмите на клавиатуре любую клавишу.
+@echo   Программа отправит на шлем команду adb devices
+@echo   После этого в шлеме всплывет окно, в котором нажмите на строчку:
+@echo.
+@echo   [ Всегда разрешать для этого компьютера ]
+@echo   Затем перезапустите эту программу
+@echo   Если окно не появляется, перезагрузите шлем.
+@echo.
+@echo   = Нажмите любую кнопку для отправки команды adb на шлем =
+@echo.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo     ++++ Headset not authorized! ++++
+rem @echo       ++++ The headset is not authorized! ++++
 rem @echo.
 rem @echo.
 rem @echo.
-rem @echo Please put on the headset and click
-rem @echo [ Always allow for this computer ]
-rem @echo Then restart this program
+rem @echo   Put on the headset and press any key on the keyboard.
+rem @echo   The program will send the adb devices command to the headset.
+rem @echo   After that, a pop-up window will appear in the headset where you should select:
+rem @echo.
+rem @echo   [ Always allow from this computer ]
+rem @echo   Then restart this program.
+rem @echo   If the window does not appear, reboot the headset
+rem @echo.
+rem @echo   = Press any key to send adb command =
+rem @echo.
 rem EndEngTextBlock
+@pause >nul
+@%MYFILES%\adb devices 1>nul 2>nul
 @goto _exitout
 
 :_OFFLINEISSUE
@@ -14291,11 +14705,15 @@ call :_hat
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo     ++++ Двойное подключение! ++++
+@echo     ++++ Множественные подключения^! ++++
 @echo.
 @echo.
+@echo   Список подключений:
 @echo.
-@echo  Шлем подключен по кабелю и Wi-Fi одновременно.
+call :_ListConnections
+@echo.
+@echo.
+@echo  Шлем подключен по кабелю и беспроводу одновременно.
 @echo  Это может вызвать ошибку "error: more than one device/emulator" 
 @echo. Лучше оставить какое-нибудь одно из подключений.
 @echo.
@@ -14309,12 +14727,16 @@ rem StartRusTextBlock
 @echo     0.  Выход из программы
 @echo     S.  Запустить без информационной таблицы
 @echo     T.  Запустить с таблицей
-@echo     R.  Отключить соединение ADB по WiFi
+@echo     R.  Отключить беспроводные соединения
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo     ++++ Double connection! ++++
+rem @echo     ++++ Multiple connections^! ++++
 rem @echo.
 rem @echo.
+rem setlocal enabledelayedexpansion
+rem @echo   Connections list:
+rem @echo.
+rem call :_ListConnections
 rem @echo.
 rem @echo  The headset is connected via cable and Wi-Fi at the same time.
 rem @echo  This can cause the error "error: more than one device/emulator"
@@ -14344,8 +14766,17 @@ if /i "%choice%"=="r" (goto _reconnect)
 cls
 goto _RunMenuNoDevice
 
+:_ListConnections
+setlocal enabledelayedexpansion
+FOR /F "skip=1 tokens=*" %%a IN ('@%MYFILES%\adb devices ^| findstr /i /c:"device"') DO (
+set adbdevices=%%a
+@echo      !adbdevices!
+)
+endlocal
+exit /b
+
 :_WiFiConnected
-::goto _tabBegin
+call :_CurrentStatusOffline
 cls
 call :_hat
 @echo.
@@ -14362,6 +14793,9 @@ rem StartRusTextBlock
 @echo  Могут не работать или работать неправильно
 @echo  некоторые функции.
 @echo.
+@echo ---------------------------------------------------
+@echo     = Текущий статус шлема	: %currstatus%
+@echo.    %presspowerbutton%
 @echo ---------------------------------------------------
 @echo.
 @echo  Как поступим?
@@ -14383,6 +14817,8 @@ rem @echo.
 rem @echo  Some functions may not work or work incorrectly.
 rem @echo.
 rem @echo ---------------------------------------------------
+rem @echo     = Headset current status	: %currstatus%
+rem @echo ---------------------------------------------------
 rem @echo.
 rem @echo  What will we do?
 rem @echo.
@@ -14398,11 +14834,21 @@ call :_MenuChoiceEnterDef
 @echo.
 if not defined choice goto _WiFiConnected
 if "%choice%"=="0" (exit)
-if /i "%choice%"=="s" (GOTO _beginn)
+if /i "%choice%"=="s" (cls && GOTO _beginn)
 if /i "%choice%"=="t" (GOTO _tabBegin)
 ::if /i "%choice%"=="s" (exit /b)
 cls
 goto _WiFiConnected
+
+:_CurrentStatusOffline
+@%MYFILES%\adb devices | findstr /i /c:"offline" 1>nul 2>nul
+@If %ERRORLEVEL%==0 (
+set currstatus=%_fBlack%%_fBRed%Offline%_fReset%
+set "presspowerbutton=Попробуйте нажать на шлеме кнопку Питание"
+) else (
+set currstatus=%_fBlack%%_fBGreen%Online%_fReset%
+)
+exit /b
 
 :_NoDriversInstalled
 cls
@@ -14467,260 +14913,7 @@ if /i "%choice%"=="i" (GOTO _InstallVPNClients)
 @cls
 goto :_NoDriversInstalled
 
-:_tabGeneral
-@echo off
-@SetLocal EnableDelayedExpansion
-
-:_tabSizeCheck
-@For /F "skip=1 tokens=2,3,4,5" %%a In ('%MYFILES%\adb shell df -h /sdcard/') Do (
-cls
-@set aa=%%a
-@set bb=%%b
-@set cc=%%c
-@set dd=%%d
-set sz=Гб
-)
-::@set aa=
-::@set bb=
-::@set cc=
-::@set dd=
-::set sz=-
-if [%aa%]==[] @set aa=------
-if [%bb%]==[] @set bb=------
-if [%cc%]==[] @set cc=------
-if [%dd%]==[] @set dd=-----
-::if [%aa%]==[] @set sz=-
-
-::>>>>>>>
-rem call :_tabModel
-call :_setfwtxt
-::>>>>>>>
-
-:_tabSN
-@For /F %%r In ('%MYFILES%\adb shell getprop ro.boot.serialno') Do set sn=%%r
-cls
-::set sn=
-if [%sn%]==[] set sn=---------------------
-
-:_tebDatetime
-@For /F %%q In ('@%MYFILES%\adb shell date +"%%Y.%%m.%%d-%%H:%%M:%%S"') Do set qdt=%%q
-cls
-::set qdt=
-if [%qdt%]==[] set qdt=---------------------
-
-:_tabIP
-@FOR /F "tokens=2" %%G IN ('@%MYFILES%\adb.exe shell ip addr show wlan0 ^|findstr /i /c:"inet "') DO set ipfull=%%G
-cls
-@FOR /F "tokens=1 delims=/" %%G in ("%ipfull%") DO set ip=%%G
-
-@if [%ip%]==[] set ip=-------------
-
-:_tabConnectType
-@set /a connectsum=%cablecheck%+%wificheck%
-@IF %connectsum% EQU 2 set connecttype=Double & goto _tabFWdltable
-@%MYFILES%\adb devices 2>NUL | findstr offline 2>nul 1>nul
-@IF %errorlevel% EQU 0 set connecttype=Offline & goto _tabFWdltable
-@%MYFILES%\adb devices 2>NUL | findstr ":" 2>nul 1>nul
-@IF %errorlevel% EQU 0 set connecttype=Wi-Fi & goto _tabFWdltable
-
-@FOR /F "skip=1 tokens=1" %%j IN ('%MYFILES%\adb devices') DO set sernum=%%j
-cls
-@if [%sernum%] NEQ [] set connecttype=Cable & goto _tabFWdltable
-
-@set connecttype=-----
-
-:_tabFWdltable
-:_ExtractFirmwareVersion
-@echo.
-rem StartRusTextBlock
-@echo Секунду, подготавливаем табличку....
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  Wait a second, preparing the table....
-rem EndEngTextBlock
-call :_hsfwversionextract
-if [%hsversion%]==[] (set fwnumb=-------------) else (set fwnumb=%hsversion%)
-if [%hsenvironment%]==[] (set fwsys=---------------------) else (set fwsys=%hsenvironment%)
-
-:_teabCheckAdmin
-rem StartRusTextBlock
-@reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=Ну а то) || (set adminaccess=Не в этот раз)
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=Of coz) || (set adminaccess=Not this time)
-rem EndEngTextBlock
-call :_BatteryStatsCheck
-call :_setfwtxt
-
-call :_UpdateStatus
-call :_hat
-rem StartRusTextBlock
-@echo  Дата в шлеме	: %qdt%	^| Общий объем : !aa:~,-1!!sz!	^| Емкость акк.	: %opcouprom%%mahh%
-@echo  Серийный номер	: %sn%	^| Занято      : !bb:~,-1!!sz!	^| Потеряно емк.	: %izgcou%%mahh%
-@echo  Верcия системы	: %fwsys%	^| Свободно    : !cc:~,-1!!sz!	^| Деградация	: %degostcou%%pr%
-@echo  Прошивка	: %fwnumb%		^| Заполнено   : !dd!	^| Заряд		: %batlevel%%pr%
-@echo  IP шлема	: %ip%     	^| Подключение : %connecttype%	^| От админа?	: %adminaccess%
-@echo  Модель шлема	: %DevModelNm%   	^| = резерв =  :		^| Обновления    : %updstatus%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  Headset date	: %qdt%	^| Total volume	: !aa:~,-1!!sz!	^| Battery capacity	: %opcouprom%%mahh%
-rem @echo  Serial number	: %sn%	^| Occupied      : !bb:~,-1!!sz!	^| Lost capacity		: %izgcou%%mahh%
-rem @echo  System version	: %fwsys%	^| Free space    : !cc:~,-1!!sz!	^| Degradation		: %degostcou%%pr%
-rem @echo  FW version	: %fwnumb%		^| Filled        : !dd!	^| Charge		: %batlevel%%pr%
-rem @echo  Headset IP	: %ip%     	^| Connection    : %connecttype%^| From admin?		: %adminaccess%
-rem @echo  Headset model	: %DevModelNm%  	^| = reserved =  :	^| Updates         	: %updstatus%
-rem EndEngTextBlock
-@echo --------------------------------------------------------------------------------------------------
-@exit /b
-
-:_UpdateStatus
-%myfiles%\adb shell pm list packages -d 2>&1 | findstr /i /c:"com.oculus.updater" 2>nul 1>nul
-rem rem @echo %DevModelNm%
-rem StartRusTextBlock
-if %errorlevel%==1 (set updstatus=Включены) else (set updstatus=Отключены)
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem if %errorlevel%==1 (set updstatus=Enabled) else (set updstatus=Disabled)
-rem EndEngTextBlock
-if %sn%==--------------------- set updstatus=-------- && exit /b
-exit /b
-
-rem :_tabModel
-call :_setfwtxt
-rem exit /b
-
-if %ERRORLEVEL% EQU 1 set uknownmodel=1
-rem StartRusTextBlock
-set model=Неизвестно
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem set model=Unknown
-rem EndEngTextBlock
-@exit /b
-
-:_CheckAllMode
-
-:_CheckCableMode
-@echo off
-@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"XRSP" 1>nul 2>nul
-@IF %ERRORLEVEL% EQU 0 (
-call :_CheckCableModeDrivers
-@set /A cablecheck=1 
-) else (
-@set /A cablecheck=0
-call :_setfwtxt
-rem call :_CheckUnSupportDevMode
-call :_CheckUnSupportDevice
-)
-@exit /b
-
-:_CheckCableModeDrivers
-@echo off
-@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"Oculus" 1>nul 2>nul
-@IF %ERRORLEVEL% EQU 0 (
-@set /A cablecheckdriver=1 
-) else (
-@set /A cablecheckdriver=0
-set s=%_fBlack%%_bYellow%DR%_fReset%
-goto _NoDriversInstalled
-)
-@exit /b
-
-
-:_CheckWiFiMode
-@echo off
-@%MYFILES%\adb devices 2>NUL | findstr /c:":" 2>nul 1>nul
-@IF %ERRORLEVEL% EQU 0 (
-@set /A wificheck=1
-rem call :_UnSupportedDevices
-) else (
-@set /A wificheck=0
-)
-@exit /b
-
-:_CheckUnSupportDevice
-@FOR /F "skip=1 tokens=2" %%a IN ('@%myfiles%\adb devices 2^>nul ^| findstr /i /c:"device"') DO set adbdevices=%%a
-@if [%adbdevices%] == [] exit /b
-set s=%_fBlack%%_bBWhite%NS%_fReset%
-goto :_NotSupported
-
-:_CheckUnSupportDevMode
-rem if [%DevModelNm%]==[] set s=%_fBlack%%_bBWhite%NS%_fReset%&& goto :_NotSupported
-rem StartRusTextBlock
-if "%DevModelNm%"==Неизвестно set s=%_fBlack%%_bBWhite%NS%_fReset%&& goto :_NotSupported
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem if "%DevModelNm%"=="Unknown" set s=%_fBlack%%_bBWhite%NS%_fReset% && goto :_NotSupported
-rem EndEngTextBlock
-exit /b
-
-:_CheckDoubleOrNoDeviceMode
-@echo off
-@set /a connectsum=%cablecheck%+%wificheck%
-@IF %wificheck% GTR %cablecheck% set s=%_fBlack%%_bBCyan%WF%_fReset%&& goto _WiFiConnected
-@IF %connectsum% EQU 2 set s=%_fBlack%%_bBBlue%DB%_fReset%&& call :_DoubleConnect
-@IF %connectsum% EQU 0 set s=%_fBlack%%_bRed%NA%_fReset%&& goto _NoDevice
-@IF %cablecheck%==1 set s=%_fBlack%%_bGreen%CB%_fReset%&& exit /b
-@exit /b
-
-:_CheckDevMode
-@echo off
-@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"ADB" 1>nul 2>nul
-IF %wificheck%==1 exit /b
-@IF %ERRORLEVEL% EQU 0 (
-@set /A adbcheck=1 
-) else (
-@set /A adbcheck=0
-set s=%_fBlack%%_bBYellow%DV%_fReset%
-@call :_noadb
-)
-@exit /b
-
-:_CheckAfterWiFiCheckMode
-:_CheckAutorization
-@echo off
-@%MYFILES%\adb devices 2>NUL | findstr /i /c:"unauthorized" 1>NUL 2>nul
-@IF %ERRORLEVEL% EQU 0 (
-@set /A autorizecheck=1 
-set s=%_fBlack%%_bBMag%AU%_fReset%
-goto _notautorized
-) else (
-@set /A autorizecheck=0
-)
-@exit /b
-
-:_CheckSideloadMode
-@echo off
-@%MYFILES%\adb devices | findstr /i /c:"sideload" 1>nul 2>nul
-@IF %ERRORLEVEL% EQU 0 (
-set /A sideloadcheck=1 
-set s=%_fBlack%%_bLGray%SL%_fReset%
-@goto _sideloadmode
-) else (
-@set /A sideloadcheck=0
-)
-@exit /b
-
-:_CheckBootloaderMode
-@%MYFILES%\fastboot devices | findstr /i /c:"fastboot" 1>nul 2>nul
-@If %ERRORLEVEL%==0 (
-set bl=1
-set s=%_fBlack%%_bDGray%BL%_fReset%
-goto _bootloadermode
-)
-exit /b
-
-:_UnSupportedDevices
-@FOR /F "skip=1 tokens=2" %%a IN ('%myfiles%\adb devices ^| findstr /i /c:"device"') DO set adbdevices=%%a
-@if [%adbdevices%] == [] exit /b
-set s=%_fBlack%%_bBWhite%NS%_fReset%
-goto :_NotSupported
-
-
 :_NotSupported
-@For /F %%a In ('%MYFILES%\adb shell getprop ro.product.manufacturer') Do set manuf=%%a
-@For /F "tokens=*" %%a In ('%MYFILES%\adb shell getprop ro.semc.product.name') Do set prodname=%%a
-@For /F %%a In ('%MYFILES%\adb shell getprop ro.semc.product.model') Do set prodmodel=%%a
 cls
 call :_hat
 @echo.
@@ -14776,6 +14969,143 @@ if /i "%choice%"=="d" (start mmc.exe devmgmt.msc)
 @cls
 goto _NotSupported
 
+:_tabGeneral
+@%verbecho%
+@SetLocal EnableDelayedExpansion
+
+:_tabSizeCheck
+@For /F "skip=1 tokens=2,3,4,5" %%a In ('%MYFILES%\adb shell df -h /sdcard/') Do (
+cls
+@set aa=%%a
+@set bb=%%b
+@set cc=%%c
+@set dd=%%d
+set sz=Гб
+)
+::@set aa=
+::@set bb=
+::@set cc=
+::@set dd=
+::set sz=-
+if [%aa%]==[] @set aa=------
+if [%bb%]==[] @set bb=------
+if [%cc%]==[] @set cc=------
+if [%dd%]==[] @set dd=-----
+::if [%aa%]==[] @set sz=-
+
+::>>>>>>>
+rem call :_tabModel
+call :_setfwtxt
+::>>>>>>>
+
+:_tabSN
+@For /F %%r In ('%MYFILES%\adb shell getprop ro.boot.serialno 2^<nul') Do set sn=%%r
+cls
+::set sn=
+if [%sn%]==[] set sn=---------------------
+:_tebDatetime
+@For /F %%q In ('@%MYFILES%\adb shell date +"%%Y.%%m.%%d-%%H:%%M:%%S" 2^<nul') Do set qdt=%%q
+cls
+::set qdt=
+if [%qdt%]==[] set qdt=---------------------
+
+:_tabIP
+@FOR /F "tokens=2" %%G IN ('@%MYFILES%\adb.exe shell ip addr show wlan0 2^<nul ^|findstr /i /c:"inet "') DO set ipfull=%%G
+cls
+@FOR /F "tokens=1 delims=/" %%G in ("%ipfull%") DO set ip=%%G
+
+@if [%ip%]==[] set ip=-------------
+
+:_tabConnectType
+rem @set /a connectsum=%cableconnect%+%wificheck%
+@IF [%connectsum%] EQU [2] set "ctype=Double  " & goto _tabFWdltable
+@%MYFILES%\adb devices 2>NUL | findstr offline 2>nul 1>nul
+@IF %errorlevel% EQU 0 set ctype=%_fBlack%%_fBRed%Offline%_fReset% & goto _tabFWdltable
+@%MYFILES%\adb devices 2>NUL | findstr ":" 2>nul 1>nul
+@IF %errorlevel% EQU 0 set "ctype=Wi-Fi   "& goto _tabFWdltable
+@FOR /F "skip=1 tokens=1" %%j IN ('%MYFILES%\adb devices 2^<nul') DO set sernum=%%j
+cls
+@if [%sernum%] NEQ [] set "ctype=Cable   "& goto _tabFWdltable
+
+@set "ctype=-----   "
+
+:_tabFWdltable
+:_ExtractFirmwareVersion
+@echo.
+rem StartRusTextBlock
+@echo Секунду, подготавливаем табличку....
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  Wait a second, preparing the table....
+rem EndEngTextBlock
+call :_hsfwversionextract
+if [%hsversion%]==[] (set fwnumb=-------------) else (set fwnumb=%hsversion%)
+if [%hsenvironment%]==[] (set fwsys=---------------------) else (set fwsys=%hsenvironment%)
+
+:_teabCheckAdmin
+rem StartRusTextBlock
+@reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=Ну а то) || (set adminaccess=Не в этот раз)
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=Of coz) || (set adminaccess=Not this time)
+rem EndEngTextBlock
+call :_CheckEnvVarTemp
+call :_BatteryStatsCheck
+rem call :_setfwtxt
+call :_UpdateStatus
+call :_hat
+rem StartRusTextBlock
+@echo  Дата в шлеме	: %qdt%	^| Общий объем : !aa:~,-1!!sz!	^| Емкость акк.	: %opcouprom% %mahh%
+@echo  Серийный номер	: %sn%	^| Занято      : !bb:~,-1!!sz!	^| Потеряно емк.	: %izgcou% %mahh%
+@echo  Верcия системы	: %fwsys%	^| Свободно    : !cc:~,-1!!sz!	^| Деградация	: %degostcou%%pr%
+@echo  Прошивка	: %fwnumb%		^| Заполнено   : !dd!	^| Заряд		: %batlevel%%pr% [%batinfo%]
+@echo  IP шлема	: %ip%     	^| Подключение : %ctype%^| От админа?	: %adminaccess%
+@echo  Модель шлема	: %DevModelNm%   	^| EnvVar TEMP : %evt%	^| Обновления    : %updstatus%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  Headset date	: %qdt%	^| Total volume	: !aa:~,-1!!sz!	  ^| Batt capacity : %opcouprom%%mahh%
+rem @echo  Serial number	: %sn%	^| Occupied      : !bb:~,-1!!sz!   ^| Lost capacity : %izgcou%%mahh%
+rem @echo  System version	: %fwsys%	^| Free space    : !cc:~,-1!!sz!   ^| Degradation	  : %degostcou%%pr%
+rem @echo  FW version	: %fwnumb%		^| Filled        : !dd!	  ^| Charge	  : %batlevel%%pr% [%batinfo%]
+rem @echo  Headset IP	: %ip%     	^| Connection 	: %ctype%^| From admin?	  : %adminaccess%
+rem @echo  Headset model	: %DevModelNm%  	^| EnvVar TEMP	: %evt% ^| Updates	  : %updstatus%
+rem EndEngTextBlock
+@echo --------------------------------------------------------------------------------------------------
+goto _tabReturn
+rem @exit /b
+
+:_CheckEnvVarTemp
+set "perc=%%%"
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Environment /v TEMP 2^>nul') do set envvartemp=%%a
+if /i %envvartemp%==%perc%userprofile%perc%\AppData\Local\Temp (set "evt=Std    ") else (set "evt=Non Std")
+exit /b
+
+:_UpdateStatus
+%myfiles%\adb shell pm list packages -d 2>&1 | findstr /i /c:"com.oculus.updater" 2>nul 1>nul
+rem rem @echo %DevModelNm%
+rem StartRusTextBlock
+if %errorlevel%==1 (set updstatus=Включены) else (set updstatus=Отключены)
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem if %errorlevel%==1 (set updstatus=Enabled) else (set updstatus=Disabled)
+rem EndEngTextBlock
+if %sn%==--------------------- set updstatus=-------- && exit /b
+exit /b
+
+rem :_tabModel
+call :_setfwtxt
+rem exit /b
+
+if %ERRORLEVEL% EQU 1 set uknownmodel=1
+rem StartRusTextBlock
+set model=Неизвестно
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set model=Unknown
+rem EndEngTextBlock
+@exit /b
+
+rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 rem :_BattseryStatTab
 rem call :_hat
@@ -14785,11 +15115,12 @@ rem @echo.
 
 
 :_BattseryStatTab
-call :_hat
+cls
+rem call :_hat
 call :_BatteryStatsCheck
 call :_BattHealthLevel
 @echo.
-@echo. %biggernominal%
+rem @echo. %biggernominal%
 @echo  -----------------------------------------------------------------------------------------------
 rem StartRusTextBlock
 @echo  		^| Остаточная емкость	^| Потеряно емкости	^| Деградация батареи	^|
@@ -14868,18 +15199,17 @@ rem @echo                          [one hundred minus the ratio of standard capa
 rem @echo.
 rem @echo  Standard capacity   - the initial capacity of a new battery according to the specification
 rem @echo.
-@echo  Estimated capacity  - a parameter calculated using a complex algorithm, including
-@echo                            state diagram, average power for each of them,
-@echo                            average current, backup power time, degradation coefficient, etc.
-@echo                            IN SHORT, THIS IS THE MOST IMPORTANT PARAMETER. Although sometimes it's crooked.
-@echo                            Calculated based on statistics since the last charge.
-@echo                            [if the capacity value is higher than standard, there will be dashes in this line]
-@echo.
+rem @echo  Estimated capacity  - a parameter calculated using a complex algorithm, including state diagram,
+rem @echo                        average power for each of them, average current, backup power time,
+rem @echo                        degradation coefficient, etc. THIS IS THE MOST IMPORTANT PARAMETER.
+rem @echo                        Although sometimes it's crooked. Calculated based on statistics 
+rem @echo                        since the last charge.
+rem @echo                        [if the capacity is higher than standard, there will be dashes in this line]
+rem @echo.
 rem @echo  Calculated capacity - Calculation based on the current state of the battery
 rem @echo.
-rem @echo  Learned capacity    - Last/Min/Max.
-rem @echo                            Absolutely useless parameters,
-rem @echo                            but the list looks more impressive with them.
+rem @echo  Learned capacity    - Last/Min/Max. 
+rem @echo                        Absolutely useless parameters, but the list looks more impressive with them.
 rem EndEngTextBlock
 exit /b
 ::goto _exitout
@@ -14950,8 +15280,17 @@ rem @FOR /F "tokens=3" %%G IN ('@%MYFILES%\adb shell dumpsys battery ^| findstr 
 @FOR /F "tokens=3" %%G IN ('findstr /i "Charge counter:" battery.txt') DO set batcounter=%%G
 rem @FOR /F "tokens=2" %%G IN ('@%MYFILES%\adb shell dumpsys battery ^| findstr "level:"') DO set batlevel=%%G
 @FOR /F "tokens=2" %%G IN ('findstr /i "level:" battery.txt') DO set batlevel=%%G
-
-
+@FOR /F "tokens=2" %%G IN ('findstr /i "status:" battery.txt') DO set bstatus=%%G
+rem StartRusTextBlock
+if %bstatus%==2 set "batinfo=Заряд"
+if %bstatus%==3 set "batinfo=Разряд"
+if %bstatus%==5 set "batinfo=Полная"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem if %bstatus%==2 set "batinfo=Charge"
+rem if %bstatus%==3 set "batinfo=Discharg"
+rem if %bstatus%==5 set "batinfo=Full"
+rem EndEngTextBlock
 @del charged.txt /q /f
 @del battery.txt /q /f
 rem call :_setfwtxt
@@ -15137,7 +15476,9 @@ set /a exitnumb=!menunumb!+3
 @echo.>>%menufile%
 
 @echo %%myfiles%%\cmdMenuSel f870 "Application backup menu" "Restore application data" "Clear application data" "Uninstall application" "Start application" "Stop application" "Disable application" "Enable application" "View application status" "==============================" "BACK TO APPS MENU">>%menufile%
+rem @echo %%myfiles%%\cmdMenuSel f870 "Application backup menu" "Application backup menu  [AB version]" "Clear application data" "Uninstall application" "Start application" "Stop application" "Disable application" "Enable application" "View application status" "==============================" "BACK TO APPS MENU">>%menufile%
 @echo if "%%errorlevel%%"=="1" goto _backupappmenu>>%menufile%
+rem @echo if "%%errorlevel%%"=="2" goto _backupappmenuab>>%menufile%
 @echo if "%%errorlevel%%"=="2" goto _restoredata>>%menufile%
 @echo if "%%errorlevel%%"=="3" goto _cleardata>>%menufile%
 @echo if "%%errorlevel%%"=="4" goto _uninstallapp>>%menufile%
@@ -15186,7 +15527,6 @@ set /a exitnumb=!menunumb!+3
 @echo GOTO _mainmenu>>%menufile%
 @echo.>>%menufile%
 
-
 @echo :_saveappdata>>%menufile%
 @echo @echo.>>%menufile%
 @echo @echo  ---------------------------------->>%menufile%
@@ -15201,6 +15541,7 @@ set /a exitnumb=!menunumb!+3
 @echo @echo.>>%menufile%
 @echo @echo  ---------------------------------->>%menufile%
 @echo @echo  ..Saving apk file..>>%menufile%
+@echo set "apkbkpproc=1" >>%menufile%
 @echo call %%myfiles%%\backup.cmd :_BackupBegin>>%menufile%
 @echo @echo.>>%menufile%
 @echo call :_KeyReturnAppsMenu>>%menufile%
@@ -15219,7 +15560,47 @@ set /a exitnumb=!menunumb!+3
 @echo.>>%menufile%
 
 @echo :_restoredata>>%menufile%
+
 call :_optiondev
+
+:_backupappmenuab
+rem >>>>>>>>  App Backup AB Start <<<<<<<<<<<<<<<<<
+rem @echo cls>>%menufile%
+rem @echo @echo.>>%menufile%
+rem @echo @echo.>>%menufile%
+rem @echo @echo  ------------------------------------------------------------->>%menufile%
+rem @echo @echo  = Package name selected: "^!packagename^!">>%menufile%
+rem @echo @echo  ------------------------------------------------------------->>%menufile%
+rem @echo @echo.>>%menufile%
+rem @echo @echo      BACKUP MENU >>%menufile%
+rem @echo @echo      =========== >>%menufile%
+rem @echo @echo.>>%menufile%
+rem @echo @echo.>>%menufile%
+
+rem @echo %%myfiles%%\cmdMenuSel f870 "Full application backup" "Restore application" "View backup content" "==================" "BACK TO ACTION MENU">>%menufile%
+
+rem @echo if "%%errorlevel%%"=="1" goto _fullbackupappab>>%menufile%
+rem @echo if "%%errorlevel%%"=="2" goto _restoredataab>>%menufile%
+rem @echo if "%%errorlevel%%"=="3" goto _viewbackupcontentab>>%menufile%
+rem @echo if "%%errorlevel%%"=="4" goto _backupappmenuab>>%menufile%
+rem @echo if "%%errorlevel%%"=="5" goto _actionsubmenu>>%menufile%
+
+rem @echo.>>%menufile%
+
+rem @echo :_fullbackupappab>>%menufile%
+rem @echo @echo.>>%menufile%
+rem @echo @echo  ---------------------------------->>%menufile%
+rem @echo @echo  ..Saving full backup..>>%menufile%
+rem @echo set "apkbkpproc=1" >>%menufile%
+rem @echo set "obbbkpproc=1" >>%menufile%
+rem @echo set "datbkpproc=1" >>%menufile%
+rem @echo call %%myfiles%%\backup.cmd :_BackupBegin>>%menufile%
+rem @echo call :_KeyReturnAppsMenu>>%menufile%
+rem @echo GOTO _mainmenu>>%menufile%
+rem @echo.>>%menufile%
+
+rem @echo :_restoredataab>>%menufile%
+rem call :_optiondev
 rem @echo @echo.>>%menufile%
 rem @echo @echo.>>%menufile%
 rem @echo @echo.>>%menufile%
@@ -15239,7 +15620,7 @@ rem @echo if /i "%%choice%%"=="1" (GOTO _restoredataaction)>>%menufile%
 rem @echo goto _restoredata>>%menufile%
 rem @echo.>>%menufile%
 
-rem @echo :_restoredataaction>>%menufile%
+rem @echo :_restoredataactionab>>%menufile%
 rem @echo @echo.>>%menufile%
 rem @echo @echo  ---------------------------------->>%menufile%
 rem @echo @echo  ..Restoring application data..>>%menufile%
@@ -15250,6 +15631,14 @@ rem @echo @echo.>>%menufile%
 rem @echo pause>>%menufile%
 rem @echo GOTO _mainmenu>>%menufile%
 rem @echo.>>%menufile%
+
+rem @echo :_viewbackupcontentab>>%menufile%
+
+
+
+rem =====================================
+rem >>>>>>> App Backup AB End <<<<<<<<<<<<<<
+
 
 @echo :_cleardata>>%menufile%
 @echo cls>>%menufile%
@@ -15397,7 +15786,8 @@ rem @echo.>>%menufile%
 @echo @echo.>>%menufile%
 @echo @echo		0. Exit application module>>%menufile%
 @echo @echo		M. Exit application menu>>%menufile%
-@echo @echo	    Enter. Confirm %actionchoise%>>%menufile%
+@echo @echo.>>%menufile%
+@echo @echo	Enter. Confirm %actionchoise%>>%menufile%
 @echo @echo.>>%menufile%
 @echo @echo.>>%menufile%
 @echo @echo.>>%menufile%
@@ -15532,7 +15922,7 @@ exit
 
 :_egg
 @cls
-@echo off
+@%verbecho%
 color 0a
 @echo.
 @echo.
@@ -15580,14 +15970,14 @@ rem call :_cdcb
 @cls
 rem @echo ==================================================================================================
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.0.0 - 3.07.24         Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.1.2 - 30.08.24        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 rem @echo ==================================================================================================
 @exit /b
 
 :_hatmenu
-@echo off
+@%verbecho%
 ::@@echo.
 @echo.
 ::@@echo     -------------------
@@ -15646,6 +16036,20 @@ rem EndEngTextBlock
 @pause >nul
 @exit
 
+:_exitwindow
+@echo ----------------------------------------------------------------
+@echo.
+rem StartRusTextBlock
+@echo ^>^>^> Нажмите что-нибудь для закрытия этого окна ^<^<^<
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo ^>^>^> Press any key for close the window ^<^<^<
+rem EndEngTextBlock
+@pause 1>nul 2>nul
+exit /b
+
+
+
 :_prevmenu
 @echo ----------------------------------------------------------------
 @echo.
@@ -15698,16 +16102,17 @@ call :_cdcbnoreg
 @echo.
 @echo.
 @echo. %_fReset% 
-set nd=%_fBlack%%_bRed%ND%_fReset%
+set nd=%_fBlack%%_bRed%NA%_fReset%
 set cb=%_fBlack%%_bGreen%CB%_fReset%
 set dv=%_fBlack%%_bBYellow%DV%_fReset%
 set db=%_fBlack%%_bBBlue%DB%_fReset%
 set au=%_fBlack%%_bBMag%AU%_fReset%
-set wf=%_fBlack%%_bBCyan%WF%_fReset%
+set wl=%_fBlack%%_bBCyan%WL%_fReset%
 set dr=%_fBlack%%_bYellow%DR%_fReset%
 set sl=%_fBlack%%_bLGray%SL%_fReset%
 set bl=%_fBlack%%_bDGray%BL%_fReset%
 set ns=%_fBlack%%_bBWhite%NS%_fReset%
+set no=NO
 rem StartRusTextBlock
 @echo   Цветовые (только Win 10) и буквенные индикаторы статуса или режима подключенного устройства
 @echo   Отображаются в верхнем левом углу программы. Удобно использовать с ключом Bypass (пункты F-H)
@@ -15717,26 +16122,29 @@ rem StartRusTextBlock
 @echo		%dv%	= Режим разработчика не включен
 @echo		%db%	= Двойное подключение, по кабелю и Wi-Fi одновременно
 @echo		%au%	= Устройство не авторизовано
-@echo		%wf%	= Устройство подключено по Wi-Fi
+@echo		%wl%	= Устройство подключено по беспроводному соединению
 @echo		%dr%	= Шлем подключен, но драйверы не установлены
 @echo		%sl%	= Шлем в режиме Sideload
 @echo		%bl%	= Шлем в режиме Bootloader
 @echo		%ns%	= Подключенное устройство не является шлемом
+@echo		%no%	= Установлен ключ Bypass Initial Status, пропуск всех начальных проверок
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   Color and letter markings for the status or mode of the connected device
-rem @echo   Displayed in the top left corner of the program. Convenient to use with the Bypass option (items F-H)
+rem @echo   Displayed in the top left corner of the program. 
+rem @echo   Convenient to use with the Bypass option (items F-H)
 rem @echo.
 rem @echo		%nd%	= Device not connected
 rem @echo		%cb%	= Device connected via cable
 rem @echo		%dv%	= Developer mode not enabled
 rem @echo		%db%	= Dual connection, via cable and Wi-Fi simultaneously
 rem @echo		%au%	= Device not authorized
-rem @echo		%wf%	= Device connected via Wi-Fi
+rem @echo		%wl%	= Device connected via Wi-Fi
 rem @echo		%dr%	= Headset connected, but drivers not installed
 rem @echo		%sl%	= Headset in Sideload mode
 rem @echo		%bl%	= Headset in Bootloader mode
 rem @echo		%ns%	= Connected device is not a headset
+rem @echo		%no%	= The Bypass Initial Status key is set, skipping all initial checks
 rem EndEngTextBlock
 exit /b
 
@@ -15771,104 +16179,30 @@ exit /b
 if %osverrr% GEQ 10 call :_SetColours
 exit /b
 
-:_colorsetlite
+:_CheckAllStatusMode
+call :_ColorSetOS
+call :_CheckSideloadMode
+call :_CheckBootloaderMode
+goto :_CheckTCPConnect
+
+rem call :_CheckWiFiConnect
+
+:_ColorSetOS
 @FOR /F "tokens=1,2,3,4,5 delims=. " %%a IN ('ver.exe') DO set /a osverrr=%%d
 if %osverrr% GEQ 10 call :_SetColours
-rem if %cod%==utf call :_SetColours
-@call :_CheckCableModeLT
-@call :_CheckWiFiModeLT
-@call :_CheckDoubleOrNoDeviceModeLT
-@call :_CheckDevModeLT
-@call :_CheckAfterWiFiCheckModeLT
-@call :_CheckSideloadModeLT
-@call :_CheckBootloaderModeLT
 exit /b
 
-:_CheckCableModeLT
-rem @echo off
-@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"XRSP" 1>nul 2>nul
-@IF %ERRORLEVEL% EQU 0 (
-@set /A cablecheck=1 
-call :_CheckCableModeDriversT
-) else (
-@set /A cablecheck=0
-call :_setfwtxt
-rem call :_CheckUnSupportDevMode
-call :_CheckUnSupportDevice
-)
-@exit /b
-
-:_CheckCableModeDriversT
-@echo off
-@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"Oculus" 1>nul 2>nul
-@IF %ERRORLEVEL% EQU 0 (
-@set /A cablecheckdriver=1
-) else (
-@set /A cablecheckdriver=0
-set s=%_fBlack%%_bYellow%DR%_fReset%
-goto _NoDriversInstalled
-)
-@exit /b
-
-:_CheckWiFiModeLT
-rem @echo off
-@%MYFILES%\adb devices 2>NUL | findstr ":" 2>nul 1>nul
-@IF %ERRORLEVEL% EQU 0 (
-@set /A wificheck=1
-) else (
-@set /A wificheck=0
-)
-@exit /b
-
-:_CheckDoubleOrNoDeviceModeLT
-rem @echo off
-@set /a connectsum=%cablecheck%+%wificheck%
-@IF %wificheck% GTR %cablecheck% set s=%_fBlack%%_bBCyan%WF%_fReset%&& exit /b
-@IF %connectsum% EQU 0 set s=%_fBlack%%_bRed%NA%_fReset%&& goto _beginn else exit /b 
-@IF %connectsum% EQU 2 set s=%_fBlack%%_bBBlue%DB%_fReset%&& exit /b
-@IF %cablecheck%==1 set s=%_fBlack%%_bGreen%CB%_fReset%&& exit /b
-@exit /b
-
-
-:_CheckDevModeLT
-@echo off
-@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"ADB" 1>nul 2>nul
-IF %wificheck%==1 exit /b
-@IF %ERRORLEVEL% EQU 0 (
-@set /A adbcheck=1
-) else (
-@set /A adbcheck=0
-set s=%_fBlack%%_bBYellow%DV%_fReset%
-@exit /b
-)
-@exit /b
-
-:_CheckAfterWiFiCheckModeLT
-:_CheckAutorizationLT
-@echo off
-@%MYFILES%\adb devices 2>NUL | findstr /i /c:"unauthorized" 1>NUL 2>nul
-@IF %ERRORLEVEL% EQU 0 (
-@set /A autorizecheck=1 
-set s=%_fBlack%%_bBMag%AU%_fReset%
-exit /b
-) else (
-@set /A autorizecheck=0
-)
-@exit /b
-
-:_CheckSideloadModeLT
-@echo off
+:_CheckSideloadMode
+@%verbecho%
 @%MYFILES%\adb devices | findstr /i /c:"sideload" 1>nul 2>nul
 @IF %ERRORLEVEL% EQU 0 (
-set /A sideloadcheck=1 
+set sideloadcheck=1
 set s=%_fBlack%%_bLGray%SL%_fReset%
-@goto _sideloadmode
-) else (
-@set /A sideloadcheck=0
+goto _sideloadmode
 )
-@exit /b
+exit /b
 
-:_CheckBootloaderModeLT
+:_CheckBootloaderMode
 @%MYFILES%\fastboot devices | findstr /i /c:"fastboot" 1>nul 2>nul
 @If %ERRORLEVEL%==0 (
 set bl=1
@@ -15877,24 +16211,149 @@ goto _bootloadermode
 )
 exit /b
 
-
-rem @%myfiles%\adb shell getprop ro.boot.serialno 1>NUL 2>&1
-rem if %errorlevel%==0 (set s=%_bGreen%O%_fReset%) else (set s=%_bRed%X%_fReset%)
+:_CheckTCPConnect
+@%MYFILES%\adb devices 2>NUL | findstr /c:"_adb-tls-connect._tcp" 2>nul 1>nul
+@IF %ERRORLEVEL% == 0 (
+set /A tcpcheck=1
+call :_TCPDisconnect
+call :_CheckWiFiConnect
+) else (
+set /A tcpcheck=0
+call :_CheckWiFiConnect
+)
 exit /b
 
-:_CheckRegisterKeys
-For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v Bypass 2^>nul') do set bpstatus=%%a
-@if [%bpstatus%]==[] (exit /b)
-@if %bpstatus%==0xb call :_colorsetlite & goto _beginn else goto _begin0
+:_CheckWiFiConnect
+@%verbecho%
+@%MYFILES%\adb devices 2>NUL | findstr /c:":" 2>nul 1>nul
+@IF %ERRORLEVEL% EQU 0 (
+set /A wificheck=1
+call :_CheckCableDoubleConnect
+) else (
+set /A wificheck=0
+call :_CheckCableConnect
+)
+exit /b
+
+:_CheckCableDoubleConnect
+@%verbecho%
+%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"XRSP" 2>nul 1>nul
+IF %ERRORLEVEL% == 0 (
+set /A cableconnect=1
+call :_CheckDoubleOrNoDeviceMode
+) else (
+set /A cableconnect=0
+call :_CheckDoubleOrNoDeviceMode
+)
+exit /b
+
+:_CheckCableConnect
+@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"XRSP" 1>nul 2>nul
+@IF %ERRORLEVEL% EQU 0 (
+set /A cableconnect=1
+call :_CheckDriversInstalled
+) else (
+set /A cableconnect=0
+call :_CheckDoubleOrNoDeviceMode
+)
+exit /b
+
+:_CheckDriversInstalled
+@%verbecho%
+@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"Oculus" 1>nul 2>nul
+@IF %ERRORLEVEL% EQU 0 (
+set checkdrivers=1
+call :_CheckDevMode
+) else (
+set checkdrivers=0
+set s=%_fBlack%%_bYellow%DR%_fReset%
+)
+exit /b
+
+:_CheckDevMode
+@%verbecho%
+@%MYFILES%\devcon_x64 find *VID_2833* | findstr /i /c:"ADB" 1>nul 2>nul
+IF %ERRORLEVEL% EQU 0 (
+set adbcheck=1
+call :_setfwtxt
+call :_CheckAutorization
+) else (
+set adbcheck=0
+set s=%_fBlack%%_bBYellow%DV%_fReset%
+)
 exit /b
 
 
-For /f "skip=1 tokens=3 delims= " %%a in ('reg query HKCU\Software\Quas /v Rights') do set rightskey=%%a
-if [%rightskey%]==[] goto _begin0
-if /i %rightskey%==u goto _userright 
-if /i %rightskey%==a goto _adminright
-if /i %rightskey%==c goto _uacright
+:_CheckAutorization
+@%verbecho%
+@%MYFILES%\adb devices 2>NUL | findstr /i /c:"unauthorized" 1>NUL 2>nul
+@IF %ERRORLEVEL% EQU 0 (
+set autorizecheck=1
+set s=%_fBlack%%_bBMag%AU%_fReset%
+goto _notautorized
+) else (
+set autorizecheck=0
+set s=%_fBlack%%_bGreen%CB%_fReset%
+goto _CheckInfoTableKeys
+)
 exit /b
 
+:_CheckDoubleOrNoDeviceMode
+rem call :_SetSNConnecting
+@set /a connectsum=%cableconnect%+%wificheck%+%tcpcheck%
+rem echo %connectsum%
+@IF [%connectsum%] == [] set s=%_fBlack%%_bRed%NA%_fReset%&& call :_CheckUnSupportDevice && goto _NoDevice
+@IF %tcpcheck% GTR %cableconnect% set s=%_fBlack%%_bBCyan%WL%_fReset%&& goto _CheckWLWarningKey
+@IF %wificheck% GTR %cableconnect% set s=%_fBlack%%_bBCyan%WL%_fReset%&& goto _CheckWLWarningKey
+@IF %connectsum% GEQ 2 set s=%_fBlack%%_bBBlue%DB%_fReset%&& goto :_DoubleConnect
+@IF %connectsum% EQU 0 set s=%_fBlack%%_bRed%NA%_fReset%&& call :_CheckUnSupportDevice && goto _NoDevice
+
+
+:_CheckUnSupportDevice
+@For /F %%a In ('@%MYFILES%\adb shell getprop ro.product.manufacturer 2^>nul') Do set manuf=%%a
+@if [%manuf%] == [] exit /b
+if [%manuf%] NEQ [Oculus] (set s=%_fBlack%%_bBWhite%NS%_fReset%) else (exit /b)
+@For /F "tokens=*" %%a In ('%MYFILES%\adb shell getprop ro.semc.product.name') Do set prodname=%%a
+@For /F %%a In ('%MYFILES%\adb shell getprop ro.semc.product.model') Do set prodmodel=%%a
+goto :_NotSupported
+
+:_CheckInitialStatusKey
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassInitialStatus 2^>nul') do set bpinitialstatus=%%a
+@if [%bpinitialstatus%]==[] goto _CheckAllStatusMode
+@if %bpinitialstatus%==0xb set s=NO&& call :_hat && goto _beginn
+exit /b
+
+:_CheckInfoTableKeys
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassInfoTable 2^>nul') do set bpinfotable=%%a
+@if [%bpinfotable%]==[] goto _tabGeneral
+@if %bpinfotable%==0xb  call :_hat && goto _beginn
+exit /b
+
+:_CheckWLWarningKey
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassWLWarning 2^>nul') do set bpwfatt=%%a
+@if [%bpwfatt%]==[] goto _WiFiConnected
+@if %bpwfatt%==0xb goto _CheckInfoTableKeys
+exit /b
+
+:_SetSNConnecting
+setlocal enabledelayedexpansion
+if [%cableconnect%]==[1] @FOR /F "skip=1 tokens=*" %%a IN ('@%MYFILES%\adb devices ^| findstr /i /c:"device"') DO set sn=%%a && endlocal && exit /b
+if [%wificheck%]==[1] @FOR /F "skip=1 tokens=*" %%a IN ('@%MYFILES%\adb devices ^| findstr /i /c:"device"') DO set sn=%%a && endlocal && exit /b
+if [%tcpcheck%]==[1] @FOR /F "skip=1 tokens=1,2 delims=." %%a IN ('@%MYFILES%\adb devices ^| findstr /i /c:"device"') DO set sn=%%a && endlocal && exit /b
+@FOR /F "skip=1 tokens=1,2 delims=." %%a IN ('@%MYFILES%\adb devices ^| findstr /i /c:"offline"') DO set sn=%%a && endlocal && exit /b
+@For /F %%a In ('%MYFILES%\adb shell getprop ro.boot.serialno 2^<nul') Do set sn=%%a
+exit /b
+
+:_TCPDisconnect
+if [%tcpcheck%]==[1] @FOR /F "skip=1 tokens=1,2 delims=." %%a IN ('@%MYFILES%\adb devices ^| findstr /i /c:"device"') DO set adbdevices=%%a
+@%myfiles%\adb -s %adbdevices% disconnect 1>nul 2>nul
+exit /b
+
+rem For /f "skip=1 tokens=3 delims= " %%a in ('reg query HKCU\Software\Quas /v Rights') do set rightskey=%%a
+rem if [%rightskey%]==[] goto _tabBegin
+rem if /i %rightskey%==u goto _userright 
+rem if /i %rightskey%==a goto _adminright
+rem if /i %rightskey%==c goto _uacright
+rem exit /b
 
 

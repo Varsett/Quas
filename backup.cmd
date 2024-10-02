@@ -86,7 +86,10 @@ if [!pkgnamef!]==[] exit /b
 @echo   = Data app copying	: !pkgnamef!
 if [!applabel!]==[] set applabel=!pkgnamef!
 @md "%cd%\Backups\!applabel!\data\!pkgnamef!" 1>nul 2>nul
-%myfiles%\adb pull "/sdcard/Android/data/!pkgnamef!" "%cd%\Backups\!applabel!\data" 1>nul 2>nul
+@%myfiles%\adb pull "/sdcard/Android/data/!pkgnamef!" "%cd%\Backups\!applabel!\data" | findstr /i /c:"permission denied"  1>nul 2>nul
+
+if %errorlevel% == 0 (call :_BackupDataExtractData)
+
 @rd /q "%cd%\Backups\!applabel!\data\!pkgnamef!" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!\data" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!" 1>nul 2>nul
@@ -188,3 +191,110 @@ exit /b
 @echo   ^>^>^> Press any key for return apps menu ^<^<^<
 @pause >nul
 exit /b
+
+:_BackupDataExtractData
+@echo   ---
+@echo   +++  Permission denied detected. Launching an alternative backup +++
+set noapk=no
+set noobb=no
+:_BackupDataExtract
+rem For backup with apk to stay empty
+rem set noapk=
+rem For backup with obb to stay empty
+rem set noobb=
+
+@rd /s /q "%cd%\Backups\!applabel!\data" 1>nul 2>nul
+@rd /s /q "%cd%\Backups\!applabel!" 1>nul 2>nul
+@md "%cd%\Backups\!applabel!\data\" 1>nul 2>nul
+set datapackagename=!applabel!
+set archivename=%datapackagename%.ab
+
+set shscriptname=dataextract.sh
+@%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
+@%myfiles%\adb shell input keyevent 224
+
+@ping localhost -n 4 1>nul
+
+start /min "" %myfiles%\adb backup -f %archivename% -%noapk%apk -%noobb%obb %datapackagename%
+
+call :_CheckBackupProcessB
+
+@echo   ---
+@echo   = AB Backup started..
+
+rem 1>nul
+@ping localhost -n 5 1>nul
+
+@%myfiles%\adb shell input keyevent 61
+@ping localhost -n 1 1>nul
+@%myfiles%\adb shell input keyevent 61
+@ping localhost -n 1 1>nul
+@%myfiles%\adb shell input keyevent 61
+@ping localhost -n 1 1>nul
+@%myfiles%\adb shell input keyevent 66
+@echo   ---
+@echo   = Creating AB backup... 
+
+call :_CheckBackupProcess
+@echo   ---
+@echo   = Extracting data from backup file...
+
+:_SendHSExtract
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 /data/local/tmp/%archivename% ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
+@%myfiles%\adb push %archivename% /data/local/tmp/ 1>nul 2>nul
+@%myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
+@%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
+@%myfiles%\adb shell sh /data/local/tmp/%shscriptname% 1>nul 2>nul
+rem  >log.txt 2>nul
+@%myfiles%\adb pull /data/local/tmp/apps/!applabel! "%cd%\Backups\!applabel!\data" 1>nul 2>nul
+@%myfiles%\adb shell rm -R /data/local/tmp/ 1>nul 2>nul
+
+@%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+@del /q /f %shscriptname% 1>nul 2>nul
+@del /q /f %archivename% 1>nul 2>nul
+@echo   ---
+@echo   = Data extraction and copying completed
+exit /b
+
+:_CheckBackupProcess
+@for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
+if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcess) else (exit /b)
+)
+goto _CheckBackupProcess
+
+:_CheckBackupProcessB
+@for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
+if [%%c] NEQ [com.android.backupconfirm] (@timeout 1 1>nul && goto _CheckBackupProcessB) else (exit /b)
+)
+goto _CheckBackupProcessB
+
+:_ViewABPackageName
+@echo.
+@echo.
+@echo   Backups list
+@echo.
+@echo   ----------------------------------
+set shscriptname=dataextract.sh
+@for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
+set archivename=%%~na
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 /data/local/tmp/!archivename!.ab ^) ^| tar xfvz - -C /data/local/tmp/ >%shscriptname%
+adb push !archivename!.ab /data/local/tmp/ 1>nul 2>nul
+adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
+adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
+adb shell sh /data/local/tmp/%shscriptname% 1>nul 2>nul
+adb shell ls -1t /data/local/tmp/apps/ ^| head -1 >log.txt 2>nul
+@FOR /F "tokens=*" %%a IN (%cd%\log.txt) DO set viewpn=%%a
+@echo   Archive Name	: !archivename!
+@echo   Package Name	: !viewpn!
+@echo   ----------------------------------
+)
+del /q /f %cd%\log.txt 1>nul 2>nul
+del /q /f %cd%\%shscriptname% 1>nul 2>nul
+pause
+exit /b
+
+rem >>>>>>>>>>>>>>>>>>>>>>>>>
+:_BackupAB
+
+
+:_RestoreApplicationDataAB
