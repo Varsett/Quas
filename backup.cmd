@@ -271,6 +271,68 @@ goto _CheckBackupProcessB
 :_ViewABPackageName
 @echo.
 @echo.
+@echo      Backups list
+@echo ----------------------------------------------------------
+set shscriptname=dataextract.sh
+@for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
+set archivename=%%~na
+@echo Archive Name : !archivename!
+<nul set /p strTemp=Package Name : ...Checking...
+rem pause > nul
+<nul set /p strTemp=                                                               
+rem pause > nul
+<nul set /p strTemp=
+
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 /data/local/tmp/!archivename!.ab ^) ^| tar xfvz - -C /data/local/tmp/ >%shscriptname%
+%myfiles%\adb push !archivename!.ab /data/local/tmp/ 1>nul 2>nul
+%myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
+%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
+%myfiles%\adb shell sh /data/local/tmp/%shscriptname% 1>nul 2>nul
+%myfiles%\adb shell ls -1t /data/local/tmp/apps/ ^| head -1 >log.txt 2>nul
+@FOR /F "tokens=*" %%a IN (%cd%\log.txt) DO set viewpn=%%a
+<nul set /p strTemp=Package Name : !viewpn! 
+rem @echo   Package Name	: !viewpn!
+@echo.
+@echo ----------------------------------------------------------
+if "%onlyview%" == "" call :_ExtractDataDromABFiles
+)
+pause
+exit /b
+
+rem ===========================
+
+:_ExtractDataDromABFiles
+set shscriptname=dataextract.sh
+@echo Extracting data from backup file...
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 /data/local/tmp/%archivename% ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
+%myfiles%\adb push %archivename% /data/local/tmp/ 1>nul 2>nul
+%myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
+%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
+%myfiles%\adb shell sh /data/local/tmp/%shscriptname% >log.txt 2>nul
+md "%cd%\Backups\%applabel%\data"
+%myfiles%\adb pull /data/local/tmp/apps "%cd%\Backups\%applabel%\data" 1>nul 2>nul
+
+del /q /f %cd%\log.txt 1>nul 2>nul
+del /q /f %cd%\%shscriptname% 1>nul 2>nul
+pause
+exit /b
+
+:_BackupAB
+
+
+:_RestoreApplicationDataAB
+
+
+
+
+
+
+
+rem Old
+
+:_ViewABPackageName_____
+@echo.
+@echo.
 @echo   Backups list
 @echo.
 @echo   ----------------------------------
@@ -294,7 +356,4 @@ pause
 exit /b
 
 rem >>>>>>>>>>>>>>>>>>>>>>>>>
-:_BackupAB
 
-
-:_RestoreApplicationDataAB
