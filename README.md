@@ -3,7 +3,7 @@
 #### Utility - a collection of the most commonly used commands and actions for the headset. It's like a "multitool" for beginners and      beyond. No need to search for and learn adb commands, parameters, and so on. %%<-
 #### Just select the desired action from the list.
 
-![](https://i.ibb.co/6shfD4r/q400maineng.jpg)
+![](https://i.ibb.co/GPX1wqx/maineng.jpg)
 
 
 ![Download current release](https://github.com/Varsett/Quas/releases)
@@ -105,7 +105,7 @@ List of markings and their meanings:
   * **Camera functionality check (Quest 2 only):** Displays temperature of four external headset cameras. Any malfunction can be identified by temperature difference.
   * **Measuring Wi-Fi speed between headset and PC:** Uses the built-in `Wireless Connect Tester` utility - Wi-Fi speed testing. Displays headset and PC IP addresses, allows entering your PC IP address if incorrect. You can specify the interval between checks (in milliseconds) and test duration (in seconds). Conducts two tests - direct and reverse. Results are saved in a text and CSV file, which can be used to create charts in Excel for visualization. After test completion, a preliminary simplified analysis of results is performed:
 
-![](https://i.ibb.co/BGsjTFp/wfte.jpg)
+![](https://i.ibb.co/b3qStnr/wftesteng.jpg)
 
   * **Network Connection Statistics (netstat):** Displays comprehensive network connection statistics for the headset. This option helps determine whether the headset has access to Meta servers for firmware updates and App Library. (see Google - netstat)
   
@@ -159,12 +159,12 @@ List of markings and their meanings:
 * **Additional explanations about incremental firmware updates:**
   * **Analyzer result for full firmware file:** 
 
-![](https://i.ibb.co/tDXR6nv/fafulleng.jpg)
+![](https://i.ibb.co/16v00FH/fwfulleng.jpg)
 
 
   * **Analyzer result for incremental firmware file:** 
 
-![](https://i.ibb.co/c2206SL/fainceng.jpg)
+![](https://i.ibb.co/crGNZtn/fwincreng.jpg)
 
 * **Download/Update Progress, DNS Setup:**
   * **View Download Progress:** Displays download progress status in percentage. Progress can be updated manually or automatically with a set interval.
