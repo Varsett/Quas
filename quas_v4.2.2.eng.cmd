@@ -1,3 +1,4 @@
+
 @if /i [%1]==[v] (set "verbecho=echo on") else (set "verbecho=echo off")
 @%verbecho%
 :_NormalStart
@@ -791,11 +792,11 @@ rem @echo    B.  Показать скрытые настройки
 rem @echo    C.  Устранение ошибки OpenSSL SHA Crash Bug
 rem @echo    D.  Перезапуск сервиса Oculus на ПК
 rem @echo    E.  Открыть в шлеме настройки VPN
-rem @echo    F.  Установить высокий приоритет сервисам Oculus
+rem @echo    F.  Установить высокий приоритет сервисам Oculus (только Windows 10 и ниже)
 rem @echo    G.  Комплексная установка приложения Oculus Wireless ADB
 rem @echo    H.  Управление ключами реестра для запуска Quas
 rem @echo    I.  Управление приложения Социальной платформы
-rem @echo    J.  Решение проблемы с файлами fba в корне диска С
+rem @echo    J.  Решение проблемы с файлами fba
 rem @echo    K.  Включить экран и отключить датчик приближения
 rem @echo    L.  Удаление старых файлов и каталогов Quas
 rem EndRusTextBlock
@@ -808,11 +809,11 @@ rem StartEngTextBlock
 @echo    C.  Fixing the OpenSSL SHA Crash Bug
 @echo    D.  Restarting the Oculus service on PC
 @echo    E.  Open VPN settings on the headset
-@echo    F.  Set high priority for Oculus services
+@echo    F.  Set high priority for Oculus services (only Windows 10 and below)
 @echo    G.  Oculus Wireless ADB complex	[EXP]
 @echo    H.  Managing registry keys for application startup
 @echo    I.  Social Platform management
-@echo    J.  Solution to the problem with fba files in the root of drive C
+@echo    J.  Solution to the problem with fba files
 @echo    K.  Turn on the screen and disable the proximity sensor
 @echo    L.  Delete old Quas files and directories
 rem EndEngTextBlock
@@ -948,7 +949,7 @@ rem @echo       пользоваться в будущем, его можно с
 rem @echo.
 rem @echo       Процедура ненадолго остановит сервис Oculus, переименует файл
 rem @echo       RemoteDesktopCompanion.exe в RemoteDesktopCompanion.exe.old
-rem @echo       и снова запустит сервис. Также она удалит все файлы fba в корне диска С
+rem @echo       и снова запустит сервис. Также она удалит все файлы fba на системном диске
 rem @echo       и каталоге %USERPROFILE%\AppData\Local\Temp
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -980,17 +981,20 @@ goto _fbafixmenu
 
 :_fbafix
 @echo  ========================================
+For /f "tokens=3" %%a in ('reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\OVRService /v ImagePath') do set imagepath=%%a
+@set mlpath=%imagepath:~1,1%
 rem StartRusTextBlock
-rem 
 rem @echo  = Остановка сервисов Oculus
 rem @net stop OVRservice 1>nul 2>nul
 rem @echo  = Переименование файла RemoteDesktopCompanion.exe
-rem @ren "C:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" "RemoteDesktopCompanion.exe.old" 1>nul 2>nul
+rem @ren "%mlpath%:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" "RemoteDesktopCompanion.exe.old" 1>nul 2>nul
 rem @echo  = Создание заглушки - пустого файла RemoteDesktopCompanion.exe
-rem @fsutil file createnew "C:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" 0 2>nul 1>nul
-rem @echo  = Удаление файлов fba из корня диска С
-rem @del c:\fba*.json /q 1>nul 2>nul
-rem @echo  = Удаление файлов fba из каталога Temp
+rem @fsutil file createnew "%mlpath%:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" 0 2>nul 1>nul
+rem @echo  = Удаление файлов fba из корня системного диска 
+rem @del %SYSTEMDRIVE%\fba*.json /q 1>nul 2>nul
+rem @echo  = Удаление файлов fba из каталога %WINDIR%\System32
+rem @del %WINDIR%\System32\fba*.json /q 1>nul 2>nul
+rem @echo  = Удаление файлов fba из пользовательского каталога Temp
 rem CHCP 866 1>nul
 rem @del "%USERPROFILE%\AppData\Local\Temp\fba*.json" /q 1>nul 2>nul
 rem CHCP 65001 1>nul
@@ -1000,11 +1004,11 @@ rem StartEngTextBlock
 @echo  = Stopping Oculus services
 @net stop OVRservice 1>nul 2>nul
 @echo  = Renaming RemoteDesktopCompanion.exe
-@ren "C:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" "RemoteDesktopCompanion.exe.old" 1>nul 2>nul
+@ren "%mlpath%:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" "RemoteDesktopCompanion.exe.old" 1>nul 2>nul
 @echo  = Creating a dummy - empty RemoteDesktopCompanion.exe file
-@fsutil file createnew "C:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" 0 2>nul 1>nul
+@fsutil file createnew "%mlpath%:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" 0 2>nul 1>nul
 @echo  = Deleting fba files from the root of drive C
-@del c:\fba*.json /q 1>nul 2>nul
+@del %SYSTEMDRIVE%\fba*.json /q 1>nul 2>nul
 @echo  = Deleting fba files from the Temp directory
 CHCP 866 1>nul
 @del "%USERPROFILE%\AppData\Local\Temp\fba*.json" /q 1>nul 2>nul
@@ -3195,9 +3199,6 @@ rem @echo ║                                                                   
 rem @echo ║   %_fBYellow%На шлеме очень старая версия прошивки, не обновляйтесь сразу до последней версии.%_fReset%            ║
 rem @echo ║   %_fBYellow%Следует предварительно обновиться до v51, затем можно обновлять до v71, но не старше.%_fReset%        ║
 rem @echo ║                                                                                                ║
-@echo ║   %_fBYellow%Настоятельно рекомендуется перед прошивкой cбросить шлем на заводские настройки.%_fReset%             ║
-@echo ║   %_fBYellow%После этого при первичной настройке шлем будет обновлен штатным образом по воздуху.%_fReset%          ║
-@echo ║                                                                                                ║
 rem @echo ║   %_fBRed%В ПОСЛЕДНЕЕ ВРЕМЯ УЧАСТИЛИСЬ СЛУЧАИ ОКИРПИЧИВАНИЯ ШЛЕМА ПРИ РУЧНОЙ ПРОШИВКЕ^^^!%_fReset%                 ║
 rem @echo ║                                                                                                ║
 rem @echo ║         %_fBRed%ПРОШИВАЙТЕ ШЛЕМ ВРУЧНУЮ ТОЛЬКО ЕСЛИ ВЫ ТОЧНО ЗНАЕТЕ ЧТО ДЕЛАЕТЕ%_fReset%                        ║
@@ -3211,9 +3212,6 @@ rem StartEngTextBlock
 @echo ║                                                                                               ║
 @echo ║   %_fBYellow%The headset has a very old firmware version. Do not update directly to the latest version.%_fReset%  ║
 @echo ║   %_fBYellow%It is recommended to first update to v51, then you can update to v71, but not higher.%_fReset%       ║
-@echo ║                                                                                               ║
-@echo ║   %_fBYellow%It is strongly advised to factory reset the headset before updating.%_fReset%                        ║
-@echo ║   %_fBYellow%After the reset the headset will be updated automatically via OTA during the initial setup.%_fReset% ║
 @echo ║                                                                                               ║
 @echo ║   %_fBRed%RECENTLY, CASES OF HEADSET BRICKING DURING MANUAL UPDATES HAVE INCREASED^!%_fReset%                   ║
 @echo ║                                                                                               ║
@@ -3232,9 +3230,6 @@ rem @echo ╔══════════════════════�
 rem @echo ║                                                                                                ║
 rem @echo ║   %_fBYellow%На шлеме очень старая версия прошивки. Не обновляйте прошивку сразу до последней версии.%_fReset%     ║
 rem @echo ║                                                                                                ║
-@echo ║   %_fBYellow%Настоятельно рекомендуется перед прошивкой cбросить шлем на заводские настройки.%_fReset%             ║
-@echo ║   %_fBYellow%В этом случае, вероятнее всего, шлем будет обновлен штатным образом по воздуху.%_fReset%              ║
-@echo ║                                                                                                ║
 rem @echo ║   %_fBRed%В ПОСЛЕДНЕЕ ВРЕМЯ УЧАСТИЛИСЬ СЛУЧАИ ОКИРПИЧИВАНИЯ ШЛЕМА ПРИ РУЧНОЙ ПРОШИВКЕ^^^!%_fReset%                 ║
 rem @echo ║                                                                                                ║
 rem @echo ║         %_fBRed%ПРОШИВАЙТЕ ШЛЕМ ВРУЧНУЮ ТОЛЬКО ЕСЛИ ВЫ ТОЧНО ЗНАЕТЕ ЧТО ДЕЛАЕТЕ%_fReset%                        ║
@@ -3247,9 +3242,6 @@ rem StartEngTextBlock
 @echo ╔═══════════════════════════════════ %_fBRed%+++  WARNING +++%_fReset%  ═════════════════════════════════════════╗
 @echo ║                                                                                               ║
 @echo ║   %_fBYellow%The headset has a very old firmware version. Do not update directly to the latest version.%_fReset%  ║
-@echo ║                                                                                               ║
-@echo ║   %_fBYellow%It is strongly recommended to factory reset the headset before updating.%_fReset%                    ║
-@echo ║   %_fBYellow%In this case, the headset is most likely to update automatically via OTA.%_fReset%                   ║
 @echo ║                                                                                               ║
 @echo ║   %_fBRed%RECENTLY, CASES OF HEADSET BRICKING DURING MANUAL UPDATES HAVE INCREASED^!%_fReset%                   ║
 @echo ║                                                                                               ║
@@ -5558,9 +5550,10 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  Timezone on the headset	: %tzhs%
 rem EndEngTextBlock
-@for /f "tokens=3 delims=()" %%a in ('wmic timezone get caption /value') do set tzpc=%%a
+set "pscommand=(Get-TimeZone).DisplayName"
+call :_ps1CommandRun tzpc
 rem StartRusTextBlock
-rem @echo  Таймзона на ПК		:%tzpc%
+rem @echo  Таймзона на ПК		: %tzpc%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  Timezone on the PC		:%tzpc%
@@ -13261,8 +13254,19 @@ rem @call :_GetIP ipaddr
 if not exist ipaddr.txt call :_CreateIPaddressTxt
 call :_ExtractIPaddress
 if [%ipaddrtxt%]==[] goto :_IPaddrEmpty
+if "%copytotemp%"=="1" (
+set iperfdirview=%SYSTEMDRIVE%\Temp
+) else (
+set iperfdirview=%MYFILES%
+)
 
 :_iperftestmenu
+if "%copytotemp%"=="1" (
+set iperfdirview=%SYSTEMDRIVE%\Temp
+) else (
+set iperfdirview=%MYFILES%
+)
+cls
 call :_hat
 call :_hatmenu
 @echo        ===========  Wireless Connect Tester   v1.8 - 13.08.24  ===========
@@ -13276,13 +13280,15 @@ rem @echo    H.  Дополнительные пояснения по теста
 rem @echo    F.  Работа с файрволлом при ошибке Bad file descriptor
 rem @echo    C.  Сервисная проверка соединения
 rem @echo    I.  Запустить сервер iperf отдельным процессом
+rem @echo    V.  Установить %SYSTEMDRIVE%\Temp каталогом запуска сервера iperf
 rem @echo.
 rem @echo.
 rem @echo.
 rem @echo  ОБРАТИТЕ ВНИМАНИЕ:
 rem @echo.
-rem @echo    IP адрес компьютера:		[ %ipaddrtxt% 	]
-rem @echo    IP адрес гарнитуры:		[ %iphs% 	]
+rem @echo    IP адрес компьютера:	[ %ipaddrtxt% 	]
+rem @echo    IP адрес гарнитуры:	[ %iphs% 	]
+rem @echo    Каталог iperf:	[ %iperfdirview% 	]
 rem @echo.
 rem @echo    IP адрес компьютера определяется автоматически, проверьте его правильность. 
 rem @echo    Если IP адрес не соответствует вашей сетевой карте, выйдите из программы 
@@ -13291,6 +13297,9 @@ rem @echo.
 rem @echo    Для теста требуется подключить кабель к ПК и шлему, а также включенный Режим разработчика.
 rem @echo    Тестирование производится по сетевому протоколу TCP, ПК -- роутер -- шлем, поэтому:
 rem @echo    НЕ НУЖНО СПЕЦИАЛЬНО ПЕРЕКЛЮЧАТЬ ШЛЕМ НА БЕСПРОВОДНОЕ СОЕДИНЕНИЕ. ПОДКЛЮЧИТЕ ШЛЕМ К ПК КАБЕЛЕМ.
+rem @echo.
+rem @echo    Каталог iperf отображает текущее местоположение сервера iperf, из которого он будет запущен.
+rem @echo    Если тестирование не начинается или вылетат с ошибкой, попробуйте сменить каталог из пункта V.
 rem @echo.
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -13302,13 +13311,15 @@ rem StartEngTextBlock
 @echo    F.  Firewall handling for Bad file descriptor error
 @echo    C.  Service connection check
 @echo    I.  Start the iperf server as a separate process
+@echo    V.  Set %SYSTEMDRIVE%\Temp as the iperf server launch directory
 @echo.
 @echo.
 @echo.
 @echo  NOTE:
 @echo.
-@echo    Computer IP address:		[ %ipaddrtxt% 	]
-@echo    Headset IP address:		[ %iphs% 	]
+@echo    Computer IP address:	[ %ipaddrtxt% 	]
+@echo    Headset IP address:	[ %iphs% 	]
+@echo    iperf directory: [ %iperfdirview% 	]
 @echo.
 @echo    The computer IP address is determined automatically, please check its correctness.
 @echo    If the IP address does not match your network card, exit the program
@@ -13317,6 +13328,9 @@ rem StartEngTextBlock
 @echo    For the test, a USB cable connected to the PC and the headset is required, as well as the
 @echo    Developer Mode turned on. The testing is conducted via TCP protocol, PC - router - headset, so:
 @echo    DON'T SWITCH HEADSET TO WIRELESS CONNECTION. CONNECT HEADSET TO PC WITH A CABLE.
+@echo.
+@echo    iperf directory displays current location of the iperf server from which it will be launched.
+@echo    If testing does not start or crashes with an error, try changing the directory using option V.
 @echo.
 rem EndEngTextBlock
 @echo  ---------
@@ -13333,6 +13347,9 @@ if /i "%choice%"=="c" (GOTO _SetIperfAutoTesParametersTest)
 if /i "%choice%"=="i" (GOTO _StartIperfServerStandalone)
 if /i "%choice%"=="h" (call :_GeneralWFTestHelp)
 if /i "%choice%"=="f" (call :_FirewallPortSetting)
+if /i "%choice%"=="d" (call :_DebugWiFiTestConnection)
+if /i "%choice%"=="v" (call :_SwithIperfToTempMessage)
+
 
 cls
 goto _iperftest
@@ -13344,93 +13361,95 @@ cls
 rem StartRusTextBlock
 rem @echo         ОБЩИЕ ПОЯСНЕНИЯ      
 rem @echo.      
-rem @echo    Если лень читать мануал, стартуйте проверку с помощью Автотеста скорости (Пунтк A).
-rem @echo    В этом случае программа сама подставит значения по умолчанию, а после теста проанализирует
-rem @echo    результаты и покажет их.
+rem @echo   Опция Автотест (пункт A) автоматически подставит значения по умолчанию, запустит тест,
+rem @echo   а после теста проанализирует результаты и покажет их.
 rem @echo.
-rem @echo    После запуска теста (пункт S) введите значения или жмите Enter для значений по умолчанию:
+rem @echo   Стандартный тест (пункт S) дает возможность ввести желаемые параметры или можно просто
+rem @echo   жать Enter, для ввода значений по умолчанию:
 rem @echo.      
-rem @echo      - Интервал между проверками в миллисекундах, от 100 до 1000:	(по умолчанию - 100)
-rem @echo      - Количество потоков, от 1 до 10: 					(по умолчанию - 1)
-rem @echo      - Длительность каждого теста в секундах, от 30 до 3600: 		(по умолчанию - 180)
+rem @echo     - Интервал между проверками в миллисекундах, от 100 до 1000:	(по умолчанию - 100)
+rem @echo     - Количество потоков, от 1 до 10: 					(по умолчанию - 1)
+rem @echo     - Длительность каждого теста в секундах, от 1 до 3600: 		(по умолчанию - 180)
 rem @echo.      
-rem @echo    Чтоб прервать ввод данных и вернуться в меню, вместо значений введите 0
+rem @echo   Чтобы прервать ввод данных и вернуться в меню, вместо значений введите 0
 rem @echo.
-rem @echo    Для выявления просадок и потерь пакетов, рекемендуется интервал проверок оставить по умолчанию.
-rem @echo    Запустится сервер на ПК и клиент в шлеме,по завершении тестов окно сервера закроется.
+rem @echo   Для выявления просадок и потерь пакетов, рекемендуется интервал проверок оставить по умолчанию.
+rem @echo   Запустится сервер на ПК и клиент в шлеме,по завершении тестов окно сервера закроется.
 rem @echo.      
-rem @echo    Будет проведено два теста: Реверсивный - от ПК к шлему, и прямой - от шлема к ПК.
-rem @echo    После завершения тестов рядом с программой появятся лог-файлы WiFiConnectTestReverse и
-rem @echo    WiFiConnectTestDirect. В них будут лежать результаты тестов. В файлах *.csv
-rem @echo    содержатся данные, на основе которых можно построить диаграмму проверки и провести анализ.
+rem @echo   Будет проведено два теста, Реверсивный: от ПК к шлему, и прямой: от шлема к ПК. После тестов
+rem @echo   рядом с программой появятся лог-файлы WiFiConnectTestReverse и WiFiConnectTestDirect. В них 
+rem @echo   записаны результаты тестов. В файлах *.csv содержатся данные для анализа результатов.
 rem @echo.
-rem @echo    Если программа по какой-то причине отказывается работать и вылетает, смотрите текст ошибки
-rem @echo    в файле error.txt. При ошибке iperf3: unable to send control message: Bad file descriptor
-rem @echo    отключите файрволл на ПК на время тестирования или воспользуйтесь меню по работе с файрволлом.
-rem @echo    Если ошибка по-прежнему появляется даже при отключенном файрволле, попробуйте изменить
-rem @echo    значение длительности проверки, сделать ее меньше, например.
-rem @echo    Ошибка unable to send control message: Broken pipe означает прерванное соединение.
+rem @echo   Если программа не работает или вылетает, смотрите текст ошибки в файле errorcl.txt. При ошибке
+rem @echo   Bad file descriptor отключите файрволл на ПК или воспользуйтесь меню по работе с файрволлом. 
+rem @echo   Если ошибка повторяется, попробуйте изменить значение длительности проверки.
+rem @echo   Ошибка unable to send control message: Broken pipe означает прерванное соединение.
 rem @echo.
-rem @echo    После тестирования можно проанализировать результаты тестов с помощью пункта T этого меню.
+rem @echo   Опция "Установить %SYSTEMDRIVE%\Temp каталогом запуска сервера iperf" предназначена тогда, когда сервер
+rem @echo   iperf стартует, но соединение не устанавливается из-за отсутствия необходимых прав доступа. 
+rem @echo   В этом случае можно попробовать установить %SYSTEMDRIVE%\Temp каталогом запуска сервера iperf (пункт V).
+rem @echo   После этого cервер будет запускаться не из временного каталога пользователя, как обычно,
+rem @echo   а из %SYSTEMDRIVE%\Temp. По завершении можете удалить файлы iperf3.exe и cygwin1.dll из этого каталога.
 rem @echo.
-rem @echo    Опция "Сервисная проверка соединения" предназначена для быстрой проверки корректности
-rem @echo    подключения в служебных целях. Общая длительность теста 10 секунд, интервал проверок 1 секунда.
+rem @echo   Опция "Сервисная проверка соединения" предназначена для быстрой проверки корректности
+rem @echo   подключения в служебных целях. Общая длительность теста 10 секунд, интервал проверок 1 секунда.
 rem @echo. 
-rem @echo    Опция "Запустить сервер iperf отдельным процессом" запускает сервер iperf в отдельном окне
-rem @echo    в режиме ожидания подключения клиента.
+rem @echo   Опция "Запустить сервер iperf отдельным процессом" запускает сервер iperf в отдельном окне
+rem @echo   в режиме ожидания подключения клиента.
 rem @echo.    
-rem @echo    После каждого теста рядом с программой сохраняется скриншот с результатами тестирования.
-rem @echo    Картинка создается для активного окна, так что не переключайтесь на другие окна во время теста.
-rem @echo    Перед новым тестом предыдущие результаты тестов (если они есть) вместе с картинкой будут 
-rem @echo    перенесены в каталог OldWiFiTestFiles.
+rem @echo   После каждого теста рядом с программой сохраняется скриншот с результатами тестирования.
+rem @echo   Картинка создается для активного окна, так что не переключайтесь на другие окна во время теста.
+rem @echo   Перед новым тестом предыдущие результаты вместе с картинкой будут  перенесены в каталог 
+rem @echo   OldWiFiTestFiles и запакованы в архив с датой и временем тестирования в имени архива.
 rem @echo.
-rem @echo    Тест работает только на Windows 10 и выше. 
+rem @echo   После тестирования можно в любой момент проанализировать результаты с помощью пункта T в меню.
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo         GENERAL EXPLANATION
+@echo         GENERAL EXPLANATIONS      
+@echo.      
+@echo   The Auto Test option (option A) will automatically use default values, start the test,
+@echo   analyze the results after the test, and display them.
+@echo.
+@echo   The Standard Test (option S) allows you to enter desired parameters, or you can simply
+@echo   press Enter to use the default values:
+@echo.      
+@echo     - Interval between checks in milliseconds, from 100 to 1000: (default - 100)
+@echo     - Number of threads, from 1 to 10:                           (default - 1)
+@echo     - Duration of each test in seconds, from 1 to 3600:          (default - 180)
+@echo.      
+@echo   To cancel input and return to the menu, enter 0 instead of values.
+@echo.
+@echo   To detect drops and packet loss, it is recommended to keep the check interval at default.
+@echo   A server will start on the PC and a client in the headset. Once tests are completed,
+@echo   the server window will close.
+@echo.      
+@echo   Two tests will be conducted: Reverse (PC to headset) and Direct (headset to PC). After the tests,
+@echo   log files WiFiConnectTestReverse and WiFiConnectTestDirect will appear next to the program.
+@echo   These files contain test results. CSV files contain data for analysis.
+@echo.
+@echo   If the program does not work or crashes, check the error message in the file errorcl.txt.
+@echo   If you encounter a "Bad file descriptor" error, disable the firewall on your PC or use
+@echo   the firewall management menu. If the error persists, try changing the test duration value.
+@echo   The "unable to send control message: Broken pipe" error indicates a disconnected connection.
+@echo.
+@echo   The option "Set %SYSTEMDRIVE%\Temp as the iperf server launch directory" is for cases where
+@echo   the iperf server starts, but the connection fails due to insufficient access rights. 
+@echo   In this case, you can try setting %SYSTEMDRIVE%\Temp as the iperf server directory (option V).
+@echo   This will make the server launch from %SYSTEMDRIVE%\Temp instead of the user's temporary folder.
+@echo   Once testing is done, you can delete the files iperf3.exe and cygwin1.dll from this directory.
+@echo.
+@echo   The "Service connection check" option is designed for a quick validation of connectivity
+@echo   for service purposes. The total test duration is 10 seconds, with a 1-second check interval.
+@echo. 
+@echo   The "Start iperf server as a separate process" option launches the iperf server
+@echo   in a separate window in standby mode for client connection.
 @echo.    
-@echo    After starting the test (option S), enter the values or press Enter to use the default values:
+@echo   After each test, a screenshot of the test results is saved next to the program.
+@echo   The screenshot is created for the active window, so avoid switching to other windows during test.
+@echo   Before a new test, previous test results along with the screenshot will be moved to the 
+@echo   OldWiFiTestFiles folder and archived with the test date and time in the archive name.
 @echo.
-@echo      - Interval between checks in milliseconds, from 100 to 1000:	(default - 100)
-@echo      - Number of threads, from 1 to 10: 				(default - 1)
-@echo      - Test duration in seconds, from 30 to 3600: 			(default - 180)
-@echo.
-@echo    To cancel data entry and return to the menu, enter 0 instead of values.
-@echo.
-@echo    To detect drops and packet losses, it is recommended to leave the interval between checks
-@echo    at the default value. A server will start on the PC and a client on the headset;
-@echo    after the tests are completed, the server window will close.
-@echo.
-@echo    Two tests will be conducted: Reverse - from the PC to the headset, and Direct - from the headset
-@echo    to the PC. After the tests are completed, log files named WiFiConnectTestReverse and
-@echo    WiFiConnectTestDirect will appear next to the program. These files will contain test results.
-@echo    The *.csv files contain data that can be used to create test diagrams and conduct analysis.
-@echo.
-@echo    If the program crashes or refuses to work for some reason, check the error message
-@echo    in the file error.txt. If you encounter the error iperf3: unable to send control message:
-@echo    Bad file descriptor, disable the firewall on your PC during testing or use
-@echo    the firewall management menu. If the error persists even with the firewall disabled,
-@echo    try reducing the test duration to a smaller value.
-@echo    The error unable to send control message: Broken pipe indicates a dropped connection.
-@echo    If the program refuses to work and crashes for some reason, check the error text
-@echo    in the error.txt file. If you encounter the error "iperf3: unable to send control message:
-@echo    Bad file descriptor" disable the firewall on the PC during testing.
-@echo.
-@echo    After testing, you can analyze the test results using option T in this menu.
-@echo.
-@echo    If you're too lazy to read the manual, start the test using Auto Wi-Fi speed test (Option A).
-@echo    In this case, the program will automatically use the default values, analyze he results after
-@echo    test, and display them.
-@echo.
-@echo    The "Service Connection Check" option is designed for a quick verification of connection accuracy
-@echo    for service purposes. The total test duration is 10 seconds, with a check interval of 1 second.
-@echo.
-@echo    The option "Start iperf server as a separate process" starts the iperf server in a separate window
-@echo    in standby mode, waiting for client connection.
-@echo.
-@echo    After each test, an image with the test results is saved next to the program.
-@echo    Before starting a new test, previous test results (if any) along with the image
-@echo    will be moved to the OldWiFiTestFiles directory.
+@echo   After testing, you can analyze the results at any time using option T in the menu.
 rem EndEngTextBlock
 call :_exitwindow
 @echo  ---------------------- 
@@ -13438,7 +13457,8 @@ call :_exitwindow
 exit /b
 
 :_StartIperfServerStandalone
-start cmd /c "mode con:cols=80 lines=50 & %MYFILES%\iperf3.exe -s
+if "%copytotemp%"=="1" (set "iperfdir=%SYSTEMDRIVE%\Temp"&&call :_CopyingIperfToTempS) else (set iperfdir=%MYFILES%)
+start cmd /c "mode con:cols=80 lines=50 &%iperfdir%\iperf3.exe -s"
 @echo   --------------------------------------------------------------
 rem StartRusTextBlock   
 @echo   = Сервер iperf запущен.
@@ -13462,6 +13482,7 @@ rem @echo    A.  Отключить файрволл
 rem @echo    B.  Включить файрволл
 rem @echo    C.  Открыть в файрволле порт 5201 (добавить правило)
 rem @echo    D.  Закрыть в файрволле порт 5201 (удалить правило) 
+rem @echo    E.  Проверить порт 5201 (только Windows 10 и выше)
 rem @echo.
 rem @echo    W.  Вернуться к меню тестирования
 rem @echo.
@@ -13485,6 +13506,7 @@ rem StartEngTextBlock
 @echo    B.  Enable firewall
 @echo    C.  Open port 5201 in the firewall (add rule)
 @echo    D.  Close port 5201 in the firewall (remove rule)
+@echo    E.  Check port 5201 (only Windows 10 and above)
 @echo.
 @echo    W.  Return to testing menu
 @echo.
@@ -13515,8 +13537,40 @@ if /i "%choice%"=="a" (GOTO _DisableFirewall)
 if /i "%choice%"=="b" (GOTO _EnableFirewall)
 if /i "%choice%"=="c" (GOTO _AddRuleOpenPort5201)
 if /i "%choice%"=="d" (GOTO _DelRuleOpenPort5201)
+if /i "%choice%"=="e" (GOTO _CheckPort5201)
+
 cls
 goto _FirewallPortSetting
+
+:_CheckPort5201
+@echo   =======================================
+SetLocal EnableExtensions  enabledelayedexpansion
+@echo   = Check port status....
+@echo.
+
+start cmd /c "mode con:cols=50 lines=30 &%MYFILES%\iperf3.exe -s"
+@ping localhost -n 2 1>nul 2>nul
+
+set "ps=" & for %%X in (powerShell.exe) do set "ps=%%~$PATH:X"
+@if not defined ps set "ps=%systemRoot%\system32\windowsPowerShell\v1.0\powerShell.exe"
+
+@For /F "UseBackQ delims=" %%a in (`"cmd /c "
+  "%ps%" -ExecutionPolicy ByPass -NoProfile -command "TNC localhost -Port 5201 -InformationLevel Quiet" ^| findstr /i "true"
+""`) do (
+set portstatusvar=%%a
+)
+@taskkill /F /IM iperf3.exe 1>nul 2>nul
+@echo   =======================================
+if "%portstatusvar%"=="False" set portstatus=Closed&&@echo   = Port status	: !portstatus!
+if "%portstatusvar%"=="True" set portstatus=Opened&&@echo   = Port status	: !portstatus!
+@echo   ---------------------------------------
+@echo   = Check completed
+@echo   =======================================
+@echo.
+@echo    +++ Press any key to return prev menu +++
+pause >nul
+goto _FirewallPortSetting
+
 
 
 :_DisableFirewall
@@ -13598,6 +13652,7 @@ call :_ExtractIPaddress
 set iinterval=
 call :_SetIperTestInterval
 call :_IperfTestProcedure
+call :_WiFiTestCSVAnalyzer
 goto _iperftest
 
 
@@ -13651,12 +13706,77 @@ rem if [%bndwidth%]==[] set bndwidth=0
 rem if %bndwidth%==0 goto _iperftest
 rem @echo %bndwidth%
 rem @echo.
+exit /b
 
+
+:_SwithIperfToTempMessage
+set "iperfdirview=%SYSTEMDRIVE%\Temp"
+set copytotemp=1
+@echo.
+@echo =================================================================================================
+rem StartRusTextBlock
+rem @echo   Изменен каталог запуска iperf, теперь он будет стартовать из каталога %SYSTEMDRIVE%\Temp
+rem @echo   Параметры будут сохранены до выхода из программы, тесты запускаются как обычно.
+rem @echo   После тестирования можно удалить два файла из каталога %SYSTEMDRIVE%\Temp: iperf3.exe и cygwin1.dll
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   The iperf launch directory has been changed, it will now start from %SYSTEMDRIVE%\Temp
+@echo   The parameters will be saved until you exit the program, tests will run as usual.
+@echo   After testing, you can delete two files from the %SYSTEMDRIVE%\Temp directory: iperf3.exe and cygwin1.dll
+rem EndEngTextBlock
+call :_prevmenu
+goto _iperftestmenu
+
+:_CopyingIperfToTemp
+@echo.
+set "iperfdir=%SYSTEMDRIVE%\Temp"
+set /p iperfdir="Enter directory for iperf server (Press Enter for %SYSTEMDRIVE%\Temp) : "
+
+:_CopyingIperfToTempS
+rem rd %iperfdir% /S /Q 1>nul 2>nul
+md %iperfdir% 1>nul 2>nul
+@xcopy %MYFILES%\iperf3.exe %iperfdir%\*.* /Y /R 1>nul 2>nul
+@xcopy %MYFILES%\cygwin1.dll %iperfdir%\*.* /Y /R 1>nul 2>nul
+exit /b
+
+:_DebugWiFiTestConnection
+@echo   = pushing iperf to headset
+%MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>debuglogwf.txt 2>clientpushlog.txt
+@echo   = iperf chmod 
+%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>>debuglogwf.txt 2>clientchlog.txt
+@echo   = copying iperf files to start directory
+call :_CopyingIperfToTemp
+@echo   = start server iperf
+
+start cmd /c "mode con:cols=80 lines=50 &%iperfdir%\iperf3.exe -s"
+rem start cmd /c "mode con:cols=80 lines=50 &%MYFILES%\iperf3.exe -s"
+
+@ping localhost -n 5 1>nul 2>nul
+@echo   = start client iperf
+rem @echo.
+set itime=5
+set iinterval=1
+set bndwidth=0
+rem set ipaddrtxt=10.0.0.30
+set qstreams=1
+
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth% -c %ipaddrtxt% -P %qstreams% -f m 2>errorst.txt 1>clientprclog.txt
+
+rem %MYFILES%\adb shell /data/local/tmp/iperf3.18 -t 10 -i 1 -b 0 -c %ipaddrtxt% -P 1 -R -f m 1>clientprclog.txt 2>clientstlog.txt
+@ping localhost -n 2 1>nul 2>nul
+@taskkill /F /IM iperf3.exe 1>nul 2>nul
+@ping localhost -n 2 1>nul 2>nul
+rem rd %iperfdir% /S /Q 1>nul 2>nul
+@echo   ---
+@echo   = check finished. Read all logs near program
+@echo.
+@echo   ---
+@echo   Press any key to return menu
+pause >nul
 exit /b
 
 :_IperfTestProcedure
 call :_settime
-
 @if exist %~dp0WiFiConnectTestReverse*.* call :_BackupPrevWiFiTestFiles
 rem @if exist bitrate*.csv @md OldWiFiTestFiles 1>nul 2>nul &%myfiles%\7z.exe a -mx7 -t7z WiFiTests-%dt%.7z bitrate*.csv 1>nul 2>nul
 rem @if exist WiFiConnectTest*.* @md OldWiFiTestFiles 1>nul 2>nul &%myfiles%\7z.exe a -mx7 -t7z WiFiTests-%dt%.7z WiFiConnectTest*.* 1>nul 2>nul
@@ -13697,11 +13817,32 @@ rem StartEngTextBlock
 @echo    bitrate-reverse-%dt%.csv
 rem EndEngTextBlock
 @echo.
-%MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>nul 2>error.txt
-%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>nul 2>error.txt
+
+
+%MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>nul 2>errorhs.txt
+%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>nul 2>errorch.txt
 if %errorlevel% == 1 goto _iperferror
+
+rem +++++++++++++++++++++++++++++++++
+
 rem @start " " %MYFILES%\iperf3.exe -s
-start cmd /c "mode con:cols=80 lines=50 & %MYFILES%\iperf3.exe -s
+rem echo on
+rem echo %copytotemp%
+if "%copytotemp%"=="1" (set "iperfdir=%SYSTEMDRIVE%\Temp"&&call :_CopyingIperfToTempS) else (set iperfdir=%MYFILES%)
+REM set iperfdir=%MYFILES%
+
+rem start cmd /c "mode con:cols=80 lines=50 &C:\Temp\iperf3.exe -s"
+
+rem pause
+rem start cmd /c "mode con:cols=80 lines=50 &%MYFILES%\iperf3.exe -s"
+
+rem start cmd /c "mode con:cols=80 lines=50 &d:\Quest\_Cmd\__Quas\Source\iperf3.exe -s"
+rem echo %iperfdir%
+rem pause
+
+start cmd /c "mode con:cols=80 lines=50 &%iperfdir%\iperf3.exe -s"
+rem ++++++++++++++++++++++++++++
+
 
 @ping localhost -n 4 1>nul 2>nul
 rem StartRusTextBlock
@@ -13743,7 +13884,7 @@ rem >>>>>>>>>>>>>>>>>>>>>>>
 
 
 rem %MYFILES%\adb shell /data/local/tmp/iperf3.9 -t %itime% -i %iinterval% -c %ipaddrtxt% -P %qstreams% >> %wfclogdt% 2>error.txt
-%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth% -c %ipaddrtxt% -P %qstreams% -f m>> %wfclogdt% 2>error.txt
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth% -c %ipaddrtxt% -P %qstreams% -f m>> %wfclogdt% 2>errorst.txt
 
 if %errorlevel% == 1 goto _iperferror
 @echo. >>%wfclogdt%
@@ -13780,10 +13921,10 @@ rem StartEngTextBlock
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo. >>%wfclogdt%
 rem EndEngTextBlock
-%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth% -c %ipaddrtxt% -P %qstreams% -R -f m>> %wfclogdt% 2>error.txt
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth% -c %ipaddrtxt% -P %qstreams% -R -f m>> %wfclogdt% 2>errorcl.txt
 if %errorlevel% == 1 goto _iperferror
 @taskkill /F /IM iperf3.exe 1>nul 2>nul
-for %%A IN (%cd%\error.txt) DO (
+for %%A IN (%cd%\errorcl.txt) DO (
  if %%~zA EQU 0 (del %%A)
 )
 %MYFILES%\adb shell rm /data/local/tmp/iperf3.18 1>nul 2>nul
@@ -13846,11 +13987,19 @@ call :_PercentChecksNumb
 call :_WifiTestTableView
 call :_WiFiTestParametersExtract
 )
+rem StartRusTextBlock
+rem @echo ====================================================================================
+rem @echo  Длительность тестов: %fduration%	: Потоки: %fstreams%	: Интервал: %fintervals%
+rem @echo ====================================================================================
+rem EndRusTextBlock
+rem StartEngTextBlock
 @echo ====================================================================================
-@echo  Длительность тестов: %fduration%	: Потоки: %fstreams%	: Интервал: %fintervals%
+@echo  Tests duration : %fduration%	: Streams: %fstreams%	: Interval: %fintervals%
 @echo ====================================================================================
+rem EndEngTextBlock
+
 call :_settime
-@%myfiles%\nircmdc.exe savescreenshotwin %cd%\WiFiTestRezult-%dt%.png 1>nul 2>nul
+%myfiles%\nircmdc.exe savescreenshotwin %cd%\WiFiTestRezult-%dt%.png 1>nul 2>nul
 
 :_tabchoice
 set choice=m
@@ -13894,7 +14043,8 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 call :_prevmenu
 rem @timeout 1 1>nul
-goto _shellmenu
+goto _iperftestmenu
+
 
 :_WiFiTestParametersExtract
 if not exist WiFiConnectTestReverse*.txt exit /b
@@ -14163,20 +14313,42 @@ goto _shellmenu
 ::>>>>>>>>>>>>>>>>>
 
 :_BackupPrevWiFiTestFiles
-@chcp 866 >nul
+echo off
+rem @chcp 1251 >nul
 for /f %%a in ('dir /B WiFiConnectTestReverse*') do set filename=%%a
+
 set "filePath=%~dp0%filename%"
-for /f "tokens=1-2 delims==" %%a in ('wmic datafile where name^="%filePath:\=\\%" get LastModified /value ^| find "="') do (
+
+rem set filePath=d:\Quest\_Cmd\__Quas\Datetime\_tz-list.cmd
+
+set "pscommand=(Get-Item '%filePath%').LastWriteTime.ToString('yyyy-MM-dd_HH-mm-ss')"
+
+rem call :_psCommandRun datamodfile
+rem echo %datamodfile%
+
+call :_ps1CommandRun archivedata
+
+rem for /f "tokens=1-2 delims==" %%a in ('wmic datafile where name^="%filePath:\=\\%" get LastModified /value ^| find "="') do (
+
+
 rem for /f "tokens=1-2 delims==" %%a in ('wmic datafile where name^="%filePath:\=\\%" get CreationDate /value ^| find "="') do (
-    set "createDate=%%b"
-)
-set "year=!createDate:~0,4!"
-set "month=!createDate:~4,2!"
-set "day=!createDate:~6,2!"
-set "hour=!createDate:~8,2!"
-set "minute=!createDate:~10,2!"
-set "second=!createDate:~12,2!"
-set archivedata=!year!-!month!-!day!_!hour!-!minute!-!second!
+rem     set "createDate=%%b"
+rem )
+rem set "year=%createDate:~0,4%"
+rem set "month=%createDate:~4,2%"
+rem set "day=%createDate:~6,2%"
+rem set "hour=%createDate:~8,2%"
+rem set "minute=%createDate:~10,2%"
+rem set "second=%createDate:~12,2%"
+rem set archivedata=%year%-%month%-%day%_%hour%-%minute%-%second%
+
+rem set "year=!createDate:~0,4!"
+rem set "month=!createDate:~4,2!"
+rem set "day=!createDate:~6,2!"
+rem set "hour=!createDate:~8,2!"
+rem set "minute=!createDate:~10,2!"
+rem set "second=!createDate:~12,2!"
+rem set archivedata=!year!-!month!-!day!_!hour!-!minute!-!second!
 rem :_BackupPrevWiFiTestFiles
 @md OldWiFiTestFiles 1>nul 2>nul
 %myfiles%\7z.exe a -mx7 -t7z WiFiTests-%archivedata%.7z bitrate*.csv 1>nul 2>nul
@@ -14187,7 +14359,7 @@ rem :_BackupPrevWiFiTestFiles
 @del bitrate*.csv /Q /F 1>nul 2>nul
 @del WiFiConnectTest*.* /Q /F 1>nul 2>nul
 @del WiFiTestRezult*.* /Q /F 1>nul 2>nul
-@chcp 65001 >nul
+rem @chcp 65001 >nul
 exit /b
 
 
@@ -14471,7 +14643,7 @@ rem EndEngTextBlock
 @echo   To stop the process, simply close it.
 :: set "netstatstatus= | findstr ESTABLISHED"
 :: set "netstatstatus= | findstr TIME_WAIT"
-@start cmd /c "mode con:cols=120 lines=60 & netstat -f -a -p TCP 5%netstatstatus%"
+@start cmd /c "mode con:cols=120 lines=60 &netstat -f -a -p TCP 5%netstatstatus%"
 @echo.
 @echo.
 rem StartRusTextBlock
@@ -15323,7 +15495,25 @@ If "%d:~,1%"=="0" Set %2=%d:~1%
 If "%d:~,1%"==" " Set %2=%d:~1%
 Exit /B
 
-:_SETTIME
+:_settime
+set pscommand="Get-Date -Format 'yyyy.MM.dd-HH:mm:ss'"
+call :_ps1CommandRun pcdatetime
+set ti=%pcdatetime:~11,-6%-%pcdatetime:~14,-3%-%pcdatetime:~-2%
+set da=%pcdatetime:~0,4%-%pcdatetime:~5,2%-%pcdatetime:~8,2%
+set dt=%da%_%ti%
+set dap=%pcdatetime:~0,10%
+set tip=%pcdatetime:~-8%
+set dppt=%pcdatetime%
+set odt=%pcdatetime:~5,-12%-%pcdatetime:~8,-9%
+@exit /b
+
+
+:_SETTIMEOLD
+rem set "pscommand=Get-Date -Format 'yyyy.MM.dd-HH:mm:ss'"
+rem call :_psCommandRun pcdatetime
+rem echo %pcdatetime%
+
+
 @for /f %%a in ('wmic path win32_LocalTime Get Day^,Month^,Year /value') do >nul set "%%a"
 set Month=00%Month%
 set Month=%Month:~-2%
@@ -16978,7 +17168,7 @@ rem call :_cdcb
 @cls
 rem @echo ==================================================================================================
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.2.1 - 12.01.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.2.2 - 06.02.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 rem @echo ==================================================================================================
@@ -17176,6 +17366,23 @@ set codepage=@chcp 866
 set cod=oem
 set hatcod=        [ ver. OEM-866 ]
 exit /b
+
+
+:_ps1CommandRun
+@chcp 1251 >nul
+set "ps=" & for %%X in (powerShell.exe) do set "ps=%%~$PATH:X"
+if not defined ps set "ps=%systemRoot%\system32\windowsPowerShell\v1.0\powerShell.exe"
+
+For /F "UseBackQ delims=" %%a in (`"cmd /c "
+  "%ps%" -ExecutionPolicy ByPass -NoProfile -command "%pscommand%"
+""`) do (
+set "res=%%a"
+)
+set "%1=%res%"
+@chcp 65001 >nul
+exit /b
+
+
 
 :_CheckOSVersion
 @FOR /F "tokens=1,2,3,4,5 delims=. " %%a IN ('ver.exe') DO set /a osverrr=%%d
