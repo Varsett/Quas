@@ -128,7 +128,7 @@ For ease of use, a **simplified Auto Test mode** is available, which runs the te
 
 **Illustration of test results:** 
 
-![](https://i.ibb.co/b3qStnr/wftesteng.jpg)
+![](https://i.ibb.co/Xf5fgHSM/wft422eng.jpg)
 
   * **Network Connection Statistics (netstat):** Displays comprehensive network connection statistics for the headset. This option helps determine whether the headset has access to Meta servers for firmware updates and App Library. (see Google - netstat)
   
