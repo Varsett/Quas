@@ -32,6 +32,8 @@ List of markings and their meanings:
   * SL - **Sideload mode** - headset in Sideloader mode
   * BL - **Bootloader mode** - headset in Bootloader mode
   * NS - **Not Support** - Connected device is not a headset.
+  * EM - **EDL Mode** - The headset is in Emergency Download Mode
+  * OF - **Power Off** - The headset is turned off
 
 ### **Functional Capabilities:**
 
@@ -137,10 +139,9 @@ For ease of use, a **simplified Auto Test mode** is available, which runs the te
     * Enable
     * Disable
     * Delete parameter from registry
-  
-  * **Checking Headset Boot Status:** Determines which stage of boot the headset is in or stuck on.
-  
-  * **Load Monitoring and Component Diagnostics:** Monitors the status and temperature of headset components:
+   * **Checking Headset Boot Status:** Determines which stage of boot the headset is in or stuck on.
+     
+   * **Load Monitoring and Component Diagnostics:** Monitors the status and temperature of headset components:
      * Fan status
      * Fan speed
      * Fan warnings
@@ -168,6 +169,11 @@ For ease of use, a **simplified Auto Test mode** is available, which runs the te
     * **Comprehensive Installation of Oculus Wireless ADB Application:** Manages the headset via ADB directly within the headset, without using a computer.
     * **Registry Key Management for Application Startup:** Saves program startup keys to the registry. Currently only one key is available - "Bybass". It allows skipping initial checks when starting the program and does not display the information table, saving significant startup time - approximately one and a half seconds. The key can be deleted from the registry at any time or re-entered. If the key is set, a small status indicator of the headset will be displayed in the upper left corner of the program. Description of indicators can be found at the beginning of this instruction. 
     * **Social Platform Application Management:** Enables and disables social platform applications (People, Horizon World, etc.)
+    * **Solution to the problem with fba files** fba files are created by the RemoteDesktopCompanion.exe process, which is responsible for the connection of the Remote Desktop application on the headset.
+This application is from Meta, and if you do not use it and do not plan to use it in the future, it can be safely disabled.
+The procedure will temporarily stop the Oculus service, rename the file RemoteDesktopCompanion.exe to RemoteDesktopCompanion.exe.old, and restart the service. It will also delete all fba files in the root of the C drive and in the directory %USERPROFILE%\AppData\Local\Temp
+    * **Turn on the screen and disable the proximity sensor** The proximity sensor is disabled and the screen is turned on in permanent mode
+    * **Delete old Quas files and directories** Removing old Quas files from the temporary directory
 
 * **Headset Firmware and Firmware Information:**
     * **Fully Automatic Firmware Update:** Headset firmware update is fully automated; just place the firmware file next to the program with any name. Developer mode required.
@@ -189,12 +195,13 @@ For ease of use, a **simplified Auto Test mode** is available, which runs the te
 
 * **Download/Update Progress, DNS Setup:**
   * **View Download Progress:** Displays download progress status in percentage. Progress can be updated manually or automatically with a set interval.
-  * **Write DNS Servers to headset:** Sequentially sets DNS servers from a list of 80 DNS servers into the headset. Each subsequent server is set after pressing a button.
+  * **Write DNS Servers to headset:** Sequentially sets DNS servers from a list of 97 DNS servers into the headset. Each subsequent server is set after pressing a button.
   * **Automatic DNS Selection for Update Downloads:** Automatically cycles through DNS servers. The headset automatically sets DNS servers from the list and checks the availability of update addresses after each server.
   * **Reset headset DNS Settings to Default:** Resets settings to default.
   * **Set DNS Internet Placeholder:** Sets DNS server address to 127.0.0.1.
   * **Check Update Availability on PC:** Automatically checks the Meta update server address on the PC and displays a message indicating availability.
   * **Check Update Availability on headset:** Automatically checks the Meta update server address on the headset and displays a message indicating availability.
+  * **Check the current DNS server:** Display the DNS server registered in the headset
 
 * **App Operations:**
   * **Launch Quest Install Director Utility:** Comprehensive utility for installing applications individually or in batches - by files and directories.
@@ -238,6 +245,7 @@ For ease of use, a **simplified Auto Test mode** is available, which runs the te
     * Psiphon VPN
     * Proton VPN
     * Free VPN Planet
+    * v2rayNG
   * **Install Media Applications:** Installs media players, online cinemas, and torrent clients for online viewing. Installed applications include:
     * Skybox VR Video Player
     * Moon VR Video Player
@@ -248,11 +256,13 @@ For ease of use, a **simplified Auto Test mode** is available, which runs the te
     * TorServe
     * Filmix UHD (Online Cinema)
     * Cinema HD (Online Cinema)
+    * Cast Receiver
   * **Install Utility Applications:** Installs utility applications such as file managers, browsers, launchers, etc. Installed applications in this category include:
     * VRComm mobile client: Mobile client for access to vrcpmm.ru website
     * LightningLauncher: Launcher with wide capabilities for the headset
     * File Manager+: Convenient file manager for the headset
     * XR File Manager: headset file manager, replaces built-in Files with ability to write to Android/data directory
+    * XR Native File Manager:  headset file manager, replaces built-in Files with ability to write to Android/data directory
     * Bugjaeger Premium: Service program for managing headset via ADB from within the headset
     * Termux: Service program for Linux console commands
     * Oculus Wireless ADB: Program for accessing headset via wireless ADB
