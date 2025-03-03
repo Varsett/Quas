@@ -1,4 +1,5 @@
 
+
 @if /i [%1]==[v] (set "verbecho=echo on") else (set "verbecho=echo off")
 @%verbecho%
 :_NormalStart
@@ -136,6 +137,8 @@ if /i "%choice%"=="m" (GOTO _oculuslink)
 if /i "%choice%"=="n" (GOTO _qctprocedure)
 if /i "%choice%"=="p" (GOTO _datetime)
 if /i "%choice%"=="pt" (cls && GOTO _WiFiTestCSVAnalyzer)
+if /i "%choice%"=="q" (set listpackages=-3&&call :_ApplicationActionManageMenu & call :_StartEndAppsMenu)
+rem set cmdsel=1&& call :_AppsInstallMenu && call :_ApplicationActionManageMenu & call :_StartEndAppsMenu
 if /i "%choice%"=="r" (GOTO _streamingmenu)
 if /i "%choice%"=="s" (GOTO _moreview)
 if /i "%choice%"=="w" (GOTO _contactauthor)
@@ -937,6 +940,7 @@ call :_hatmenu
 @echo.
 rem StartRusTextBlock
 rem @echo    F. Прекратить спам файлов fba
+rem @echo    S. Поиск файлов fba на системном диске
 rem @echo.
 rem @echo.
 rem @echo.
@@ -950,7 +954,9 @@ rem @echo.
 rem @echo       Процедура ненадолго остановит сервис Oculus, переименует файл
 rem @echo       RemoteDesktopCompanion.exe в RemoteDesktopCompanion.exe.old
 rem @echo       и снова запустит сервис. Также она удалит все файлы fba на системном диске
-rem @echo       и каталоге %USERPROFILE%\AppData\Local\Temp
+rem @echo       и из несколькоих каталогов. Все действия сопровождаются пояснениями.
+rem @echo.
+rem @echo   УДАЛЕНИЕ МОЖЕТЬ ЗАНЯТЬ МНОГО ВРЕМЕНИ, БУДЬТЕ К ЭТОМУ ГОТОВЫ И НАБЕРИТЕСЬ ТЕРПЕНИЯ
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo    F. Stop fba file spam
@@ -976,12 +982,74 @@ if not defined choice goto _fbafixmenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="f" (GOTO _fbafix)
+if /i "%choice%"=="s" (GOTO _fbasearching)
 cls
 goto _fbafixmenu
 
+:_fbasearching
+setlocal enabledelayedexpansion
+@del fbadirlist.txt /q 1>nul 2>nul
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo  -------------------------
+rem @echo  = Поиск файлов fba на системном диске.. 
+rem @echo    Это может занять некоторое время, будьте терпеливы.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  = Searching for fba files on the system drive.. 
+@echo    This may take some time, please be patient.
+rem EndEngTextBlock
+for /f "delims=" %%a in ('dir /s /b /a-d %systemdrive%\fba*.json 2^>nul') do (
+set "csvfile=%%~dpa"
+rem set "csvfile=!csvfile:\=\\!"
+@echo !csvfile!>>fbadirlistsrc.txt
+)
+if not exist fbadirlistsrc.txt (
+@echo  ---
+rem StartRusTextBlock
+rem @echo  = Файлы fba не найдены
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  = No fba files found
+rem EndEngTextBlock
+@echo  ---
+call :_prevmenu
+goto _fbafixmenu
+exit
+)
+chcp 866 >nul
+@for /f "tokens=*" %%b in (fbadirlistsrc.txt) do (
+@find /i "%%b" fbadirlist.txt 1>nul 2>nul || @echo del /q "%%bfba*.json">>fbadirlist.txt
+)
+@echo pause>>fbadirlist.txt
+@del fbadirlistsrc.txt /q 1>nul 2>nul
+chcp 65001 >nul
+@echo  ---
+rem StartRusTextBlock
+rem @echo  = Поиск завершен
+rem @echo    Список каталогов с файлами fba сохранен в файл fbadirlist.txt
+rem @echo    Для удаления всех fba переименуйте этот файл в fbadirlist.cmd и запустите.
+rem @echo.
+rem @echo    Файлы fba из каталогов с названием на кириллице удалены НЕ БУДУТ.
+rem @echo    Удалите их оттуда вручную.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  = Search completed
+@echo    The list of directories containing fba files has been saved to fbadirlist.txt
+@echo    To delete all fba files, rename this file to fbadirlist.cmd and run it.
+@echo.
+@echo    fba files in directories with names in Cyrillic WILL NOT be deleted.
+@echo    Please remove them manually.
+rem EndEngTextBlock
+@echo  ---
+call :_prevmenu
+goto _fbafixmenu
+
+
 :_fbafix
 @echo  ========================================
-For /f "tokens=3" %%a in ('reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\OVRService /v ImagePath') do set imagepath=%%a
+For /f "tokens=3" %%a in ('reg query HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\OVRService /v ImagePath 2^>nul') do set imagepath=%%a
 @set mlpath=%imagepath:~1,1%
 rem StartRusTextBlock
 rem @echo  = Остановка сервисов Oculus
@@ -994,9 +1062,10 @@ rem @echo  = Удаление файлов fba из корня системно�
 rem @del %SYSTEMDRIVE%\fba*.json /q 1>nul 2>nul
 rem @echo  = Удаление файлов fba из каталога %WINDIR%\System32
 rem @del %WINDIR%\System32\fba*.json /q 1>nul 2>nul
-rem @echo  = Удаление файлов fba из пользовательского каталога Temp
+rem @echo  = Удаление файлов fba из подкаталогов Local и Roaming, включая Temp
 rem CHCP 866 1>nul
-rem @del "%USERPROFILE%\AppData\Local\Temp\fba*.json" /q 1>nul 2>nul
+rem @del "%USERPROFILE%\AppData\Local\fba*.json" /q /s 1>nul 2>nul
+rem @del "%USERPROFILE%\AppData\Roaming\fba*.json"  /q /s 1>nul 2>nul
 rem CHCP 65001 1>nul
 rem @echo  = Запуск сервисов Oculus
 rem EndRusTextBlock
@@ -1009,9 +1078,10 @@ rem StartEngTextBlock
 @fsutil file createnew "%mlpath%:\Program Files\Oculus\Support\oculus-remote-desktop\RemoteDesktopCompanion.exe" 0 2>nul 1>nul
 @echo  = Deleting fba files from the root of drive C
 @del %SYSTEMDRIVE%\fba*.json /q 1>nul 2>nul
-@echo  = Deleting fba files from the Temp directory
+@echo  = Deleting fba files from the Local and Roaming directories, include Temp
 CHCP 866 1>nul
-@del "%USERPROFILE%\AppData\Local\Temp\fba*.json" /q 1>nul 2>nul
+@del "%USERPROFILE%\AppData\Local\fba*.json" /q /s 1>nul 2>nul
+@del "%USERPROFILE%\AppData\Roaming\fba*.json"  /q /s 1>nul 2>nul
 CHCP 65001 1>nul
 @echo  = Starting Oculus services
 rem EndEngTextBlock
@@ -1021,7 +1091,7 @@ rem StartRusTextBlock
 rem @echo  Готово
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  Well done
+@echo  Done
 rem EndEngTextBlock
 @goto _returnmenu
 
@@ -1380,7 +1450,12 @@ goto _RegistryKeysSettings
 @reg delete "HKEY_CURRENT_USER\Software\Quas" /f 1>nul 2>nul
 @echo ---------------------------------------------
 @echo.
-@echo Ветвь HKEY_CURRENT_USER\Software\Quas удалена из реестра
+rem StartRusTextBlock
+rem @echo Ветвь HKEY_CURRENT_USER\Software\Quas удалена из реестра
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo The branch HKEY_CURRENT_USER\Software\Quas has been removed from the registry.
+rem EndEngTextBlock
 call :_prevmenu
 goto _RegistryKeysSettings
 
@@ -1592,7 +1667,12 @@ if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 rem goto _OculusWirelessADBcomplex
 @echo --------------------------------
-@echo ..Пробуем подключиться...
+rem StartRusTextBlock
+rem @echo ..Пробуем подключиться...
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo ..Attempting to connect...
+rem EndEngTextBlock
 @%myfiles%\adb connect %ip%:%port%
 call :_prevmenu
 goto _OculusWirelessADBcomplex
@@ -1689,7 +1769,7 @@ goto _OculusWirelessADBcomplex
 rem rem @start cmd /k "type dophelp.txt && @echo Для закрытия окна нажмите любую кнопку && @pause 1>nul && exit"
 :: rem EndRusTextBlock
 :: rem StartEngTextBlock
-rem @start cmd /k "type dophelp.txt && @echo Press any key to close the window && @pause >nul && exit"
+rem rem @start cmd /k "type dophelp.txt && @echo Press any key to close the window && @pause >nul && exit"
 :: rem EndEngTextBlock
 rem @ping localhost -n 2 2>nul 1>nul
 rem @del dophelp.txt /f /q 2>nul 1>nul
@@ -2000,7 +2080,7 @@ rem StartEngTextBlock
 @echo    3.  High
 @echo    4.  Ultra
 @echo    5.  Maximum
-@echo    A.  Аuto
+@echo    A.  Auto
 rem EndEngTextBlock
 @echo.
 call :_MenuChoiceEnter
@@ -3094,11 +3174,13 @@ rem StartRusTextBlock
 rem @echo    D.  Отключение Wi-Fi на шлеме
 rem @echo    E.  Включение Wi-Fi на шлеме
 rem @echo    F.  Рестарт Wi-Fi на шлеме
+rem @echo    G.  Открыть настройки Wi-Fi на шлеме
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo    D.  Disable Wi-Fi on the headset
 @echo    E.  Enable Wi-Fi on the headset
 @echo    F.  Restart Wi-Fi on the headset
+@echo    G.  Open Wi-Fi settings on the headset
 rem EndEngTextBlock
 @echo.
 call :_MenuChoiceEnter
@@ -3109,8 +3191,12 @@ if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="d" (GOTO _wifidisable)
 if /i "%choice%"=="e" (GOTO _wifienable)
 if /i "%choice%"=="f" (GOTO _wifirestart)
+if /i "%choice%"=="g" (GOTO _wifisettingsopen)
 @cls
 goto _wificontrol
+
+
+
 
 :_wifidisable
 :::::::::::::::::
@@ -3150,6 +3236,18 @@ call :_erlvl
 call :_prevmenu
 @goto _shellmenu
 
+:_wifisettingsopen
+@%MYFILES%\adb shell am start -a android.net.wifi.PICK_WIFI_NETWORK 1>nul 2>nul
+call :_erlvl
+@echo ========================================
+rem StartRusTextBlock
+rem @echo  Настройки Wi-Fi открыты на шлеме
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  Wi-Fi settings on the headset was open
+rem EndEngTextBlock
+call :_prevmenu
+@goto _shellmenu
 
 :_autosenderr
 rem @%MYFILES%\adb shell pm disable-user --user 0 com.oculus.presence
@@ -5008,16 +5106,12 @@ rem StartRusTextBlock
 rem @echo   = Извлечение завершено, начинаем скачивание прошивки....
 rem @echo     Ссылок может быть не одна, в этом случае скачиваться они будут по-очереди.
 rem @echo     Это может занять значительное время.
-@echo  = Файлы прошивок могут дублироваться, так как скачиваются из разных источников.
-@echo    Просто удалите второй файл с таким же названием - версией среды выполнения.
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  = Extraction completed, starting firmware download....
 @echo    There may be more than one link, in which case they will be downloaded sequentially.
 @echo    This may take a considerable amount of time.
 @echo.
-@echo  = Firmware files may be duplicated as they are downloaded from different sources.
-@echo    Simply delete the second file with the same name - runtime version.
 rem EndEngTextBlock
 @echo.
 @for /f "tokens=*" %%a in (link.txt) do (
@@ -5586,15 +5680,15 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 ) else (
 @echo.
-@echo  ===============================================================
+@echo  ============================================================================
 rem StartRusTextBlock
-rem @echo  ^|  +++    Время различается, требуется корректировка    +++   ^|
+rem @echo  ^|  +++    Время или таймзона различаются, требуется корректировка    +++   ^|
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  ^|  +++   Time differs, adjustment is required   +++   ^|
 rem EndEngTextBlock
 )
-@echo  ===============================================================
+@echo  ============================================================================
 @echo.
 @echo.
 @echo.
@@ -5812,6 +5906,8 @@ rem StartEngTextBlock
 @echo    E.  Set up DNS Internet blocking        [EXP]
 @echo    F.  Checking for updates availability on PC           [EXP]
 @echo    G.  Checking for updates availability on headset       [EXP]
+@echo    H.  Check the current DNS server
+rem 
 @echo.
 @echo.
 @echo    IMPORTANT:
@@ -6102,6 +6198,12 @@ rem StartEngTextBlock
 @echo  = Wi-Fi headset is being configured to the new server, please wait...
 rem EndEngTextBlock
 @timeout 3 /NOBREAK >nul
+rem StartRusTextBlock
+rem @echo  = Готово. Новый DNS прописан в шлем.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  = Done. The new DNS has been set on the headset.
+rem EndEngTextBlock
 @echo.
 call :_dnscontinues
 )
@@ -6140,7 +6242,7 @@ rem EndEngTextBlock
 @Set /p choice=">> "
 ::@@echo.
 if not defined choice goto _dnscontinues
-if "%choice%"=="0" (GOTO _beginn)
+if "%choice%"=="0" (GOTO _todmenu)
 if "%choice%"=="1" (exit /b)
 goto _dnscontinues
 exit /b
@@ -6483,7 +6585,13 @@ rem EndEngTextBlock
 @echo.    
 @echo.    
 set /a countip=%countip%+1
-@if %countip%==3 @%myfiles%\adb shell input keyevent 26 && echo ...и в третий раз забросил он в море невод... ^ & echo ...раз так, жмем кнопку питания для пробуждения.... && timeout 10 >nul && call :_CheckIPaddress
+rem StartRusTextBlock
+rem @if %countip%==3 @%myfiles%\adb shell input keyevent 26 && echo ...и в третий раз забросил он в море невод... ^ & echo ...раз так, жмем кнопку питания для пробуждения.... && timeout 10 >nul && call :_CheckIPaddress
+rem EndRusTextBlock
+rem StartEngTextBlock
+@if %countip%==3 @%myfiles%\adb shell input keyevent 26 && echo ...and for the third time, he cast the net into the sea... ^ & echo ...since that's the case, pressing the power button to wake up... && timeout 10 >nul && call :_CheckIPaddress
+rem EndEngTextBlock
+
 timeout 10 /nobreak >nul
 call :_CheckIPaddressCounter
 cls
@@ -6704,11 +6812,11 @@ rem @echo.
 rem @echo.
 rem @echo  Установить частоту обновления (Refresh Rate):
 rem @echo.
-rem @echo    S. 120Гц
-rem @echo    T. 90Гц
-rem @echo    U. 80Гц
-rem @echo    V. 72Гц
-rem @echo    X. 60Гц
+rem @echo    S. 120 Hz
+rem @echo    T. 90 Hz
+rem @echo    U. 80 Hz
+rem @echo    V. 72 Hz
+rem @echo    X. 60 Hz
 rem @echo.
 rem @echo.
 rem EndRusTextBlock
@@ -6743,11 +6851,11 @@ rem StartEngTextBlock
 @echo.
 @echo  Set refresh rate:
 @echo.
-@echo    S. 120Гц
-@echo    T. 90Гц
-@echo    U. 80Гц
-@echo    V. 72Гц
-@echo    X. 60Гц
+@echo    S. 120 Hz
+@echo    T. 90 Hz
+@echo    U. 80 Hz
+@echo    V. 72 Hz
+@echo    X. 60 Hz
 @echo.
 @echo.
 @echo.   ===================================================================
@@ -7380,7 +7488,12 @@ goto _applicationactionmenu
 :_packageslistsel
 call :_settime
 @echo ======================================  >>packages-list%fp%-%dt%.txt
-@echo Список %pkgfiltername% приложений>> packages-list%fp%-%dt%.txt
+rem StartRusTextBlock
+rem @echo Список %pkgfiltername% приложений>> packages-list%fp%-%dt%.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo List of %pkgfiltername% applications>> packages-list%fp%-%dt%.txt
+rem EndEngTextBlock
 @echo ---  >>packages-list%fp%-%dt%.txt
 :_packageslistselonly
 @%MYFILES%\adb shell pm list packages %fullp% %listpackages% >>packages-list%fp%-%dt%.txt
@@ -8090,10 +8203,10 @@ rem EndEngTextBlock
 @%myfiles%\adb pull /sdcard/Android/data/!pkgname! %cd%\BackupsData %hidefrstp% %hidescndp%
 ::@%myfiles%\7z.exe a -mx7 -t7z -ssw !pkgname!-%dt%.7z %cd% %hidefrstp% %hidescndp%
 rem StartRusTextBlock
-rem @echo  ..Removing the application..
+rem @echo  ..Удаляем приложение..
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  ..Удаляем приложение..
+@echo  ..Removing the application..
 rem EndEngTextBlock
 %MYFILES%\ADB shell pm clear !pkgname! %hidefrstp% %hidescndp%
 %MYFILES%\adb shell pm uninstall !pkgname! %hidefrstp% %hidescndp%
@@ -8233,7 +8346,7 @@ rem cls
 @set bb=%%b
 @set cc=%%c
 @set dd=%%d
-set sz=Гб
+set sz=Gb
 )
 rem StartRusTextBlock
 rem @echo 								^| Общий объем : !aa:~,-1!!sz!
@@ -9002,8 +9115,14 @@ goto _installmenugen
 
 :_outlinel
 @echo -----
-@echo Через секунду в шлеме откроется браузер с сайтом, где можно бесплатно взять ключ
-@echo Под надписью Keys Outline VPN нажмите кнопку Outline
+rem StartRusTextBlock
+rem @echo Через секунду в шлеме откроется браузер с сайтом, где можно бесплатно взять ключ
+rem @echo Под надписью Keys Outline VPN нажмите кнопку Outline
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo In a second, the browser in the headset will open a website where you can get a key for free
+@echo Under the title "Keys Outline VPN," click the "Outline" button
+rem EndEngTextBlock
 rem @echo A browser will open on the headset with a website where you can get a free key.
 @%MYFILES%\adb shell am start -n "com.oculus.vrshell/.MainActivity" -d apk://com.oculus.browser -e uri https://outlinekeys.com/ 1>nul 2>nul
 ::@%MYFILES%\adb shell am start -a android.intent.action.VIEW -d https://outline.network/  1>NUL
@@ -9100,8 +9219,14 @@ goto _installmenugen
 
 :_v2rayngurl
 @echo -----
-@echo Через секунду в шлеме откроется браузер с сайтом, где можно бесплатно взять ключ
-@echo Под надписью Keys Outline VPN нажмите кнопку Vless
+rem StartRusTextBlock
+rem @echo Через секунду в шлеме откроется браузер с сайтом, где можно бесплатно взять ключ
+rem @echo Под надписью Keys Outline VPN нажмите кнопку Vless
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo In a second, the browser in the headset will open a website where you can get a key for free
+@echo Under the title "Keys Outline VPN," click the "Vless" button
+rem EndEngTextBlock
 rem @echo A browser will open on the headset with a website where you can get a free key.
 @%MYFILES%\adb shell am start -n "com.oculus.vrshell/.MainActivity" -d apk://com.oculus.browser -e uri https://outlinekeys.com/ 1>nul 2>nul
 exit /b
@@ -9186,14 +9311,19 @@ rem EndEngTextBlock
 @curl -LJkO %curllink% -# 1>nul
 rem @%myfiles%\7z.exe x "%cd%\%dlappl%" -o"%cd%\%dlcat%\" 1>NUL 2>&1
 rem StartRusTextBlock
-@echo Установка... Ждите около минуты...
+rem @echo Установка... Ждите около минуты...
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo Installing... Please wait for about a minute...
 rem EndEngTextBlock
 rem @start " " "%cd%\%dlcat%\%startfile%"
 @echo ----------------------------------------
-@echo = Готово.
+rem StartRusTextBlock
+rem @echo = Готово.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo = Done.
+rem EndEngTextBlock
 @echo.
 @echo %instmess%
 exit /b
@@ -9325,7 +9455,7 @@ rem StartEngTextBlock
 @echo.
 @echo    H. Program description (help)
 @echo    X. Remove installed shortcuts and files
-@echo    Н. Remove installed shortcuts and files manually
+@echo    Y. Remove installed shortcuts and files manually
 @echo.
 @echo.
 @echo IMPORTANT:
@@ -9599,6 +9729,7 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 @echo @echo.>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 rem rem @echo @%sendtofoldercmdfolder%\adb.exe push "!fullpathfile!!file!" -p "/sdcard/">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+endlocal
 @echo @%sendtofoldercmdfolder%\adb.exe push -p "!fullpathfile!!file!" "%qtarget%">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 rem rem @echo @%sendtofoldercmdfolder%\adb shell mv "/sdcard/!file!" "%qtarget%">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo ^)>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
@@ -9671,6 +9802,7 @@ rem EndEngTextBlock
 @echo  -----
 
 :_InstallLnkMessageAll
+@setlocal enableextensions enabledelayedexpansion
 @echo  ==================================================
 rem StartRusTextBlock
 rem @echo  = Установлены все ярлыки.
@@ -9696,6 +9828,7 @@ rem @set myfiles=d:\Quest2\adb
 @md %sendtofoldercmdfolder% 1> nul 2>nul
 @set percents=%%%
 @set ap=%%%^*
+rem set "exclmark=^!"
 exit /b
 
 :_DescriptionContextTool
@@ -10019,15 +10152,22 @@ rem @echo.
 rem @echo  ...Перезапуск сервисов Oculus, ждите...
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo The cert*.pem file has been removed
-@echo    Registry settings removed
-@echo  Try connecting again via AirLink
+@echo  = File cert.pem deleted
+@echo  = File cert_v55.pem deleted
+@echo  = Registry parameters removed
+@echo.
+@echo  ...Restarting Oculus services, please wait...
 rem EndEngTextBlock
 call :_checkservices
 @net stop OVRservice 1>nul 2>nul
 @net start OVRservice  1>nul 2>nul
 @echo ---
-@echo  Попробуйте снова связять шлем по Airlink
+rem StartRusTextBlock
+rem @echo  Попробуйте снова связять шлем по Airlink
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  Try to reconnect the headset via Airlink
+rem EndEngTextBlock
 goto _returnmenu
 
 
@@ -10729,7 +10869,6 @@ rem @echo  	4. Обрезка кадра 	: Обрезка углов				(Пун
 rem @echo  	5. Вывод звука	 	: ПК,микрофон,шлем			(Пункт 3)
 rem @echo  	6. Датчик		: Отключить				(Пункт 1)
 rem @echo  	7. Видеокодек		: h264 OMX.qcom.video.encoder.avc	(Пункт 1)
-@echo  	8. Аудиокодек		: aac  c2.android.aac.encoder		(Пункт 2)
 rem @echo.
 rem @echo    число будет таким: 3221311
 rem @echo.
@@ -10771,7 +10910,6 @@ rem StartEngTextBlock
 @echo  	5. Sound output	 	: PC, microphone, headset		(Item 3)
 @echo  	6. Sensor		: Disable				(Item 1)
 @echo  	7. Video codec		: h264 OMX.qcom.video.encoder.avc	(Item 1)
-@echo  	8. Audio codec		: aac  c2.android.aac.encoder		(Item 2)
 @echo.
 @echo    the number will be: 3221311
 @echo.
@@ -10832,7 +10970,6 @@ rem @echo.  Обрезка кадра	: !cropmsg!
 rem @echo.  Вывод звука	: !amsg!
 rem @echo.  Датчик	: !proxmsg!
 rem @echo.  Видеокодек	: !vcodecmsg!
-@echo.  Аудиокодек	: !acodecmsg!
 rem @echo  ---------------------------------------------
 rem @echo   Профиль	: !profname!
 rem @echo.
@@ -10857,7 +10994,6 @@ rem StartEngTextBlock
 @echo.  Sound output	: !amsg!
 @echo.  Sensor	: !proxmsg!
 @echo.  Video codec	: !vcodecmsg!
-@echo.  Audio codec	: !acodecmsg!
 @echo  ---------------------------------------------
 @echo   Profile	: !profname!
 @echo.
@@ -10955,7 +11091,6 @@ if /i %choice2%==w goto _createscrcpystring
 :_ProximitySettings
 if %Proximity%==0 (@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul)
 rem goto _createvbs
-
 :_createvbs
 @echo strCommand = "cmd /c %MYFILES%\scrcpy.exe %connectivity% %angleset% %audiomute% %acodecset% %vcodecset% --crop=%cropset% --max-size=4128 --video-bit-rate=%bitrateset% --video-buffer=50 --max-fps=%setfps% --stay-awake%recformat% --power-off-on-close%recfile%">>startstream.vbs
 @echo For Each Arg In WScript.Arguments >>startstream.vbs
@@ -11433,7 +11568,6 @@ rem @echo.%dd%|>nul findstr /rc:"[^1-4]"&&(set errorout=Обрезка кадр�
 rem @echo.%ee%|>nul findstr /rc:"[^1-3]"&&(set errorout=Вывод звука)&&(goto _seterror)
 rem @echo.%ff%|>nul findstr /rc:"[^1-2]"&&(set errorout=Датчик приближения)&&(goto _seterror)
 rem @echo.%gg%|>nul findstr /rc:"[^1-3]"&&(set errorout=Видеокодек)&&(goto _seterror)
-@echo.%hh%|>nul findstr /rc:"[^1-3]"&&(set errorout=Аудиокодек)&&(goto _seterror)
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo.%aa%|>nul findstr /rc:"[^1-5]"&&(set errorout=Bitrate)&&(goto _seterror)
@@ -11444,7 +11578,6 @@ rem StartEngTextBlock
 @echo.%ff%|>nul findstr /rc:"[^1-2]"&&(set errorout=Proximity sensor)&&(goto _seterror)
 @echo.%gg%|>nul findstr /rc:"[^1-3]"&&(set errorout=Video codec)&&(goto _seterror)
 rem EndEngTextBlock
-rem rem @echo.%hh%|>nul findstr /rc:"[^1-3]"&&(set errorout=Audio codec)&&(goto _seterror)
 
 
 ::Bitrate
@@ -13269,16 +13402,20 @@ set iperfdirview=%MYFILES%
 cls
 call :_hat
 call :_hatmenu
-@echo        ===========  Wireless Connect Tester   v1.8 - 13.08.24  ===========
+@echo.
+@echo.
+@echo              =======  Wireless Connect Tester  =======
+@echo.
 @echo.
 rem StartRusTextBlock
 rem @echo    A.  Автотест скорости Wi-Fi со значениями по умолчанию [EXP]
 rem @echo    S.  Стандартный тест скорости Wi-Fi с выбором значений [EXP]
 rem @echo    T.  Проанализировать результаты тестирования  [EXP]
+rem @echo    G.  Построить гистограмму или вычислить тренд по результатам тестов  [EXP]
 rem @echo.
 rem @echo    H.  Дополнительные пояснения по тестам, ошибкам, логам и т.д.
 rem @echo    F.  Работа с файрволлом при ошибке Bad file descriptor
-rem @echo    C.  Сервисная проверка соединения
+rem @echo    C.  Сервисная проверка соединения (не для тестирования^^! см. пункт H)
 rem @echo    I.  Запустить сервер iperf отдельным процессом
 rem @echo    V.  Установить %SYSTEMDRIVE%\Temp каталогом запуска сервера iperf
 rem @echo.
@@ -13298,6 +13435,8 @@ rem @echo    Для теста требуется подключить кабе�
 rem @echo    Тестирование производится по сетевому протоколу TCP, ПК -- роутер -- шлем, поэтому:
 rem @echo    НЕ НУЖНО СПЕЦИАЛЬНО ПЕРЕКЛЮЧАТЬ ШЛЕМ НА БЕСПРОВОДНОЕ СОЕДИНЕНИЕ. ПОДКЛЮЧИТЕ ШЛЕМ К ПК КАБЕЛЕМ.
 rem @echo.
+rem @echo    Для тестирования качества WiFi соединения между ПК и шлемом используйте пункты A или S.
+rem @echo.
 rem @echo    Каталог iperf отображает текущее местоположение сервера iperf, из которого он будет запущен.
 rem @echo    Если тестирование не начинается или вылетат с ошибкой, попробуйте сменить каталог из пункта V.
 rem @echo.
@@ -13306,6 +13445,8 @@ rem StartEngTextBlock
 @echo    A.  Auto Wi-Fi speed test with default values [EXP]
 @echo    S.  Run Wi-Fi speed test  [EXP]
 @echo    T.  Analyze test results  [EXP]
+@echo    G.  Build a histogram or calculate the trend based on test results  [EXP]
+rem 
 @echo.
 @echo    H.  Additional explanations about tests, errors, logs, etc.
 @echo    F.  Firewall handling for Bad file descriptor error
@@ -13334,7 +13475,7 @@ rem StartEngTextBlock
 @echo.
 rem EndEngTextBlock
 @echo  ---------
-rem @echo.
+set tabanalize=
 call :_MenuChoiceEnter
 @echo.
 if not defined choice goto _iperftest
@@ -13343,13 +13484,15 @@ if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _SetIperfAutoTesParameters)
 if /i "%choice%"=="s" (GOTO _iperftestrun)
 if /i "%choice%"=="t" (GOTO _WiFiTestCSVAnalyzer)
+if /i "%choice%"=="g" (GOTO _BuildHistogramMenu)
 if /i "%choice%"=="c" (GOTO _SetIperfAutoTesParametersTest)
+if /i "%choice%"=="cc" (set tabanalize=1&&GOTO _SetIperfAutoTesParametersTest)
 if /i "%choice%"=="i" (GOTO _StartIperfServerStandalone)
 if /i "%choice%"=="h" (call :_GeneralWFTestHelp)
 if /i "%choice%"=="f" (call :_FirewallPortSetting)
 if /i "%choice%"=="d" (call :_DebugWiFiTestConnection)
 if /i "%choice%"=="v" (call :_SwithIperfToTempMessage)
-
+if /i "%choice%"=="p" (GOTO _IperfLogsParsing)
 
 cls
 goto _iperftest
@@ -13361,8 +13504,9 @@ cls
 rem StartRusTextBlock
 rem @echo         ОБЩИЕ ПОЯСНЕНИЯ      
 rem @echo.      
-rem @echo   Опция Автотест (пункт A) автоматически подставит значения по умолчанию, запустит тест,
-rem @echo   а после теста проанализирует результаты и покажет их.
+rem @echo   Опция Автотест (пункт A) предназначена для упрощенного запуска тестирования скорости и просадок.
+rem @echo   Будет запущен тест с автоматически подставленными значениями по умолчанию, а по завершении теста
+rem @echo   проанализированы результаты.
 rem @echo.
 rem @echo   Стандартный тест (пункт S) дает возможность ввести желаемые параметры или можно просто
 rem @echo   жать Enter, для ввода значений по умолчанию:
@@ -13391,8 +13535,8 @@ rem @echo   В этом случае можно попробовать уста�
 rem @echo   После этого cервер будет запускаться не из временного каталога пользователя, как обычно,
 rem @echo   а из %SYSTEMDRIVE%\Temp. По завершении можете удалить файлы iperf3.exe и cygwin1.dll из этого каталога.
 rem @echo.
-rem @echo   Опция "Сервисная проверка соединения" предназначена для быстрой проверки корректности
-rem @echo   подключения в служебных целях. Общая длительность теста 10 секунд, интервал проверок 1 секунда.
+rem @echo   "Сервисная проверка соединения" предназначена ТОЛЬКО ДЛЯ ПРОВЕРКИ ПОДКЛЮЧЕНИЯ в служебных целях.
+rem @echo   Длительность проверок 10 секунд с интервалом 1 секунда. НЕ ИСПОЛЬЗУЙТЕ ЕЕ ДЛЯ ТЕСТИРОВАНИЯ^^!
 rem @echo. 
 rem @echo   Опция "Запустить сервер iperf отдельным процессом" запускает сервер iperf в отдельном окне
 rem @echo   в режиме ожидания подключения клиента.
@@ -13456,28 +13600,241 @@ call :_exitwindow
 @echo.
 exit /b
 
+
+:_BuildHistogramMenu
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo    R.  Гистограмма результатов реверсивной проверки
+rem @echo    D.  Гистограмма результатов прямой проверки
+rem @echo    T.  Расчет тренда по результатам реверсивной проверки
+rem @echo    S.  Расчет тренда по результатам прямой проверки
+rem @echo    G.  Как построить диаграмму в Таблицах Google (инструкция)
+rem @echo.
+rem @echo.
+rem @echo.
+rem @echo.
+rem @echo     ОБРАТИТЕ ВНИМАНИЕ:
+rem @echo.
+rem @echo   Гистограмма предназначена для визуализации уровней просадок на протяжении всего тестирования.
+rem @echo   Она строится вертикально, т.к. заранее неизвестна продолжительность проверки, а значит 
+rem @echo   и количество строк с битрейтом.
+rem @echo   Не стоит ожидать от нее красивой картинки, но детальное представление о просадках она дает.
+rem @echo.
+rem @echo   В первой колонке значение битрейта, во второй - уровень битрейта по отношению к максимальному.  
+rem @echo.
+rem @echo   Построение осуществляется на основе файлов csv с результатами. 
+rem @echo   Файлы csv должны содержать в названии слова reverse или direct и их должно быть по одному,
+rem @echo   иначе гистограмма будет построена по самому последнему по времени файлу csv.
+rem @echo.
+rem @echo   Гистограмма создается в отдельном окне, но если в исходном файле csv больше двух тысяч строк,
+rem @echo   она сохраняется в текстовый файл histogram-имя-исходного-файла.csv.txt и показана не будет.
+rem @echo   Ее создание займет некоторое время, зависящее от продолжительности тестов.
+rem @echo   ---
+rem @echo   Тренд — устойчивое направление изменений, которое проявляется в определённый период времени. 
+rem @echo   В данном случае тренд вычисляется методом меньших квадратов и линейной аппроксимации результатов.
+rem @echo.
+rem @echo   Иными словами, анализируются все результаты тестов и определяется тенденция
+rem @echo   к росту или падению битрейта на протяжении теста.
+rem @echo   Вероятно это полная ерунда, но,таким образом есть шанс определить уменьшение 
+rem @echo   пропускной способности роутера, к примеру, если он перегревается.
+rem @echo.
+rem @echo   Результатом расчетов будет число, показывающее Рост (Growth) или Падение (Decline) общей
+rem @echo   тенденции.
+rem @echo   Единица измерения числа - "units per step", "единица на шаг", то есть рост или уменьшение
+rem @echo   на каждый шаг теста. За остальными подробностями добро пожаловать в Google.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo    R.  Histogram of reverse test results
+@echo    D.  Histogram of direct test results
+@echo    T.  Trend calculation based on reverse test results
+@echo    S.  Trend calculation based on direct test results
+@echo.
+@echo.
+@echo.
+@echo.
+@echo     PLEASE NOTE:
+@echo.
+@echo   The histogram is designed to visualize the drop levels throughout the entire test.
+@echo   It is built vertically, as the test duration is unknown in advance, and thus the number of rows
+@echo   with bitrate cannot be determined. 
+@echo   Do not expect a beautiful picture, but it provides a detailed representation of dropouts.
+@echo.
+@echo   The first column shows the bitrate value, 
+@echo   the second column shows the bitrate level relative to the maximum.
+@echo.
+@echo   The construction is based on csv result files.
+@echo   The csv files must contain the words reverse or direct in their names, and there should be 
+@echo   only one file of each type. Otherwise, the histogram will be built from the latest file by time.
+@echo.
+@echo   The histogram will be created in a separate window.
+@echo   Its creation will take some time, depending on the test duration.
+@echo   ---
+@echo   Trend — a stable direction of changes observed over a certain period of time.
+@echo   In this case, the trend is calculated using the least squares method 
+@echo   and linear approximation of the results.
+@echo.
+@echo   In other words, all test results are analyzed, and a tendency towards 
+@echo   bitrate growth or decline is determined depending on the test duration.
+@echo   This might be complete nonsense, but it can help detect bandwidth reduction
+@echo   in a router if it overheats, for example.
+@echo.
+@echo   The calculation result will be a number indicating the overall trend as
+@echo   Growth or Decline.
+@echo   The unit of measurement is "units per step," meaning the increase or decrease 
+@echo   per test step. For further details, feel free to search on Google.
+rem EndEngTextBlock
+@echo.
+@echo.
+call :_MenuChoiceEnter
+@echo.
+if not defined choice goto _BuildHistogramMenu
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="r" (set vector=reverse&&set "VectorMessage=Histogram of Reverse Test Results [From PC to Headset]"&&GOTO _BuildHistogramAction)
+if /i "%choice%"=="d" (set vector=direct&&set "VectorMessage=Histogram of Direct Test Results [From Headset to PC]"&&GOTO _BuildHistogramAction)
+if /i "%choice%"=="t" (set vector=reverse&&set "VectorMessage=Trend of Reverse Test Results [From PC to Headset]"&&GOTO _TrendAction)
+if /i "%choice%"=="s" (set vector=direct&&set "VectorMessage=Trend of Direct Test Results [From Headset to PC]"&&GOTO _TrendAction)
+if /i "%choice%"=="g" goto _GoogleHistoManual
+
+cls
+goto _BuildHistogramMenu
+
+
+:_TrendAction
+setlocal enableextensions enabledelayedexpansion
+if not exist *.csv goto _notestcsvfiles
+rem for /r "%cd%" %%i in (*.csv) do (
+rem set csvfile=%%i
+for /f "delims=" %%a in ('dir /b /a-d *%vector%*.csv') do (
+set csvfile=%%a
+)
+if "!csvfile!"==""  goto _notestcsvfiles
+set "datafile=!csvfile!"
+call :_BuildTrendPS
+@echo   ----------------------------------
+rem StartRusTextBlock
+rem @echo   Результаты вычислений тренда открыты в отдельном окне.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   The trend calculation results are displayed in a separate window.
+rem EndEngTextBlock
+@echo.
+call :_prevmenu
+goto _iperftestmenu
+
+
+:_BuildTrendPS
+@chcp 1251 >nul
+start " " cmd /c "powershell.exe -ExecutionPolicy ByPass -NoProfile -File "%myfiles%\trend.ps1" -DataFile "%datafile%" -VectorMessage "%VectorMessage%""
+@chcp 65001 >nul
+exit /b
+
+
+:_BuildHistogramAction
+setlocal enableextensions enabledelayedexpansion
+if not exist *.csv goto _notestcsvfiles
+rem for /r "%cd%" %%i in (*.csv) do (
+rem set csvfile=%%i
+for /f "delims=" %%a in ('dir /b /a-d *%vector%*.csv') do (
+set csvfile=%%a
+)
+if "!csvfile!"==""  goto _notestcsvfiles
+
+set "datafile=!csvfile!"
+set "ExternalFile=histogram-!csvfile!.txt"
+
+
+call :_BuildHistogramPS
+@echo   ----------------------------------
+rem StartRusTextBlock
+rem @echo   Гистограмма построена.
+rem @echo.
+rem @echo   Скроллируйте ее колесом мыши для просмотра просадок.
+rem @echo   Для закрытия гистограммы нажмите любую кнопку в ее окне. 
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   The histogram has been built.
+@echo.
+@echo   Scroll through it using the mouse wheel to view the drops.
+@echo   To close the histogram, press any key in its window.
+rem EndEngTextBlock
+@echo.
+call :_prevmenu
+goto _iperftestmenu
+
+
+:_GoogleHistoManual
+cls
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo   Как построить диаграмму в Таблицах Google
+rem @echo.
+rem @echo     - Идем по ссылке https://docs.google.com/spreadsheets (требуется регистрация)
+rem @echo     - Или просто из аккаунта открываем Таблицы Google - жмем Пустая таблица.
+rem @echo     - В меню выбрать Файл - Открыть - Загрузка.
+rem @echo     - Перетащить мышью на окно любой из csv файлов с результатами тестов.
+rem @echo     - После загрузки файла нажать Ctrl+A (выделится все) - в меню выбрать Вставить - Диаграмма.
+rem @echo     - Справа в поле Тип диаграммы выбрать - Столбчатая диаграмма.
+rem @echo     - Растянуть диаграмму до желаемой ширины.
+rem @echo.
+rem @echo    Уровень вашего битрейта будет показан по оси Y.
+rem @echo    Можете выбрать любой тип диаграммы, который будет для вас наглядней.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   How to Create a Chart in Google Sheets
+@echo.
+@echo     - Go to https://docs.google.com/spreadsheets (registration required)
+@echo     - Or simply open Google Sheets from your account and click on Blank Spreadsheet.
+@echo     - In the menu, select File - Open - Upload.
+@echo     - Drag and drop any of the CSV files with test results into the window.
+@echo     - After the file is uploaded, press Ctrl+A (this will select the entire table) - then in the menu, choose Insert - Chart.
+@echo     - On the right, in the Chart Type field, select Bar Chart.
+@echo     - Resize the chart to the desired width.
+@echo.
+@echo    Your bitrate level will be displayed on the Y-axis.
+@echo    You can choose any chart type that provides the best visualization for you.
+rem EndEngTextBlock
+@echo.
+call :_exitwindow
+@echo  ---------------------- 
+@echo.
+goto _BuildHistogramMenu
+
+
+:_BuildHistogramPS
+@chcp 1251 >nul
+rem start " " cmd /c "powershell.exe -ExecutionPolicy ByPass -NoProfile -File "%myfiles%\histogram.ps1" -DataFile "%datafile%" -VectorMessage "%VectorMessage%""
+start " " cmd /c "powershell.exe -ExecutionPolicy ByPass -NoProfile -File "%myfiles%\histogram.ps1" -DataFile "%datafile%" -VectorMessage "%VectorMessage%" -ExternalFile "%ExternalFile%""
+@chcp 65001 >nul
+exit /b
+
+
 :_StartIperfServerStandalone
 if "%copytotemp%"=="1" (set "iperfdir=%SYSTEMDRIVE%\Temp"&&call :_CopyingIperfToTempS) else (set iperfdir=%MYFILES%)
 start cmd /c "mode con:cols=80 lines=50 &%iperfdir%\iperf3.exe -s"
 @echo   --------------------------------------------------------------
-rem StartRusTextBlock   
-@echo   = Сервер iperf запущен.
-@echo     По завершении просто закройте его окно.
+rem StartRusTextBlock
+rem @echo   = Сервер iperf запущен.
+rem @echo     По завершении просто закройте его окно.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   = The iperf server is running.
-rem @echo     Once finished, simply close its window.
+@echo   = The iperf server is running.
+@echo     Once finished, simply close its window.
 rem EndEngTextBlock
-rem call :_prevmenu
-rem goto _iperftestmenu
-rem 
-rem 
-rem :_FirewallPortSetting
-rem call :_hat
-rem call :_hatmenu
-rem @echo.
-rem @echo.
-StartRusTextBlock   
+call :_prevmenu
+goto _iperftestmenu
+
+
+:_FirewallPortSetting
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+rem StartRusTextBlock
 rem @echo    A.  Отключить файрволл
 rem @echo    B.  Включить файрволл
 rem @echo    C.  Открыть в файрволле порт 5201 (добавить правило)
@@ -13498,8 +13855,8 @@ rem @echo     или добавить правило, которое откро�
 rem @echo     После тестиррования это правило можно будет удалить или оставить, для следующих тестов.
 rem @echo     Правило будет называться "iperf Test Port 5201"
 rem @echo.
-rem @echo     ВАЖНО: Для включения и отключения файрволла, а также для добавления или удаления правила
-rem @echo            программа Quas должна быть запущена с правами администратора.
+rem @echo     Для включения и отключения файрволла, а также для добавления или удаления правила
+rem @echo     программа Quas должна быть запущена с правами администратора.
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo    A.  Disable firewall
@@ -13538,7 +13895,6 @@ if /i "%choice%"=="b" (GOTO _EnableFirewall)
 if /i "%choice%"=="c" (GOTO _AddRuleOpenPort5201)
 if /i "%choice%"=="d" (GOTO _DelRuleOpenPort5201)
 if /i "%choice%"=="e" (GOTO _CheckPort5201)
-
 cls
 goto _FirewallPortSetting
 
@@ -13577,25 +13933,25 @@ goto _FirewallPortSetting
 @NetSh Advfirewall set allprofiles state off 1>nul 2>nul
 @echo.
 @echo   ---------------
-rem StartRusTextBlock   
-@echo   = Файрволл отключен
-@echo.
-@echo ^>^>^> Нажмите любую кнопку для возврата в меню тестирования ^<^<^<
+rem StartRusTextBlock
+rem @echo   = Файрволл отключен
+rem @echo.
+rem @echo ^>^>^> Нажмите любую кнопку для возврата в меню тестирования ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   = Firewall is disabled
-rem @echo.
-rem @echo ^>^>^> Press any key to return to the testing menu ^<^<^<
+@echo   = Firewall is disabled
+@echo.
+@echo ^>^>^> Press any key to return to the testing menu ^<^<^<
 rem EndEngTextBlock
-rem @pause >nul
-rem 
-rem GOTO _iperftest
-rem 
-rem :_EnableFirewall
-rem @NetSh Advfirewall set allprofiles state on 1>nul 2>nul
-rem @echo.
-rem @echo   ---------------
-StartRusTextBlock   
+@pause >nul
+
+GOTO _iperftest
+
+:_EnableFirewall
+@NetSh Advfirewall set allprofiles state on 1>nul 2>nul
+@echo.
+@echo   ---------------
+rem StartRusTextBlock
 rem @echo   = Файрволл включен
 rem @echo.
 rem @echo ^>^>^> Нажмите любую кнопку для возврата в меню тестирования ^<^<^<
@@ -13613,24 +13969,24 @@ GOTO _iperftest
 @netsh advfirewall firewall add rule name= "iperf Test Port 5201" dir=in action=allow protocol=TCP localport=5201 1>nul 2>nul
 @echo.
 @echo   ---------------
-rem StartRusTextBlock   
-@echo   = Правило добавлено
-@echo.
-@echo ^>^>^> Нажмите любую кнопку для возврата в меню тестирования ^<^<^<
+rem StartRusTextBlock
+rem @echo   = Правило добавлено
+rem @echo.
+rem @echo ^>^>^> Нажмите любую кнопку для возврата в меню тестирования ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   = Rule added
-rem @echo.
-rem @echo ^>^>^> Press any key to return to the testing menu ^<^<^<
+@echo   = Rule added
+@echo.
+@echo ^>^>^> Press any key to return to the testing menu ^<^<^<
 rem EndEngTextBlock
-rem @pause >nul
-rem GOTO _iperftest
-rem 
-rem :_DelRuleOpenPort5201
-rem @netsh advfirewall firewall delete rule name="iperf Test Port 5201" protocol=TCP localport=5201 1>nul 2>nul
-rem @echo.
-rem @echo   ---------------
-StartRusTextBlock   
+@pause >nul
+GOTO _iperftest
+
+:_DelRuleOpenPort5201
+@netsh advfirewall firewall delete rule name="iperf Test Port 5201" protocol=TCP localport=5201 1>nul 2>nul
+@echo.
+@echo   ---------------
+rem StartRusTextBlock
 rem @echo   = Правило удалено
 rem @echo.
 rem @echo ^>^>^> Нажмите любую кнопку для возврата в меню тестирования ^<^<^<
@@ -13776,8 +14132,24 @@ pause >nul
 exit /b
 
 :_IperfTestProcedure
+
+rem for /f "delims=" %%a in ('dir /b /a-d *%vector%*.csv') do (
+rem set csvfile=%%a
+rem )
+
 call :_settime
-@if exist %~dp0WiFiConnectTestReverse*.* call :_BackupPrevWiFiTestFiles
+rem @if exist %~dp0WiFiConnectTestReverse*.* call :_BackupPrevWiFiTestFiles
+@if exist %cd%\WiFiConnectTestReverse*.* call :_BackupPrevWiFiTestFiles
+
+setlocal enableextensions enabledelayedexpansion
+rem for /f "delims=" %%a in ('dir /b /a-d %cd%\*.csv 2^>nul 1^>nul') do (
+
+for /f "delims=" %%a in ('dir /b /a-d %cd%\*.csv 2^>nul') do (
+set csvfileforren=%%a
+ren !csvfileforren! !csvfileforren!.old 1>nul 2>nul
+)
+endlocal
+
 rem @if exist bitrate*.csv @md OldWiFiTestFiles 1>nul 2>nul &%myfiles%\7z.exe a -mx7 -t7z WiFiTests-%dt%.7z bitrate*.csv 1>nul 2>nul
 rem @if exist WiFiConnectTest*.* @md OldWiFiTestFiles 1>nul 2>nul &%myfiles%\7z.exe a -mx7 -t7z WiFiTests-%dt%.7z WiFiConnectTest*.* 1>nul 2>nul
 rem @if exist WiFiTestRezult*.* @md OldWiFiTestFiles 1>nul 2>nul &%myfiles%\7z.exe a -mx7 -t7z WiFiTests-%dt%.7z WiFiTestRezult*.* 1>nul 2>nul
@@ -13924,29 +14296,94 @@ rem EndEngTextBlock
 %MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth% -c %ipaddrtxt% -P %qstreams% -R -f m>> %wfclogdt% 2>errorcl.txt
 if %errorlevel% == 1 goto _iperferror
 @taskkill /F /IM iperf3.exe 1>nul 2>nul
-for %%A IN (%cd%\errorcl.txt) DO (
+for /f "delims=" %%A in ('dir /b /a-d %cd%\error*.txt') do (
+rem for %%A IN (%cd%\errorcl.txt) DO (
  if %%~zA EQU 0 (del %%A)
 )
 %MYFILES%\adb shell rm /data/local/tmp/iperf3.18 1>nul 2>nul
 
 setlocal enableextensions enabledelayedexpansion
-for /f "delims=" %%a in ('dir /b /a-d *.csv 2^>nul 1^>nul') do (
-set csvfileforren=%%a
-@ren !csvfileforren! !csvfileforren!.old 1>nul 2>nul
-)
 
-For /F "skip=16 tokens=7 eol=- delims= " %%a In (%wfclogd%-%dt%.txt) Do (
+rem for /f "delims=" %%a in ('dir /b /a-d *.csv 2^>nul 1^>nul') do (
+rem set csvfileforren=%%a
+rem @ren !csvfileforren! !csvfileforren!.old 1>nul 2>nul
+rem )
+
+
+rem For /F "skip=16 tokens=7 eol=- delims= " %%a In (%wfclogd%-%dt%.txt) Do (
+
+rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+rem for /f "usebackq skip=15 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" WiFiConnectTestReverse-2025-02-12_04-47-06.txt`) do (
+rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+for /f "usebackq skip=14 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" %wfclogd%-%dt%.txt`) do (
 set bitrated=%%a
-@echo !bitrated! >>bitrate-direct-%dt%.csv
+for /f "tokens=1,2 delims=." %%A in ("!bitrated!") do (
+    set "whole=%%A"
+    set "decimal=%%B"
+)
+if not defined decimal (
+@echo !whole! >>bitrate-direct-%dt%.csv
+) else (
+    if !decimal! geq 5 (
+        set /a whole+=1
+    )
+@echo !whole! >>bitrate-direct-%dt%.csv
+)
 )
 
-For /F "skip=16 tokens=7 eol=- delims= " %%a In (%wfclogr%-%dt%.txt) Do (
+rem For /F "skip=16 tokens=7 eol=- delims= " %%a In (%wfclogr%-%dt%.txt) Do (
+
+for /f "usebackq skip=15 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" %wfclogr%-%dt%.txt`) do (
 set bitrater=%%a
-@echo !bitrater! >>bitrate-reverse-%dt%.csv
+for /f "tokens=1,2 delims=." %%A in ("!bitrater!") do (
+    set "whole=%%A"
+    set "decimal=%%B"
 )
+if not defined decimal (
+@echo !whole! >>bitrate-reverse-%dt%.csv
+) else (
+    if !decimal! geq 5 (
+        set /a whole+=1
+    )
+@echo !whole! >>bitrate-reverse-%dt%.csv
+)
+)
+
 endlocal
 exit /b
 rem goto _iperftest
+
+:_IperfLogsParsing
+@echo off
+setlocal enabledelayedexpansion
+for /f "delims=" %%a in ('dir /b /a-d %cd%\*.csv 2^>nul') do (
+set csvfileforren=%%a
+ren !csvfileforren! !csvfileforren!.old 1>nul 2>nul
+)
+
+echo   ----------------
+if not exist %cd%\iperflog.txt echo   = Iperf log 'iperflog.txt' not found. Press key to exit&&pause >nul&& goto _iperftestmenu
+echo   = Start parsing..
+for /f "usebackq tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" iperflog.txt`) do (
+
+set bitrated=%%a
+for /f "tokens=1,2 delims=." %%A in ("!bitrated!") do (
+    set "whole=%%A"
+    set "decimal=%%B"
+)
+if not defined decimal (
+@echo !whole! >>iperflog.csv
+) else (
+    if !decimal! geq 5 (
+        set /a whole+=1
+    )
+@echo !whole! >>iperflog.csv
+)
+)
+goto _WiFiTestCSVAnalyzer
+
+
 
 :_SetIperfAutoTesParameters
 set itime=180
@@ -13962,6 +14399,20 @@ set iinterval=1
 set ointerval=1000
 set qstreams=1
 call :_IperfTestProcedure
+if "%tabanalize%"=="1" goto _WiFiTestCSVAnalyzer
+
+cls
+@echo.
+@echo.
+@echo.
+@echo.
+@echo =================================================================
+@echo.
+@echo            Проверка соединения прошла успешно. 
+@echo         Можно запускать полноценное тестирование.
+@echo.
+call :_prevmenu
+goto _iperftestmenu
 
 :_WiFiTestCSVAnalyzer
 cls
@@ -13970,12 +14421,14 @@ call :_cdcbnoreg
 if not exist *.csv goto _notestcsvfiles
 rem for /r "%cd%" %%i in (*.csv) do (
 rem set csvfile=%%i
+@mode con:cols=87 lines=39
 for /f "delims=" %%a in ('dir /b /a-d *.csv') do (
 set csvfile=%%a
 set "prct=%%%"
 rem StartRusTextBlock
 rem @echo !csvfile! | findstr /i /c:"direct"  1>NUL 2>&1 && @set "vector=%_fBlack%%_bCyan%Результаты прямой проверки [от шлема к ПК]                                        %_fReset%" 2>nul 1>nul
 rem @echo !csvfile! | findstr /i /c:"reverse" 1>NUL 2>&1 && @set "vector=%_fBlack%%_bCyan%Результаты реверсивной проверки [от ПК к шлему]                                   %_fReset%" 1>NUL 2>&1
+rem @echo !csvfile! | findstr /i /c:"iperflog" 1>NUL 2>&1 && @set "vector=%_fBlack%%_bCyan%Парсинг логов iperf                                   %_fReset%" 1>NUL 2>&1
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo !csvfile! | findstr /i /c:"direct" > NUL 2>&1 && set "vector=%_fBlack%%_bCyan%Results of direct check [from headset to PC]                                        %_fReset%"
@@ -13999,6 +14452,7 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 
 call :_settime
+@ping localhost -n 2 2>nul 1>nul
 %myfiles%\nircmdc.exe savescreenshotwin %cd%\WiFiTestRezult-%dt%.png 1>nul 2>nul
 
 :_tabchoice
@@ -14011,8 +14465,8 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 rem @echo.
 if not defined choice goto _tabchoice
-if /i "%choice%"=="m" (GOTO _iperftest)
-if /i "%choice%"=="h" (GOTO _WiFiTabExclamation)
+if /i "%choice%"=="m" (@mode con:cols=100 lines=52&&GOTO _iperftest)
+if /i "%choice%"=="h" (@mode con:cols=100 lines=52&&GOTO _WiFiTabExclamation)
 cls
 goto _tabchoice
 
@@ -14259,7 +14713,7 @@ rem @echo  ---------------------------------------------------------------------
 rem @echo  %_fBlack%%_fBGreen%01.    !numb90! - !maxnumb! мбит  	: !pnumb90!   	: Обычные просадки.%_fReset%
 rem @echo  %_fBlack%%_fBGreen%02.    !numb80! - !numb90! мбит  	: !pnumb80!   	: Допустимые просадки.%_fReset%
 rem @echo  %_fBlack%%_fBYellow%03.    !numb70! - !numb80! мбит  	: !pnumb70!   	: Не очень хорошо, но жить можно.%_fReset%
-rem @echo  %_fBlack%%_fBYellow%04.    !numb60! - !numb70! мбит  	: !pnumb60!   	: Уже хуже, но жить все еще можно.%_fReset%
+rem @echo  %_fBlack%%_fBYellow%04.    !numb60! - !numb70! мбит		: !pnumb60!   	: Уже хуже, но жить все еще можно.%_fReset%
 rem @echo  %_fBlack%%_fBYellow%05.    !numb50! - !numb60! мбит		: !pnumb50!   	: Плохие просадки.%_fReset%
 rem @echo  %_fBlack%%_fBYellow%06.    !numb40! - !numb50! мбит		: !pnumb40!   	: Существенные просадки.%_fReset%
 rem @echo  %_fBlack%%_fBRed%07.    !numb30! - !numb40! мбит		: !pnumb30!   	: В этих четырех нижних строках%_fReset%
@@ -14268,7 +14722,6 @@ rem @echo  %_fBlack%%_fBRed%09.    !numb10! - !numb20! мбит		: !pnumb10!   	
 rem @echo  %_fBlack%%_fBRed%10.    0 - !numb10! мбит		: !pnumb0!    	: значит есть серьезные просадки.%_fReset%
 rem @echo  -----------------------------------------------------------------------------------
 rem @echo  Максимальный битрейт		: !maxnumb! мбит	: !rouqua!
-@echo  Всего проверок			: !qnumb!
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  Bitrate measurement subranges	: Checks, %prct%	: Note 
@@ -14285,7 +14738,6 @@ rem StartEngTextBlock
 @echo  %_fBlack%%_fBRed%10.    0 - !numb10! Mbps		: !pnumb0!    	: indicates severe dips.%_fReset%
 @echo  -----------------------------------------------------------------------------------
 @echo  Maximum bitrate		: !maxnumb! Mbps	: !rouqua!
-@echo  Total checks			: !qnumb!
 rem EndEngTextBlock
 exit /b
 
@@ -14308,7 +14760,7 @@ rem EndEngTextBlock
 @echo.
 @echo.
 call :_prevmenu
-goto _shellmenu
+goto _iperftestmenu
 
 ::>>>>>>>>>>>>>>>>>
 
@@ -14317,7 +14769,8 @@ echo off
 rem @chcp 1251 >nul
 for /f %%a in ('dir /B WiFiConnectTestReverse*') do set filename=%%a
 
-set "filePath=%~dp0%filename%"
+rem set "filePath=%~dp0%filename%"
+set "filePath=%cd%\%filename%"
 
 rem set filePath=d:\Quest\_Cmd\__Quas\Datetime\_tz-list.cmd
 
@@ -14355,7 +14808,7 @@ rem :_BackupPrevWiFiTestFiles
 %myfiles%\7z.exe a -mx7 -t7z WiFiTests-%archivedata%.7z WiFiTestRezult*.* 1>nul 2>nul
 %myfiles%\7z.exe a -mx7 -t7z WiFiTests-%archivedata%.7z WiFiConnectTest*.* 1>nul 2>nul
 
-@move WiFiTests-%archivedata%.7z %~dp0OldWiFiTestFiles\ 1>nul 2>nul
+@move WiFiTests-%archivedata%.7z %cd%\OldWiFiTestFiles\ 1>nul 2>nul
 @del bitrate*.csv /Q /F 1>nul 2>nul
 @del WiFiConnectTest*.* /Q /F 1>nul 2>nul
 @del WiFiTestRezult*.* /Q /F 1>nul 2>nul
@@ -15212,7 +15665,12 @@ call :_prevmenu
 goto _adblogcat
 
 :_lccustomstr
-@Set /p custstr="Введите количество строк (в тысячах) нажмите Enter: "
+rem StartRusTextBlock
+rem @Set /p custstr="Введите количество строк (в тысячах) нажмите Enter: "
+rem EndRusTextBlock
+rem StartEngTextBlock
+@Set /p custstr="Enter the number of lines (in thousands) and press Enter: "
+rem EndEngTextBlock
 @set /a qstr=custstr*1000
 @%myfiles%\adb logcat -t "%qstr%" >lc-%custstr%k-%dt%.txt
 call :_erlvl
@@ -15299,7 +15757,12 @@ goto _adblogcat
 @%myfiles%\adb logcat -c 1>nul 2>nul
 call :_erlvl
 @echo =====================================================
-@echo Logcat очищен.
+rem StartRusTextBlock
+rem @echo Logcat очищен.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo Logcat cleared.
+rem EndEngTextBlock
 call :_prevmenu
 goto _adblogcat
 
@@ -15940,7 +16403,12 @@ goto _WiFiConnected
 @%MYFILES%\adb devices | findstr /i /c:"offline" 1>nul 2>nul
 @If %ERRORLEVEL%==0 (
 set currstatus=%_fBlack%%_fBRed%Offline%_fReset%
-set "presspowerbutton=Попробуйте нажать на шлеме кнопку Питание и перезапустите программу"
+rem StartRusTextBlock
+rem set "presspowerbutton=Попробуйте нажать на шлеме кнопку Питание и перезапустите программу"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "presspowerbutton=Try pressing the Power button on the headset and restart the program"
+rem EndEngTextBlock
 ) else (
 set currstatus=%_fBlack%%_fBGreen%Online%_fReset%
 )
@@ -16174,7 +16642,7 @@ cls
 @set bb=%%b
 @set cc=%%c
 @set dd=%%d
-set sz=Гб
+set sz=Gb
 )
 ::@set aa=
 ::@set bb=
@@ -16674,7 +17142,7 @@ set /a exitnumb=!menunumb!+3
 rem @echo %%myfiles%%\cmdMenuSel f870 "Application backup menu" "Application backup menu  [AB version]" "Extract application data" "Clear application data" "Uninstall application" "Start application" "Stop application" "Disable application" "Enable application" "View application status" "==============================" "BACK TO APPS MENU">>%menufile%
 @echo if "%%errorlevel%%"=="1" goto _backupappmenu>>%menufile%
 rem @echo if "%%errorlevel%%"=="2" goto _backupappmenuab>>%menufile%
-rem @echo if "%%errorlevel%%"=="2" goto _extractappdata>>%menufile%
+rem @echo if "%%errorlevel%%"=="3" goto _extractappdata>>%menufile%
 @echo if "%%errorlevel%%"=="2" goto _restoredata>>%menufile%
 @echo if "%%errorlevel%%"=="3" goto _cleardata>>%menufile%
 @echo if "%%errorlevel%%"=="4" goto _uninstallapp>>%menufile%
@@ -16759,8 +17227,11 @@ rem @echo if "%%errorlevel%%"=="2" goto _extractappdata>>%menufile%
 
 call :_optiondev
 
-:_BackupAppMenuAB
+
 rem >>>>>>>>  App Backup AB Start <<<<<<<<<<<<<<<<<
+
+
+rem @echo :_BackupAppMenuAB>>%menufile%
 rem @echo cls>>%menufile%
 rem @echo @echo.>>%menufile%
 rem @echo @echo.>>%menufile%
@@ -16833,9 +17304,8 @@ rem @echo.>>%menufile%
 rem @echo :_viewbackupcontentab>>%menufile%
 
 
-
-rem =====================================
 rem >>>>>>> App Backup AB End <<<<<<<<<<<<<<
+rem =====================================
 
 
 @echo :_cleardata>>%menufile%
@@ -16985,7 +17455,7 @@ rem >>>>>>> App Backup AB End <<<<<<<<<<<<<<
 @echo @echo		0. Exit application module>>%menufile%
 @echo @echo		M. Exit application menu>>%menufile%
 @echo @echo.>>%menufile%
-@echo @echo	Enter. Confirm %actionchoise%>>%menufile%
+@echo @echo	    Enter. Confirm %actionchoise%>>%menufile%
 @echo @echo.>>%menufile%
 @echo @echo.>>%menufile%
 @echo @echo.>>%menufile%
@@ -17168,7 +17638,7 @@ rem call :_cdcb
 @cls
 rem @echo ==================================================================================================
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.2.2 - 06.02.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.2.3 - 01.03.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 rem @echo ==================================================================================================
@@ -17626,6 +18096,4 @@ rem if /i %rightskey%==u goto _userright
 rem if /i %rightskey%==a goto _adminright
 rem if /i %rightskey%==c goto _uacright
 rem exit /b
-
-
 
