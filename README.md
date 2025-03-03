@@ -32,6 +32,8 @@ List of markings and their meanings:
   * SL - **Sideload mode** - headset in Sideloader mode
   * BL - **Bootloader mode** - headset in Bootloader mode
   * NS - **Not Support** - Connected device is not a headset.
+  * EM - **EDL Mode** - The headset is in Emergency Download Mode
+  * OF - **Power Off** - The headset is turned off
 
 ### **Functional Capabilities:**
 
@@ -103,9 +105,30 @@ List of markings and their meanings:
   * **Creating a shared resource on PC:** Automates the process of creating a shared directory on the computer for access from the headset to this network resource. Connection to this resource is made like a regular network disk (see Google).
   * **Checking USB cable functionality:** USB cable test from PC to headset with test results output for each pass and data transfer speed.
   * **Camera functionality check (Quest 2 only):** Displays temperature of four external headset cameras. Any malfunction can be identified by temperature difference.
-  * **Measuring Wi-Fi speed between headset and PC:** Uses the built-in `Wireless Connect Tester` utility - Wi-Fi speed testing. Displays headset and PC IP addresses, allows entering your PC IP address if incorrect. You can specify the interval between checks (in milliseconds) and test duration (in seconds). Conducts two tests - direct and reverse. Results are saved in a text and CSV file, which can be used to create charts in Excel for visualization. After test completion, a preliminary simplified analysis of results is performed:
+  * **Measuring Wi-Fi speed between headset and PC:** The built-in **Wireless Connect Tester** utility performs Wi-Fi speed testing. It displays the IP addresses of both the headset and the PC, allowing users to manually specify the PC's IP address if it is incorrect. Users can define the interval between checks (in milliseconds) and the test duration (in seconds).  
+The test consists of two parts: **direct** and **reverse**. Results are saved in both text and CSV formats, enabling visualization through Excel charts. After the test, a **preliminary simplified analysis** is performed. Additionally, users can conduct a more detailed analysis at any time using the CSV files via a separate option in the testing menu.  
+For ease of use, a **simplified Auto Test mode** is available, which runs the test with default settings at the press of a single button.  
+ Available Options:  
+- **Wi-Fi Speed Auto Test with Default Values:** Quick test launch with pre-configured parameters:  
+    - Check interval: **100 ms**  
+    - Test duration: **180 seconds per test**  
+    - Number of threads: **1**  
+- **Standard Wi-Fi Speed Test with Custom Values:** Users can manually set test parameters such as duration, interval, and the number of threads.  
+- **Analyze Test Results:** Identifies **connection drops** using CSV files.  
+- **Additional Explanations on Tests, Errors, Logs, etc.:** Provides detailed help on test options and parameters.  
+- **Firewall Management in Case of "Bad File Descriptor" Error:**  
+  - **Disable Firewall**  
+  - **Enable Firewall**  
+  - **Open Port 5201 in Firewall** (Add rule)  
+  - **Close Port 5201 in Firewall** (Remove rule)
+  - **Check port 5201** (only Windows 10 and above)
+- **Service Connection Check:** A quick **5-second** connectivity test.  
+- **Launch iperf Server as a Separate Process:** Starts the iperf server and waits for client connections.
+- **Set C:\Temp as the iperf server launch directory** Changing the Startup directory of iperf if there are problems when starting testing
 
-![](https://i.ibb.co/b3qStnr/wftesteng.jpg)
+**Illustration of test results:** 
+
+![](https://i.ibb.co/Xf5fgHSM/wft422eng.jpg)
 
   * **Network Connection Statistics (netstat):** Displays comprehensive network connection statistics for the headset. This option helps determine whether the headset has access to Meta servers for firmware updates and App Library. (see Google - netstat)
   
@@ -116,10 +139,9 @@ List of markings and their meanings:
     * Enable
     * Disable
     * Delete parameter from registry
-  
-  * **Checking Headset Boot Status:** Determines which stage of boot the headset is in or stuck on.
-  
-  * **Load Monitoring and Component Diagnostics:** Monitors the status and temperature of headset components:
+   * **Checking Headset Boot Status:** Determines which stage of boot the headset is in or stuck on.
+     
+   * **Load Monitoring and Component Diagnostics:** Monitors the status and temperature of headset components:
      * Fan status
      * Fan speed
      * Fan warnings
@@ -147,6 +169,11 @@ List of markings and their meanings:
     * **Comprehensive Installation of Oculus Wireless ADB Application:** Manages the headset via ADB directly within the headset, without using a computer.
     * **Registry Key Management for Application Startup:** Saves program startup keys to the registry. Currently only one key is available - "Bybass". It allows skipping initial checks when starting the program and does not display the information table, saving significant startup time - approximately one and a half seconds. The key can be deleted from the registry at any time or re-entered. If the key is set, a small status indicator of the headset will be displayed in the upper left corner of the program. Description of indicators can be found at the beginning of this instruction. 
     * **Social Platform Application Management:** Enables and disables social platform applications (People, Horizon World, etc.)
+    * **Solution to the problem with fba files** fba files are created by the RemoteDesktopCompanion.exe process, which is responsible for the connection of the Remote Desktop application on the headset.
+This application is from Meta, and if you do not use it and do not plan to use it in the future, it can be safely disabled.
+The procedure will temporarily stop the Oculus service, rename the file RemoteDesktopCompanion.exe to RemoteDesktopCompanion.exe.old, and restart the service. It will also delete all fba files in the root of the C drive and in the directory %USERPROFILE%\AppData\Local\Temp
+    * **Turn on the screen and disable the proximity sensor** The proximity sensor is disabled and the screen is turned on in permanent mode
+    * **Delete old Quas files and directories** Removing old Quas files from the temporary directory
 
 * **Headset Firmware and Firmware Information:**
     * **Fully Automatic Firmware Update:** Headset firmware update is fully automated; just place the firmware file next to the program with any name. Developer mode required.
@@ -168,12 +195,13 @@ List of markings and their meanings:
 
 * **Download/Update Progress, DNS Setup:**
   * **View Download Progress:** Displays download progress status in percentage. Progress can be updated manually or automatically with a set interval.
-  * **Write DNS Servers to headset:** Sequentially sets DNS servers from a list of 80 DNS servers into the headset. Each subsequent server is set after pressing a button.
+  * **Write DNS Servers to headset:** Sequentially sets DNS servers from a list of 97 DNS servers into the headset. Each subsequent server is set after pressing a button.
   * **Automatic DNS Selection for Update Downloads:** Automatically cycles through DNS servers. The headset automatically sets DNS servers from the list and checks the availability of update addresses after each server.
   * **Reset headset DNS Settings to Default:** Resets settings to default.
   * **Set DNS Internet Placeholder:** Sets DNS server address to 127.0.0.1.
   * **Check Update Availability on PC:** Automatically checks the Meta update server address on the PC and displays a message indicating availability.
   * **Check Update Availability on headset:** Automatically checks the Meta update server address on the headset and displays a message indicating availability.
+  * **Check the current DNS server:** Display the DNS server registered in the headset
 
 * **App Operations:**
   * **Launch Quest Install Director Utility:** Comprehensive utility for installing applications individually or in batches - by files and directories.
@@ -217,6 +245,7 @@ List of markings and their meanings:
     * Psiphon VPN
     * Proton VPN
     * Free VPN Planet
+    * v2rayNG
   * **Install Media Applications:** Installs media players, online cinemas, and torrent clients for online viewing. Installed applications include:
     * Skybox VR Video Player
     * Moon VR Video Player
@@ -227,11 +256,13 @@ List of markings and their meanings:
     * TorServe
     * Filmix UHD (Online Cinema)
     * Cinema HD (Online Cinema)
+    * Cast Receiver
   * **Install Utility Applications:** Installs utility applications such as file managers, browsers, launchers, etc. Installed applications in this category include:
     * VRComm mobile client: Mobile client for access to vrcpmm.ru website
     * LightningLauncher: Launcher with wide capabilities for the headset
     * File Manager+: Convenient file manager for the headset
     * XR File Manager: headset file manager, replaces built-in Files with ability to write to Android/data directory
+    * XR Native File Manager:  headset file manager, replaces built-in Files with ability to write to Android/data directory
     * Bugjaeger Premium: Service program for managing headset via ADB from within the headset
     * Termux: Service program for Linux console commands
     * Oculus Wireless ADB: Program for accessing headset via wireless ADB
@@ -301,17 +332,17 @@ List of markings and their meanings:
 * **Streaming Video Transmission to PC:** Operates on the scrcpy program and includes five transmission modes from the headset to the PC - four pre-installed and one manual. The manual mode can be configured independently with seven parameters - Bitrate, FPS, recording to file, sound output, proximity sensor, and video codec. The subprogram can work with pre-installed profiles and includes six integrated profiles - minimum, light, balanced, demo, quality, maximum. Any of these profiles can be selected and immediately started with the transmission. There is also an option to create your own profiles - up to four. They are saved in a separate file and can be loaded as well as integrated ones. In manual mode, there is also an option to save the scrcpy launch string and edit it as needed. Built-in usage instructions.
 
 * **Advanced Commands and Parameters (Help):** Restart as user, restart as admin with UAC prompt, restart as admin without UAC prompt, accelerated Quas start - without table and checks, additional explanation about incremental firmware, enable downgrade installation, enable installation details display, enable installation log file recording, table of headset partitions and their sizes in bytes and gigabytes: Here are these Additional keys and commands:
-!!! note
-    **h** = This is a window (can be typed in the Main menu)
-    **u** = Restart as a user
-    **c** = Restart as an admin with UAC prompt
-    **a** = Restart as admin without UAC prompt
-    **b** = Quick start Quas: without table and checks
-    **J > A > d** = Enable installation with downgrade option
-    **J > A > v** = Enable installation details display
-    **J > A > l** = Enable installation log file recording
-    **449** = headset partition table and their size in bytes and gigabytes
-    **103** = headset partition table and their size in bytes and gigabytes
+
+      h = This is a window (can be typed in the Main menu)
+      u = Restart as a user
+      c = Restart as an admin with UAC prompt
+      a = Restart as admin without UAC prompt
+      b = Quick start Quas: without table and checks
+      J > A > d = Enable installation with downgrade option
+      J > A > v = Enable installation details display
+      J > A > l = Enable installation log file recording
+      449 = headset partition table and their size in bytes and gigabytes
+      103 = headset partition table and their size in bytes and gigabytes
 
 * **Contact the Author:** Links to GitHub, Viarkomm, program description link, and donate via browser or QR code.
 
