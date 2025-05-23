@@ -3,7 +3,7 @@
 #### Utility - a collection of the most commonly used commands and actions for the headset. It's like a "multitool" for beginners and beyond. No need to search for and learn adb commands, parameters, and so on.
 #### Just select the desired action from the list.
 
-![](https://i.ibb.co/d0XVzj45/quas423eng.jpg)
+![](https://i.ibb.co/C5S0nz1D/q431e.jpg)
 
 ## **Description of Operation and Functional Capabilities of the Program**
 
