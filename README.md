@@ -3,7 +3,7 @@
 #### Utility - a collection of the most commonly used commands and actions for the headset. It's like a "multitool" for beginners and beyond. No need to search for and learn adb commands, parameters, and so on.
 #### Just select the desired action from the list.
 
-![](https://i.ibb.co/C5S0nz1D/q431e.jpg)
+![](https://github.com/Varsett/pictures/blob/2e928fb2c0b7b87aab704e8d8369639a825f52a8/q431e.jpg)
 
 ## **Description of Operation and Functional Capabilities of the Program**
 
@@ -130,10 +130,10 @@ A simplified **Auto Test** mode is also available, allowing the test to be perfo
 	* **Set C:\Temp as the Iperf Server Launch Directory:** This option is for cases where the **Iperf server starts but fails to establish a connection due to insufficient access rights.**  Setting **C:\Temp as the launch directory** may resolve the issue.  After enabling this option, the server will no longer start from the **user’s temporary directory** but from **C:\Temp** instead. The **current launch directory** will be displayed on the testing page.  
 
 ***Test Results Illustration***
-![](https://i.ibb.co/YsPy6mS/wftenglittle.jpg)
+![](https://github.com/Varsett/pictures/blob/2e928fb2c0b7b87aab704e8d8369639a825f52a8/wftenglittle.jpg)
 
 ***Histogram Illustration of Test Results***
-![](https://i.ibb.co/BHFhKcBb/histo.jpg)
+![](https://github.com/Varsett/pictures/blob/2e928fb2c0b7b87aab704e8d8369639a825f52a8/histo.jpg)
 
 
   * **Network Connection Statistics (netstat):** Displays comprehensive network connection statistics for the headset. This option helps determine whether the headset has access to Meta servers for firmware updates and App Library. (see Google - netstat)
