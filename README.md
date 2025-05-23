@@ -198,11 +198,11 @@ These keys can be added to or removed from the registry at any time.
 
   ***Analyzer result for full firmware file:***
 
-![](https://i.ibb.co/tDXR6nv/fafulleng.jpg)  
+![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/fafulleng.jpg)  
 
   ***Analyzer result for incremental firmware file:***
 
-![](https://i.ibb.co/c2206SL/fainceng.jpg)  
+![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/fainceng.jpg)  
 
 * **Download/Update Progress, DNS Setup:**
   * **View Download Progress:** Displays download progress status in percentage. Progress can be updated manually or automatically with a set interval.
@@ -345,7 +345,7 @@ List of applications:
   * **Manually delete installed shortcuts and files:** If the shortcuts for some reason were not deleted, you can do it manually
 
 ***Illustration of working with contextual shortcuts***
-![](https://i.ibb.co/0jcpfJ4T/sendtoeng.jpg)  
+![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/sendtoeng.jpg)  
 
 * **Adjusting headset Date, Time, and Timezone:** Checks the correctness of the set time, date, and timezone, and if necessary, sets the correct values.
 
