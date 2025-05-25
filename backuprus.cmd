@@ -132,7 +132,7 @@ exit /b
 set namelabel=1
 set listpackages="!packagename!"
 
-set packagename=!pathname!
+set "packagename=!pathname!"
 
 :_ViewApkLabelInsideHeadset
 setlocal enableextensions enabledelayedexpansion
@@ -172,7 +172,7 @@ rem @echo     printf "\n";>>%shscriptname%
 @for /f "tokens=1,2 delims=;" %%A in ("!line!") do (
 set applabel=%%A
 set pkgnamef=%%B
-if [!pkgnamef!]==[] set pkgnamef=!applabel!
+if [!pkgnamef!]==[] set "pkgnamef=!applabel!"
 call :_ViewAppLabel
 )
 )
@@ -262,16 +262,16 @@ rem set noobb=
 @rd /s /q "%cd%\Backups\!applabel!\data" 1>nul 2>nul
 @rd /s /q "%cd%\Backups\!applabel!" 1>nul 2>nul
 @md "%cd%\Backups\!applabel!\data\" 1>nul 2>nul
-set datapackagename=!applabel!
-set archivename=%datapackagename%.ab
+set "datapackagename=!applabel!"
+set "archivename=%datapackagename%.ab"
 
 set shscriptname=dataextract.sh
 @%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
 @%myfiles%\adb shell input keyevent 224
 
-@ping localhost -n 4 1>nul
+@timeout 4 1>nul
 
-start /min "" %myfiles%\adb backup -f %archivename% -%noapk%apk -%noobb%obb %datapackagename%
+start /min "" %myfiles%\adb backup -f "%archivename%" -%noapk%apk -%noobb%obb "%datapackagename%"
 
 call :_CheckBackupProcessB
 
@@ -284,14 +284,14 @@ rem @echo   = AB Backup started..
 rem EndEngTextBlock
 
 rem 1>nul
-@ping localhost -n 5 1>nul
+timeout 4 1>nul
 
 @%myfiles%\adb shell input keyevent 61
-@ping localhost -n 1 1>nul
+timeout 1 1>nul
 @%myfiles%\adb shell input keyevent 61
-@ping localhost -n 1 1>nul
+timeout 1 1>nul
 @%myfiles%\adb shell input keyevent 61
-@ping localhost -n 1 1>nul
+timeout 1 1>nul
 @%myfiles%\adb shell input keyevent 66
 @echo   ---
 rem StartRusTextBlock
@@ -312,18 +312,18 @@ rem EndEngTextBlock
 
 
 :_SendHSExtract
-@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 /data/local/tmp/%archivename% ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
-@%myfiles%\adb push %archivename% /data/local/tmp/ 1>nul 2>nul
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/%archivename%" ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
+@%myfiles%\adb push "%archivename%" /data/local/tmp/ 1>nul 2>nul
 @%myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
 @%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
 @%myfiles%\adb shell sh /data/local/tmp/%shscriptname% 1>nul 2>nul
 rem  >log.txt 2>nul
-@%myfiles%\adb pull /data/local/tmp/apps/!applabel! "%cd%\Backups\!applabel!\data" 1>nul 2>nul
+@%myfiles%\adb pull "/data/local/tmp/apps/!applabel!" "%cd%\Backups\!applabel!\data" 1>nul 2>nul
 @%myfiles%\adb shell rm -R /data/local/tmp/ 1>nul 2>nul
 
 @%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
 @del /q /f %shscriptname% 1>nul 2>nul
-@del /q /f %archivename% 1>nul 2>nul
+@del /q /f "%archivename%" 1>nul 2>nul
 @echo   ---
 rem StartRusTextBlock
 @echo   = Извлечение данных и копирование завершены
@@ -331,7 +331,6 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   = Data extraction and copying completed
 rem EndEngTextBlock
-
 exit /b
 
 :_CheckBackupProcess
@@ -367,8 +366,8 @@ rem pause > nul
 rem pause > nul
 <nul set /p strTemp=
 
-@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 /data/local/tmp/!archivename!.ab ^) ^| tar xfvz - -C /data/local/tmp/ >%shscriptname%
-%myfiles%\adb push !archivename!.ab /data/local/tmp/ 1>nul 2>nul
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/!archivename!.ab" ^) ^| tar xfvz - -C /data/local/tmp/ >%shscriptname%
+%myfiles%\adb push "!archivename!.ab" /data/local/tmp/ 1>nul 2>nul
 %myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
 %myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
 %myfiles%\adb shell sh /data/local/tmp/%shscriptname% 1>nul 2>nul
@@ -392,16 +391,16 @@ rem ===========================
 :_ExtractDataDromABFiles
 set shscriptname=dataextract.sh
 @echo Extracting data from backup file...
-@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 /data/local/tmp/%archivename% ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
-%myfiles%\adb push %archivename% /data/local/tmp/ 1>nul 2>nul
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/%archivename%" ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
+%myfiles%\adb push "%archivename%" /data/local/tmp/ 1>nul 2>nul
 %myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
 %myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
 %myfiles%\adb shell sh /data/local/tmp/%shscriptname% >log.txt 2>nul
 md "%cd%\Backups\%applabel%\data"
 %myfiles%\adb pull /data/local/tmp/apps "%cd%\Backups\%applabel%\data" 1>nul 2>nul
 
-del /q /f %cd%\log.txt 1>nul 2>nul
-del /q /f %cd%\%shscriptname% 1>nul 2>nul
+del /q /f "%cd%\log.txt" 1>nul 2>nul
+del /q /f "%cd%\%shscriptname%" 1>nul 2>nul
 exit /b
 
 
@@ -426,10 +425,10 @@ exit /b
 %myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
 
 @for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
-set archivename=%%~na
+set "archivename=%%~na"
 @echo -----------------------------------------------------------
 rem StartRusTextBlock
-@echo  = Восстанавливаем архив	: %_fCyan%!archivename!%_fReset%
+@echo  = Восстанавливаем архив	: %_fBCyan%!archivename!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  = Restoring archive	: %_fCyan%!archivename!%_fReset%
@@ -441,17 +440,17 @@ rem set archivename=re4.ab
 
 
 %myfiles%\adb shell input keyevent 224
+set archivename=111
 
-start /min "" %myfiles%\adb restore !archivename!.ab  1>nul 2>nul
-
-timeout 2 1>nul
+start /min "" %myfiles%\adb restore "!archivename!.ab" 1>nul 2>nul
+@timeout 2 1>nul
 
 %myfiles%\adb shell input keyevent 61
-@ping localhost -n 1 1>nul
+@timeout 1 1>nul
 %myfiles%\adb shell input keyevent 61
-@ping localhost -n 1 1>nul
+@timeout 1 1>nul
 %myfiles%\adb shell input keyevent 61
-@ping localhost -n 1 1>nul
+@timeout 1 1>nul
 %myfiles%\adb shell input keyevent 66
 
 call :_CheckBackupProcessRest
@@ -470,7 +469,7 @@ if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupPro
 :_BackupAB
 
 :_BackupChoises
-set pathname=!packagename!
+set "pathname=!packagename!"
 rem set lp=!packagename!
 rem for /f "tokens=*" %%a in ('%myfiles%\adb shell pm list packages -f %lp%')
 rem for /f "tokens=*" %%a in ('%myfiles%\adb shell pm list packages !packagename!') do (
@@ -485,7 +484,7 @@ rem pause
 call :_settime
 rem set packageslist=-3
 set nomode=no
-md %cd%\Backups\%dt%
+md "%cd%\Backups\%dt%"
 @echo.
 @del /q /f ZeroSizeBackups.txt 1>nul 2>nul
 
@@ -516,7 +515,7 @@ cls
 %myfiles%\adb shell input keyevent 224
 set nomode=no
 call :_settime
-md %cd%\Backups\%dt%
+md "%cd%\Backups\%dt%"
 @echo.
 @del /q /f ZeroSizeBackups.txt 1>nul 2>nul
 @echo   ================================================================
@@ -551,7 +550,7 @@ cls
 set "packageslist=-3"
 set nomode=no
 call :_settime
-md %cd%\Backups\%dt%
+md "%cd%\Backups\%dt%"
 @echo.
 call :_PackagesListApkNameParserFull
 @%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
@@ -586,14 +585,13 @@ exit /b
 
 rem @echo   ---
 
-rem @ping localhost -n 4 1>nul
 @timeout 2 1>nul
 
 rem === All backup
 rem @start /min "" %myfiles%\adb backup -f !pathname!.ab -apk -obb !pathname!
 
 rem === Only data backup
-@start /min "" %myfiles%\adb backup -f !pathname!.ab  -%nomode%apk -%nomode%obb !pathname!
+@start /min "" %myfiles%\adb backup -f "!pathname!.ab"  -%nomode%apk -%nomode%obb "!pathname!"
 @echo   ----------------------------------------------
 call :_ViewApkLabelInsideHeadsetPN
 rem StartRusTextBlock
@@ -636,7 +634,7 @@ if [%%c] NEQ [com.android.backupconfirm] (@timeout 1 1>nul && goto _CheckBackupP
 exit /b
 
 :_CurrentFileSize
-@timeout 7 1>nul
+@timeout 10 1>nul
 rem pause
 for /f "tokens=3" %%a in ('dir /-c "!pathname!.ab" ^| findstr /r /c:"[0-9][0-9]* !pathname!.ab$"') do (
 set filesize=%%a
@@ -650,7 +648,7 @@ rem StartEngTextBlock
 rem @echo   %_fBYellow%= Backup file has zero size and will be delete%_fReset%
 rem EndEngTextBlock
 @echo !pathname!>>ZeroSizeBackups.txt
-del /q /f !pathname!.ab
+del /q /f "!pathname!.ab"
 ) else (
 if "!filesize!"=="0" (
 rem @echo   ---
@@ -661,7 +659,7 @@ rem StartEngTextBlock
 rem @echo   %_fBYellow%= Backup file has zero size and will be delete%_fReset%
 rem EndEngTextBlock
 @echo !pathname!>>ZeroSizeBackups.txt
-del /q /f !pathname!.ab
+del /q /f "!pathname!.ab"
 ) else (
 rem @echo   ---
 rem StartRusTextBlock
@@ -693,7 +691,7 @@ setlocal enableextensions enabledelayedexpansion
 @echo.
 @del /q /f ArchivesList.txt 1>nul 2>nul
 rem StartRusTextBlock
-@echo    Список найденных бэкапов:
+@echo    %_fBYellow%Список найденных бэкапов:%_fReset%
 @echo.>>ArchivesList.txt
 @echo   Список архивов>>ArchivesList.txt
 rem EndRusTextBlock
@@ -722,8 +720,8 @@ rem StartRusTextBlock
 @echo   Имя файла	: !archivename!>>ArchivesList.txt
 @echo   Имя пакета	: !viewpn!>>ArchivesList.txt
 @echo   ---------------------------------->>ArchivesList.txt
-@echo   Имя архива	: !archivename!  
-@echo   Имя пакета	: !viewpn!
+@echo   Имя архива	: %_fBCyan%!archivename!%_fReset%
+@echo   Имя пакета	: %_fCyan%!viewpn!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   File name	: !archivename!>>ArchivesList.txt
@@ -739,8 +737,8 @@ rem set applabel=
 %MYFILES%\adb shell rm -R /data/local/tmp 1>nul 2>nul
 rem %MYFILES%\adb shell rm /data/local/tmp
 )
-del /q /f %cd%\log.txt 1>nul 2>nul
-del /q /f %cd%\%shscriptname% 1>nul 2>nul
+del /q /f "%cd%\log.txt" 1>nul 2>nul
+del /q /f "%cd%\%shscriptname%" 1>nul 2>nul
 exit /b
 
 :_ViewApkLabelInsideHeadsetPN
@@ -777,6 +775,53 @@ rem call :_ViewAppLabel
 @del /q %shscriptname%
 exit /b
 
+:_VirePackageNmaeForExtract
+rem call :_CheckHeadsetConnect
+setlocal enableextensions enabledelayedexpansion
+set shscriptname=dataextract.sh
+@echo   --------------------------------
+@echo   %_fBYellow%= Начинаем извлечение..%_fReset%
+@for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
+set "applabel=%%~na"
+set "archivename=!applabel!"
+)
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/!archivename!.ab" ^) ^| tar xfvz - -C /data/local/tmp/ >%shscriptname%
+%myfiles%\adb push "!archivename!.ab" /data/local/tmp/ 1>nul 2>nul
+%myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
+%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
+%myfiles%\adb shell sh /data/local/tmp/%shscriptname% 1>nul 2>nul
+%myfiles%\adb shell ls -1t /data/local/tmp/apps/ ^| head -1 >log.txt 2>nul
+@FOR /F "tokens=*" %%k IN (%cd%\log.txt) DO set viewpn=%%k
+
+set "applabelsave=!applabel!"
+ren "%cd%\%applabel%.ab" "%viewpn%.ab" 1>nul 2>nul
+
+@echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/!viewpn!.ab" ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
+@%myfiles%\adb push "!viewpn!.ab" /data/local/tmp/ 1>nul 2>nul
+@%myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul 2>nul
+@%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname% 1>nul 2>nul
+@%myfiles%\adb shell sh /data/local/tmp/%shscriptname% 1>nul 2>nul
+rem  >log.txt 2>nul
+md "%cd%\Backups\!applabelsave!\data" 1>nul 2>nul
+@%myfiles%\adb pull "/data/local/tmp/apps/!viewpn!" "%cd%\Backups\!applabelsave!\data" 1>nul 2>nul
+@%myfiles%\adb shell rm -R /data/local/tmp/ 1>nul 2>nul
+
+@%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+@del /q /f %shscriptname% 1>nul 2>nul
+rem @del /q /f %archivename% 1>nul 2>nul
+ren "%cd%\%viewpn%.ab" "%applabelsave%.ab" 1>nul 2>nul
+rem StartRusTextBlock
+@echo   %_fBGreen%= Извлечение данных завершено%_fReset%
+@echo   ---
+@echo     Вы можете найти их здесь: %_fBYellow%%cd%\Backups\!applabelsave!\data%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%= Data extraction and copying completed%_fReset%
+rem @echo     You can find them here: %_fBYellow%%cd%\Backups\!applabelsave!\data%_fReset%
+
+rem EndEngTextBlock
+exit /b
+
 :_settime
 set pscommand="Get-Date -Format 'yyyy.MM.dd-HH:mm:ss'"
 call :_ps1CommandRun pcdatetime
@@ -803,4 +848,25 @@ set "%1=%res%"
 @chcp 65001 >nul
 exit /b
 
-rem ver 4.3.1.4
+
+:_CheckHeadsetConnect
+@%myfiles%\adb shell getprop ro.boot.serialno 1>NUL 2>&1
+rem @echo %errorlevel%
+rem exit /b
+IF %errorlevel%==1 goto _NoHeadsetConnect
+exit /b
+
+:_NoHeadsetConnect
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo       ==============================================================
+@echo       ^|     %_fBlack%%_fBRed%           ++++ Шлем не обнаружен +++++           %_fReset%     ^|
+@echo       ==============================================================
+@echo.   
+@echo       Для извлечения файлов необходим подключенный к ПК шлем
+@echo       Проверьте соединение и установку драйверов
+@echo.
+exit /b
+rem ver 4.3.2

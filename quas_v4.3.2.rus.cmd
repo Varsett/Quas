@@ -1,3 +1,23 @@
+@ECHO OFF
+REM  QBFC Project Options Begin
+REM HasVersionInfo: Yes
+REM Companyname: 
+REM Productname: QUest ADB Scripts
+REM Filedescription: Russian version
+REM Copyrights: Varset
+REM Trademarks: 
+REM Originalname: Quas
+REM Comments: 
+REM Productversion:  4. 3. 2. 0
+REM Fileversion:  0. 0. 0. 0
+REM Internalname: 
+REM ExeType: consoleold
+REM Architecture: x64
+REM Appicon: 
+REM AdministratorManifest: No
+REM  QBFC Project Options End
+@ECHO ON
+
 
 @if /i [%1]==[v] (set "verbecho=echo on") else (set "verbecho=echo off")
 @%verbecho%
@@ -179,6 +199,7 @@ rem StartRusTextBlock
 @echo    C.  Архивация всех приложений				[EXPERIMENTAL]
 @echo    D.  Восстановление данных приложений				[EXPERIMENTAL]
 @echo    E.  Сохранить в файл список установленных приложений		
+@echo    F.  Извлечение данных из файла бэкапа		
 @echo.
 @echo    %_fBYellow%H. Помощь по функциям архивации и восстановления%_fReset%
 @echo    %_fBYellow%R. Помощь по переносу сохранений%_fReset%
@@ -189,6 +210,7 @@ rem @echo    B.  Backup from List                     [EXPERIMENTAL]
 rem @echo    C.  Backup All Applications              [EXPERIMENTAL]
 rem @echo    D.  Restore Application Data             [EXPERIMENTAL]
 rem @echo    E.  Save List of Installed Applications to File
+rem @echo    F.  Extract data from a backup file
 rem @echo.
 rem @echo    %_fBYellow%H. Help on Backup and Restore Functions%_fReset%
 rem @echo    %_fBYellow%R. Help on Transferring Saves%_fReset%
@@ -208,12 +230,14 @@ if /i "%choice%"=="b" (GOTO _EnterListNumber)
 if /i "%choice%"=="c" (GOTO _BackupAllAppsQ)
 if /i "%choice%"=="d" (GOTO _Restoring)
 if /i "%choice%"=="e" (set "pkgchoice=thrid-party"&&set "listpackages=-3"&&set "pkgfiltername=неофициальных"&&GOTO _StartAppsInstalledScript)
+if /i "%choice%"=="f" (goto _ExtractDataFromBackupFile)
 if /i "%choice%"=="h" (call :_BackupHelp)
 if /i "%choice%"=="r" (call :_BackupRelocateHelp)
 goto _BackupAndRestoreMenu
 
 :_BackupHelp
 cls
+@echo.
 @echo.
 rem StartRusTextBlock
 @echo   Этот раздел предназначен для архивации и восстановления данных приложений, в которых хранятся
@@ -234,9 +258,11 @@ rem StartRusTextBlock
 @echo   %_fBGreen%Опция "Архивация по списку"%_fReset% позволяет делать выборочную архивацию, для определенных приложений. 
 @echo   Для этого создайте текстовый файл с именем %_fBYellow%ListForBackups.txt%_fReset% и запишите в него названия
 @echo   пакетов приложений, по одному в каждой строке, например:
+@echo.       
 @echo   %_fCyan%com.Armature.VR4
 @echo   com.BlueBrainGames.TheHouseofDaVinciVR
 @echo   com.fallen.manorquest%_fReset%
+@echo.       
 @echo   %_fBYellow%Архивы будут созданы только для приложений, перечисленных в файле ListForBackups.txt.%_fReset%
 @echo   Вы можете создать несколько списков (количество не ограничено) для разных приложений и условий
 @echo   бэкапа. Для этого в начале имени файла укажите номер, по которому будете идентифицировать
@@ -251,6 +277,13 @@ rem StartRusTextBlock
 @echo   приложений. После выбора и подтверждения этой опции начнется создание бэкапа данных всех
 @echo   установленных на шлеме приложений. Это полезно при миграции с одного шлема на другой.
 @echo.       
+@echo ----------------------------------------------------------------
+@echo.
+@echo ^>^>^> Нажмите что-нибудь для продолжения ^<^<^<
+@pause >nul
+cls
+@echo.
+@echo.
 @echo   %_fBGreen%Опция "Восстановление данных приложений"%_fReset% восстанавливает данные из созданных ранее бэкапов.
 @echo   Поместите в каталог программы %_fBYellow%Quas%_fReset% архивы, которые хотите восстановить и выберите опцию
 @echo   %_fBGreen%"Восстановление данных приложений"%_fReset%. После выбора программа выведет список найденных бэкапов.
@@ -259,12 +292,29 @@ rem StartRusTextBlock
 @echo   %_fBRed%ВАЖНО: будут восстановлены все архивы, которые программа найдет рядом с собой,
 @echo   даже если сами приложения не установлены на шлем.%_fReset%
 @echo.
+@echo   %_fBYellow%ВНИМАНИЕ: Восстановление бэкапа на только что установленную игру имеет свои особенности^^!%_fReset%
+@echo   Как правило, при первом запуске игра компилирует шейдеры или выполняет другую оптимизацию.
+@echo   Поэтому восстановление на новую игру следует выполнять так:
+@echo.
+@echo      %_fBYellow%1. Запустить игру, дождаться завершение первого запуска
+@echo      2. Начать игру и при первой возможности выполнить сохранение или дойти 
+@echo         до контрольной точки автосохранения
+@echo      3. Выйти из игры%_fReset%
+@echo.
+@echo   После этого можно делать восстановление из бэкапа. 
+@echo.
 @echo   %_fBGreen%Опция "Сохранить в файл список установленных приложений"%_fReset% позволит вам точно определить какому
 @echo   приложению соответствует название пакета. На экран и в файл %_fBYellow%AppsInstalled-thrid-party.txt%_fReset% будет
 @echo   выведен список установленных на шлеме приложений с их именами и названиями пакетов.
 @echo   Эту опцию удобно использовать для создания файла %_fBYellow%ListForBackups.txt%_fReset%.
+@echo.
+@echo   %_fBGreen%Опция "Извлечение данных из файла бэкапа"%_fReset% распаковывает файл бэкапа и извлекает содержимое
+@echo   в каталог %_fBYellow%Backups%_fReset% с подкаталогом по имени файла бэкапа. 
+@echo   %_fBYellow%Перед использованием этой опции шлем должен быть подключен к ПК%_fReset%.
 rem EndRusTextBlock
 rem StartEngTextBlock
+rem @echo.
+rem @echo.
 rem @echo   This section is intended for backing up and restoring application data, including
 rem @echo   game saves, settings, and other app-related information. Here, you can back up this
 rem @echo   data for each app and later restore it, for example, after performing a factory reset
@@ -300,6 +350,13 @@ rem @echo   %_fBGreen%The "Backup All Applications" option%_fReset% is for quick
 rem @echo   After selection and confirmation, backup of all app data on the headset will begin.
 rem @echo   This is useful when migrating to a new headset.
 rem @echo.       
+rem @echo ----------------------------------------------------------------
+rem @echo.
+rem @echo ^>^>^> Press key for continue ^<^<^<
+rem @pause >nul
+rem cls
+rem @echo.
+rem @echo.
 rem @echo   %_fBGreen%The "Restore Application Data" option%_fReset% restores data from previously created backups.
 rem @echo   Place the archives you want to restore in the %_fBYellow%Quas%_fReset% program folder and select
 rem @echo   the %_fBGreen%"Restore Application Data"%_fReset% option. The program will then display a list of found backups.
@@ -308,10 +365,24 @@ rem @echo   Archive filenames can be anything, as long as they have the %_fBYell
 rem @echo   %_fBRed%IMPORTANT: All archives found in the program folder will be restored,
 rem @echo   even if the apps are not installed on the headset.%_fReset%
 rem @echo.
+rem @echo   %_fBYellow%WARNING: Restoring a backup to a newly installed game has its own specifics^^!%_fReset%
+rem @echo   Usually, during the first launch, the game compiles shaders or performs other optimization.
+rem @echo   Therefore, restoration to a new game should be done as follows:
+rem @echo.
+rem @echo      %_fBYellow%1. Launch the game and wait for the initial launch to complete
+rem @echo      2. At the first opportunity, create a save or reach an autosave checkpoint
+rem @echo      3. Exit the game%_fReset%
+rem @echo.
+rem @echo   After that, you can proceed with restoring from the backup.
+rem @echo.
 rem @echo   %_fBGreen%The "Save List of Installed Applications to File" option%_fReset% lets you match package names to app
 rem @echo   names. A list of installed third-party apps with names and package IDs will be shown on screen
 rem @echo   and saved to the file %_fBYellow%AppsInstalled-thrid-party.txt%_fReset%. This option is convenient for creating
 rem @echo   the %_fBYellow%ListForBackups.txt%_fReset% file.
+rem @echo.
+rem @echo   %_fBGreen%The "Extract data from a backup file" option%_fReset% unpacks the backup file and extracts its contents
+rem @echo   into the %_fBYellow%Backups%_fReset% directory with a subfolder named after the backup file.
+
 rem EndEngTextBlock
 call :_exitwindow
 exit /b
@@ -325,7 +396,7 @@ rem StartRusTextBlock
 @echo      %_fBGreen%КАК ПЕРЕНЕСТИ СОХРАНЕНИЯ НА ДРУГОЙ ШЛЕМ%_fReset%
 @echo     ------------------------------------------
 @echo.
-@echo   Обычный бэкап и восстановление удобно, но только в том случае, если пакеты приложений 
+@echo   Обычный бэкап и восстановление удобны, но только в том случае, если пакеты приложений 
 @echo   на разных шлемах называются одинаково. В этом случае просто используйте опции 
 @echo   %_fBGreen%"Архивация всех приложений"%_fReset% и %_fBGreen%"Восстановление данных приложений"%_fReset%. Но как быть, если 
 @echo   пакеты называются по-разному, например у обычной версии игры %_fBYellow%Resident Evil 4%_fReset% и локализованной?
@@ -340,10 +411,9 @@ rem StartRusTextBlock
 @echo.  
 @echo   После этого файл сохранения становится доступным для чтения и его можно скопировать
 @echo   любым удобным способом из каталога в шлеме %_fBYellow%Android/data%_fReset%, например, %_fBYellow%Проводником Windows%_fReset%.
-@echo   Или используйте эту же программу %_fBYellow%Quas%_fReset%, пункты %_fBYellow%J-E-3%_fReset%, выбираете пункт с именем пакета
-@echo   приложения, в данном случае это будет пакет %_fBYellow%com.Armature.VR4%_fReset%, жмете %_fBYellow%Enter%_fReset% и в следющем меню
-@echo   выбираете пункт %_fBYellow%Application Backup Menu%_fReset%, затем пункт %_fBYellow%Save Application Data%_fReset%. После этого
-@echo   в подкаталоге %_fBYellow%Backups%_fReset% текущего каталога вы найдете подкаталог с именем пакета, в котором
+@echo.
+@echo   Или используйте пункт %_fBGreen%Извлечение данных из файла бэкапа%_fReset% в предыдущем меню. После извлечения 
+@echo   в подкаталоге %_fBYellow%Backups%_fReset% текущего каталога вы найдете подкаталог с именем бэкапа, в котором
 @echo   будут находиться файлы данных, в том числе тот самый файл сохранения. Сберегите его.
 @echo.
 @echo   А дальше подключаете другой шлем или переустанавливаете игру, играете до момента
@@ -372,7 +442,8 @@ rem @echo.
 rem @echo   After that, the save file becomes readable and can be copied
 rem @echo   by any convenient method from the directory on the headset %_fBYellow%Android/data%_fReset%, for example,
 rem @echo   using %_fBYellow%Windows Explorer%_fReset%.
-rem @echo   Or use the same program %_fBYellow%Quas%_fReset%, go to option %_fBYellow%J-E-3%_fReset%, select the package name option,
+rem @echo.  
+rem @echo   Or use the same program %_fBGreen%Quas%_fReset%, go to option %_fBYellow%J-E-3%_fReset%, select the package name option,
 rem @echo   in this case, it will be the package %_fBYellow%com.Armature.VR4%_fReset%, press %_fBYellow%Enter%_fReset% and in the next menu
 rem @echo   choose the %_fBYellow%Application Backup Menu%_fReset%, then select %_fBYellow%Save Application Data%_fReset%. After that,
 rem @echo   in the %_fBYellow%Backups%_fReset% subfolder of the current directory, you will find a subfolder with the 
@@ -403,7 +474,21 @@ call %myfiles%\backup.cmd :_BackupListsSelected
 goto _BackupFinishMessage
 
 
+:_ExtractDataFromBackupFile
+call :_cdc
+call :_SetColours
+setlocal enableextensions enabledelayedexpansion
+rem @for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
+rem set "archivename=%%~na"
+rem )
+rem set applabel=%archivename%
+call %myfiles%\backup.cmd :_VirePackageNmaeForExtract
+call :_prevmenu
+goto _BackupAndRestoreMenu
+
+
 :_BackupChoisesQ
+call :_SetColours
 rem @echo Пока не готово
 set newbackup=1
 set "listpackages=-3"
@@ -413,6 +498,7 @@ goto _BackupFinishMessage
 
 
 :_BackupListsQ
+call :_SetColours
 set ListNumber=%choice:~2%
 if not exist %ListNumber%ListForBackups.txt (goto _BackupListNotFound)
 rem if [%ListNumber%]==[] goto _backuplistDefault
@@ -423,6 +509,7 @@ goto _BackupFinishMessage
 
 
 :_BackupListsQCommandLine
+call :_SetColours
 setlocal enableextensions enabledelayedexpansion
 if not exist %ListNumber%ListForBackups.txt (goto _BackupListNotFound)
 rem if [%ListNumber%]==[] goto _backuplistDefault
@@ -433,6 +520,7 @@ rem goto _BackupFinishMessage
 exit
 
 :_BackupAllAppsQ
+call :_SetColours
 call %myfiles%\backup.cmd :_BackupAllApps
 goto _BackupFinishMessage
 
@@ -564,23 +652,27 @@ set "timecheck=%_fBGreen%Time is correct%_fReset%"
 ) else (
 set "timecheck=%_fBRed%Time differs%_fReset%"
 )
-@echo   Time		: %timecheck%
+@echo   %_fBYellow%Time%_fReset%		: %timecheck%
 @reg query "HKU\S-1-5-19" >NUL 2>&1 && (set "adminmsg=%_fBGreen%Admin%_fReset%") || (set "adminmsg=%_fBRed%User%_fReset%")
 rem @echo.
-@echo   Rights	: %adminmsg%
+@echo   %_fBYellow%Rights%_fReset%	: %adminmsg%
 @echo.
 @echo    -----------------------------
-%myfiles%\devcon_x64 find *VID_2833*
+@echo   %_fBYellow%ADB devices:%_fReset%
+@echo.
+%myfiles%\adb devices
 @echo    -----------------------------
-%myfiles%\devcon_x64 find *Quest*
+%myfiles%\devcon_x64 find *VID_2833* 2>nul
+@echo    -----------------------------
+%myfiles%\devcon_x64 find *Quest* 2>nul
+@echo.
 rem @echo    -----------------------------
-@echo.
 @echo  =============================
-@echo   This is folder %%cd%%	: %_fBYellow%%cd%%_fReset%
-@echo   This is folder %%~dp0	: %_fBYellow%%~dp0%_fReset%
-@echo   This is folder %%temp%%	: %_fBYellow%%temp%%_fReset%
+@echo   %_fBYellow%This is folder %%cd%%%_fReset%	: %cd%
+@echo   %_fBYellow%This is folder %%~dp0%_fReset%	: %~dp0
+@echo   %_fBYellow%This is folder %%temp%%%_fReset%	: %temp%
 @echo  =============================
-@echo    Check paths for cyrillic:
+@echo    %_fBYellow%Check paths for cyrillic:
 @echo.
 @echo.   %_fBRed%%cyrmsgtemp%
 @echo.   %cyrmsgdp%
@@ -2837,7 +2929,7 @@ rem EndEngTextBlock
 if /i "%txt%"==":::" (GOTO _beginn)
 if /i "%txt%"=="(((" (GOTO _beginn)
 if /i "%txt%"==")))" (GOTO _beginn)
-@%MYFILES%\adb shell input text '%txt%' 1>nul 2>nul
+@%MYFILES%\adb shell input text '"%txt%"' 1>nul 2>nul
 call :_erlvl
 @echo ========================================
 rem StartRusTextBlock
@@ -5466,11 +5558,11 @@ For /F %%a In ('@%MYFILES%\adb shell getprop ro.build.version.incremental') Do s
 call :_hsfwversionextract
 call :_setfwtxt
 rem StartRusTextBlock
-rem @echo -----------------------------------------------------
-@echo   Модель шлема			: %DevModelNm%
 @echo -----------------------------------------------------
-@echo   Версия среды шлема		: %hsenvironment%
-@echo   Версия прошивки шлема		: %hsversion%
+@echo   Модель шлема				: %DevModelNm%
+@echo ------------------------------------------------------------
+@echo   Версия среды окружения шлема		: %hsenvironment%
+@echo   Версия прошивки шлема			: %hsversion%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   Headset model			: %DevModelNm%
@@ -5478,16 +5570,15 @@ rem @echo -----------------------------------------------------
 rem @echo  Headset environment version	: %hsenvironment%
 rem @echo  Headset firmware version	: %hsversion%
 rem EndEngTextBlock
-@echo -----------------------------------------------------
+@echo ------------------------------------------------------------
 rem call :_SetFWtxtFileName
 set ftpfile=%fwtxt%
 call :_GetFTP
 if errorlevel==1 goto _errordownloadfwtxt
-(for /f "delims=" %%i in ('type %fwtxt%') do @set last_string=%%i)
-@echo.%last_string% >ls.txt
-@For /F "tokens=1,2 delims= " %%a In (ls.txt) Do (
-@set lstxtenvironment=%%a
-@set lstxtversion=%%b
+set /p firstline=<%fwtxt%
+for /f "tokens=1,2 delims= " %%a in ("%firstline%") do (
+    set "lstxtenvironment=%%a"
+    set "lstxtversion=%%b"
 )
 set num1=%hsenvironment%
 set num2=%lstxtenvironment%
@@ -5496,14 +5587,14 @@ set "tmp2=                 %num2%"
 set hsnumb="%tmp1:~-17%"
 set lsnumb="%tmp2:~-17%"
 rem StartRusTextBlock
-@echo   Версия среды из таблицы	: %lsnumb:~1,-1%
-@echo   Версия прошивки из таблицы	: %lstxtversion%
+@echo   Версия среды из базы данных		: %lsnumb:~1,-1%
+@echo   Версия прошивки из базы данных	: %lstxtversion%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  Environment version from table	: %lsnumb:~1,-1%
-rem @echo  Firmware version from table	: %lstxtversion%
+rem @echo  Environment version from database	: %lsnumb:~1,-1%
+rem @echo  Firmware version from database	: %lstxtversion%
 rem EndEngTextBlock
-@echo -----------------------------------------------------
+@echo ------------------------------------------------------------
 @if %hsnumb% GTR %lsnumb% (
 @echo.
 rem StartRusTextBlock
@@ -5521,7 +5612,7 @@ call :_SetCompareDeviceModelName
 rem call :_SetFWtxtFileName
 set ftpfile=%fwtxt%
 call :_PutFTP
-del ls.txt /q /f
+rem del ls.txt /q /f
 @echo.
 goto _returnmenu
 ) else (
@@ -5533,8 +5624,8 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo     +++ The firmware version in the headset is up to date +++
 rem EndEngTextBlock
-del %fwtxt% /q /f
-del ls.txt /q /f
+@del %fwtxt% /q /f 1>nul 2>nul
+@del ls.txt /q /f 1>nul 2>nul
 @echo.
 goto _returnmenu
 ) else (
@@ -5546,8 +5637,8 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo     +++ The firmware version in the headset is outdated +++
 rem EndEngTextBlock
-del %fwtxt% /q /f
-del ls.txt /q /f
+@del %fwtxt% /q /f 1>nul 2>nul
+@del ls.txt /q /f 1>nul 2>nul
 @echo.
 goto _returnmenu
 ) else (
@@ -5604,7 +5695,7 @@ rem call %myfiles%\rentry.cmd --edit --url %rentryurlpage% --edit-code %rentryco
 
 :_PutFTP
 set transfer=put
-call :_ftpconnect
+call :_ftpconnect_old
 @del ftp_%transfer%.txt /q /f 1>nul 2>nul
 @del %fwtxt% /q /f 1>nul 2>nul
 exit /b
@@ -5771,7 +5862,8 @@ rem @echo   If there was no download, check the fwlinks.txt file,
 rem @echo   which was just created next to the program. 
 rem @echo   Manually copy the firmware link (if available) into your browser.
 rem EndEngTextBlock
-goto _Sendlink
+goto _returnmenu
+rem goto _Sendlink
 
 :_hsfwversionextract
 For /F %%a In ('@%MYFILES%\adb shell getprop ro.build.version.incremental 2^>nul') Do set hsenvironment=%%a
@@ -5803,6 +5895,7 @@ rem EndEngTextBlock
 @del links.txt 2>nul 1>nul
 @del bugreport*.zip /q
 @rd %cd%\bugreport /Q /S
+goto _returnmenu
 
 :_Sendlink
 @echo ---------------------------------------------------------------
@@ -5829,11 +5922,11 @@ rem EndEngTextBlock
 @echo.
 @echo.
 @set "choicesend="
-@set "choicesend=s"
+@set "choicesend=savelink"
 @Set /p choice=">>> "
 @echo.
 if not defined choicesend goto _Sendlink
-if /i "%choicesend%"=="s" (GOTO _Savelink)
+if /i "%choicesend%"=="savelink" (GOTO _Savelink)
 if /i "%choicesend%"=="0" (GOTO _fwmenuskip)
 cls
 goto _Sendlink
@@ -7832,6 +7925,7 @@ rem EndEngTextBlock
 @echo    U.  = Steam Link
 @echo    V.  = Auto Start Apps Manager
 @echo    W.  = XR Native File Manager (with Data folder access)
+@echo    X.  = Meta Quest Developer Hub
 
 @echo.
 call :_MenuChoiceEnter
@@ -7861,6 +7955,7 @@ if /i "%choice%"=="t" (GOTO _privatequest)
 if /i "%choice%"=="u" (GOTO _steamlink)
 if /i "%choice%"=="v" (GOTO _autostartapp)
 if /i "%choice%"=="w" (GOTO _xrnativefm)
+if /i "%choice%"=="x" (GOTO _mqdhinstall)
 @cls
 goto _InstallSoftwareApps
 
@@ -9397,6 +9492,15 @@ goto _InstallGamesApps
 
 :: Секция установки прикладных приложений
 :: Section for installing application software
+
+:_mqdhinstall
+call :_cdc
+set dlappl=LightningLauncher.apk
+set curllink=https://securecdn.oculus.com/binaries/download/?id=9659320600819602
+set "instmess=Распакуйте архив и запустите exe файл"
+call :_dlwingamesapps
+call :_prevmenu
+goto _InstallSoftwareApps
 
 :_llauncher
 call :_cdc
@@ -18366,7 +18470,7 @@ rem call :_cdcb
 @cls
 rem @echo ==================================================================================================
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.3.1 - 16.05.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.3.2 - 26.05.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 rem @echo ==================================================================================================
