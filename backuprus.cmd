@@ -440,10 +440,21 @@ rem set archivename=re4.ab
 
 
 %myfiles%\adb shell input keyevent 224
-set archivename=111
 
-start /min "" %myfiles%\adb restore "!archivename!.ab" 1>nul 2>nul
+start /min "" %myfiles%\adb restore "!archivename!.ab" 1>nul 2>>RestoreErrors.txt
 @timeout 2 1>nul
+rem for %%A in ("RestoreErrors.txt") do set "filesize=%%~zA"
+rem if [%filesize%] GTR 3 (
+rem @echo. >>RestoreErrors.txt
+rem @echo  %_fBRed%= Произошла ошибка. Текст ошибки записан в файл RestoreErrors.txt%_fReset%
+rem @echo.
+rem ) else (
+rem if %restfilesize% LSS 3 (
+rem @del /q /f RestoreErrors.txt 1>nul 2>nul
+rem ) else (
+rem @echo.
+rem )
+rem )
 
 %myfiles%\adb shell input keyevent 61
 @timeout 1 1>nul
@@ -856,17 +867,5 @@ rem exit /b
 IF %errorlevel%==1 goto _NoHeadsetConnect
 exit /b
 
-:_NoHeadsetConnect
-@echo.
-@echo.
-@echo.
-rem StartRusTextBlock
-@echo       ==============================================================
-@echo       ^|     %_fBlack%%_fBRed%           ++++ Шлем не обнаружен +++++           %_fReset%     ^|
-@echo       ==============================================================
-@echo.   
-@echo       Для извлечения файлов необходим подключенный к ПК шлем
-@echo       Проверьте соединение и установку драйверов
-@echo.
-exit /b
-rem ver 4.3.2
+rem ver 4.3.3
+

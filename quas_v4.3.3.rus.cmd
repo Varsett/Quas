@@ -8,7 +8,7 @@ REM Copyrights: Varset
 REM Trademarks: 
 REM Originalname: Quas
 REM Comments: 
-REM Productversion:  4. 3. 2. 0
+REM Productversion:  4. 3. 3. 0
 REM Fileversion:  0. 0. 0. 0
 REM Internalname: 
 REM ExeType: consoleold
@@ -17,7 +17,6 @@ REM Appicon:
 REM AdministratorManifest: No
 REM  QBFC Project Options End
 @ECHO ON
-
 
 @if /i [%1]==[v] (set "verbecho=echo on") else (set "verbecho=echo off")
 @%verbecho%
@@ -18470,7 +18469,7 @@ rem call :_cdcb
 @cls
 rem @echo ==================================================================================================
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.3.2 - 26.05.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.3.3 - 27.05.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 rem @echo ==================================================================================================
