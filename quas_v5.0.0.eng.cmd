@@ -3,12 +3,12 @@ REM  QBFC Project Options Begin
 REM HasVersionInfo: Yes
 REM Companyname: 
 REM Productname: QUest ADB Scripts
-REM Filedescription: Russian version
+REM Filedescription: English version
 REM Copyrights: Varset
 REM Trademarks: 
 REM Originalname: Quas
 REM Comments: 
-REM Productversion:  4. 3. 3. 0
+REM Productversion:  5. 0. 0. 0
 REM Fileversion:  0. 0. 0. 0
 REM Internalname: 
 REM ExeType: consoleold
@@ -17,6 +17,8 @@ REM Appicon:
 REM AdministratorManifest: No
 REM  QBFC Project Options End
 @ECHO ON
+
+
 
 @if /i [%1]==[v] (set "verbecho=echo on") else (set "verbecho=echo off")
 @%verbecho%
@@ -92,13 +94,13 @@ rem @echo      L.  Установка нативного RefreshRate и разр
 rem @echo      M.  Управление Oculus Link/Airlink
 rem @echo      N.  Создание ярлыков для копирования файлов и установки приложений
 rem @echo      P.  Корректировка даты, времени и таймзоны в шлеме
-rem @echo      Q.  Архивация и восстановление данных приложений
+rem @echo      Q.  Архивация и восстановление
 rem @echo      R.  Стрим видеотрансляции на ПК
 rem @echo.
 rem @echo      H.  Список расширенных команд и параметров
 rem @echo      W.  Связь с автором
 rem @echo      X.  Открыть консоль cmd
-rem @echo      Y.  Открыть консоль adb shell
+rem @echo      Y.  Открыть графическую консоль
 rem @echo      Z.  Помощь в решении проблем
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -123,13 +125,13 @@ rem StartEngTextBlock
 @echo      M.  Oculus Link/Airlink management
 @echo      N.  Creating shortcuts for copying files and installing applications
 @echo      P.  Adjusting date, time, and timezone on the headset
-@echo      Q.  Backup and restore of application data
+@echo      Q.  Backup and restore
 @echo      R.  Stream video casting to PC
 @echo.
 @echo      H.  List of advanced commands and parameters
 @echo      W.  Contact the author
 @echo      X.  Open cmd console
-@echo      Y.  Open ADB shell console
+@echo      Y.  Open ADB console
 @echo      Z.  Help
 rem EndEngTextBlock
 @echo.
@@ -163,14 +165,13 @@ if /i "%choice%"=="p" (GOTO _datetime)
 if /i "%choice%"=="q" (GOTO _BackupAndRestoreMenu)
 if /i "%choice:~0,2%"=="qq" (goto _BackupListsQ)
 if /i "%choice%"=="pt" (cls && GOTO _WiFiTestCSVAnalyzer)
-if /i "%choice%"=="q" (set listpackages=-3&&call :_ApplicationActionManageMenu & call :_StartEndAppsMenu)
-rem set cmdsel=1&& call :_AppsInstallMenu && call :_ApplicationActionManageMenu & call :_StartEndAppsMenu
 if /i "%choice%"=="r" (GOTO _streamingmenu)
 if /i "%choice%"=="s" (GOTO _ServiceInformation)
 if /i "%choice%"=="st" (GOTO _ServiceTools)
 rem if /i "%choice%"=="v" (GOTO _FromTempDir)
 if /i "%choice%"=="w" (GOTO _contactauthor)
-if /i "%choice%"=="y" (GOTO _openshell)
+if /i "%choice%"=="yy" (GOTO _openshell)
+if /i "%choice%"=="y" (GOTO _openshellgui)
 if /i "%choice%"=="x" (GOTO _opencmd)
 if /i "%choice%"=="z" (GOTO _helplinksmenu)
 :: Egg
@@ -189,18 +190,22 @@ call :_hatmenu
 rem StartRusTextBlock
 rem @echo.
 rem @echo.
-rem @echo        МЕНЮ АРХИВАЦИИ И ВОССТАНОВЛЕНИЯ ДАННЫХ ПРИЛОЖЕНИЙ
-rem @echo        =================================================
+rem @echo        МЕНЮ АРХИВАЦИИ И ВОССТАНОВЛЕНИЯ 
+rem @echo        ===============================
 rem @echo.
 rem @echo.
-rem @echo    A.  Архивация по выбору					[EXPERIMENTAL]
-rem @echo    B.  Архивация по списку					[EXPERIMENTAL]
-rem @echo    C.  Архивация всех приложений				[EXPERIMENTAL]
-rem @echo    D.  Восстановление данных приложений				[EXPERIMENTAL]
+rem @echo    A.  Архивация данных по выбору					
+rem @echo    B.  Архивация данных по списку					
+rem @echo    C.  Архивация данных всех приложений				
+rem @echo    D.  Восстановление данных приложений				
 rem @echo    E.  Сохранить в файл список установленных приложений		
 rem @echo    F.  Извлечение данных из файла бэкапа		
+rem @echo    G.  Полный бэкап приложений (APK+OBB+DATA)
+rem @echo    I.  Сохранение APK
+rem @echo    J.  Сохранение APK+OBB
+rem @echo    K.  Копирование данных
 rem @echo.
-rem @echo    %_fBYellow%H. Помощь по функциям архивации и восстановления%_fReset%
+rem @echo    %_fBYellow%H. Описание функций этого меню%_fReset%
 rem @echo    %_fBYellow%R. Помощь по переносу сохранений%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -210,11 +215,14 @@ rem StartEngTextBlock
 @echo    D.  Restore Application Data             [EXPERIMENTAL]
 @echo    E.  Save List of Installed Applications to File
 @echo    F.  Extract data from a backup file
+@echo    G.  Full apps backup (APK+OBB+DATA)
+@echo    I.  Save APK
+@echo    J.  Save APK+OBB
+@echo    K.  Data copying
 @echo.
 @echo    %_fBYellow%H. Help on Backup and Restore Functions%_fReset%
 @echo    %_fBYellow%R. Help on Transferring Saves%_fReset%
 rem EndEngTextBlock
-
 @echo.
 @echo.
 @echo.
@@ -224,12 +232,20 @@ call :_MenuChoiceEnter
 if not defined choice goto _BackupAndRestoreMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
-if /i "%choice%"=="a" (GOTO _BackupChoisesQ)
+rem if /i "%choice%"=="a" (GOTO _BackupSelectiveMenu)
+if /i "%choice%"=="a" (GOTO _BackupChoisesPS)
 if /i "%choice%"=="b" (GOTO _EnterListNumber)
 if /i "%choice%"=="c" (GOTO _BackupAllAppsQ)
 if /i "%choice%"=="d" (GOTO _Restoring)
-if /i "%choice%"=="e" (set "pkgchoice=thrid-party"&&set "listpackages=-3"&&set "pkgfiltername=неофициальных"&&GOTO _StartAppsInstalledScript)
+rem if /i "%choice%"=="e" (set "pkgchoice=thrid-party"&&set "listpackages=-3"&&set "pkgfiltername=неофициальных"&&GOTO _StartAppsInstalledScript)
+if /i "%choice%"=="e" (call :_AppsInstallMenu && GOTO _StartAppsInstalledScript)
+rem if /i "%choice%"=="g" (GOTO :_BackupChoisesFiltered)
 if /i "%choice%"=="f" (goto _ExtractDataFromBackupFile)
+if /i "%choice%"=="g" (goto _FullApplicationBackupPS)
+if /i "%choice%"=="i" (goto _SaveAPKPS)
+if /i "%choice%"=="j" (goto _SaveAPKOBBPS)
+if /i "%choice%"=="k" (goto _SaveDATAPS)
+
 if /i "%choice%"=="h" (call :_BackupHelp)
 if /i "%choice%"=="r" (call :_BackupRelocateHelp)
 goto _BackupAndRestoreMenu
@@ -237,7 +253,7 @@ goto _BackupAndRestoreMenu
 :_BackupHelp
 cls
 @echo.
-@echo.
+rem @echo.
 rem StartRusTextBlock
 rem @echo   Этот раздел предназначен для архивации и восстановления данных приложений, в которых хранятся
 rem @echo   сохранения игр, настройки и другая информация о приложении. Здесь вы сможете забэкапить эти
@@ -249,10 +265,12 @@ rem @echo   Для архивации используется встроенн�
 rem @echo   Ни apk, ни obb не бэкапятся. Для бэкапа apk и obb используйте пункты %_fBYellow%J-E-3%_fReset%. Если у приложения
 rem @echo   нет данных, бэкап не создается. Список таких приложений сохранится в файл %_fBYellow%ZeroSizeBackups.txt%_fReset%.
 rem @echo.
-rem @echo   %_fBGreen%Опция "Архивация по выбору"%_fReset% откроет список установленных неофициальных приложений. Выберите
-rem @echo   приложение, после этого начнется его  архивация. Затем можете выбрать следующее и так далее.
-rem @echo   Выбор приложения осуществляется курсором или мышью. Все архивы помещаются в каталог %_fBYellow%Backups%_fReset%
-rem @echo   с подкаталогом текущей даты и времени. Имена архивов такие же, как и имена пакетов приложений.
+rem @echo   %_fBGreen%Опция "Архивация по выбору"%_fReset% выведет весь список приложений из выбранной категории
+rem @echo   (%_fBYellow%Системные, Неофициальные%_fReset% и т.д.). После этого выберите нужные приложения 
+rem @echo   в специальном окне, отмечая их галками, и они будут заархивированы. В этом окне
+rem @echo   также работает поиск, по нему можно отфильтровать приложения по имени или названию пакета.
+rem @echo   Все архивы помещаются в каталог %_fBYellow%Backups%_fReset% с подкаталогом текущей даты и времени.
+rem @echo   Имена архивов будут такими же, как и имена приложений.
 rem @echo.       
 rem @echo   %_fBGreen%Опция "Архивация по списку"%_fReset% позволяет делать выборочную архивацию, для определенных приложений. 
 rem @echo   Для этого создайте текстовый файл с именем %_fBYellow%ListForBackups.txt%_fReset% и запишите в него названия
@@ -275,14 +293,20 @@ rem @echo.
 rem @echo   %_fBGreen%Опция "Архивация всех приложений"%_fReset% предназначена для быстрого создания бэкапов всех неофициальных
 rem @echo   приложений. После выбора и подтверждения этой опции начнется создание бэкапа данных всех
 rem @echo   установленных на шлеме приложений. Это полезно при миграции с одного шлема на другой.
-rem @echo.       
+rem @echo.
+rem @echo   %_fBRed%ОЧЕНЬ ВАЖНО: Во время бэкапа датчик приближения будет ОТКЛЮЧЕН^^!%_fReset%
+rem @echo                %_fBYellow%Это значит что экран шлема будет постоянно включен пока выполняется бэкап.
+rem @echo                После завершения бэкапа датчик будет снова включен.%_fReset%
+rem @echo.
+rem @echo   %_fBRed%ПОЭТОМУ:%_fReset%     %_fBYellow%Не прерывайте процесс бэкапа. А если все-таки он прервался, включите датчик
+rem @echo                вручную, из Главного меню пункты %_fYellow%E-F-E%_fReset%
 rem @echo ----------------------------------------------------------------
 rem @echo.
 rem @echo ^>^>^> Нажмите что-нибудь для продолжения ^<^<^<
 rem @pause >nul
 rem cls
 rem @echo.
-rem @echo.
+rem @echo.       
 rem @echo   %_fBGreen%Опция "Восстановление данных приложений"%_fReset% восстанавливает данные из созданных ранее бэкапов.
 rem @echo   Поместите в каталог программы %_fBYellow%Quas%_fReset% архивы, которые хотите восстановить и выберите опцию
 rem @echo   %_fBGreen%"Восстановление данных приложений"%_fReset%. После выбора программа выведет список найденных бэкапов.
@@ -306,13 +330,23 @@ rem @echo   %_fBGreen%Опция "Сохранить в файл список у
 rem @echo   приложению соответствует название пакета. На экран и в файл %_fBYellow%AppsInstalled-thrid-party.txt%_fReset% будет
 rem @echo   выведен список установленных на шлеме приложений с их именами и названиями пакетов.
 rem @echo   Эту опцию удобно использовать для создания файла %_fBYellow%ListForBackups.txt%_fReset%.
+rem @echo   %_fBYellow%В списке будут содержаться только неофициальные приложения%_fReset%.
 rem @echo.
-rem @echo   %_fBGreen%Опция "Извлечение данных из файла бэкапа"%_fReset% распаковывает файл бэкапа и извлекает содержимое
-rem @echo   в каталог %_fBYellow%Backups%_fReset% с подкаталогом по имени файла бэкапа. 
+rem @echo   %_fBGreen%Опция "Извлечение данных из файла бэкапа"%_fReset% распаковывает файлы бэкапа и извлекает содержимое
+rem @echo   в каталог %_fBYellow%Backups%_fReset% с подкаталогами по именам файлов бэкапов. 
 rem @echo   %_fBYellow%Перед использованием этой опции шлем должен быть подключен к ПК%_fReset%.
+rem @echo.
+rem @echo   %_fBGreen%Опция "Полный бэкап приложений (APK+OBB+DATA)"%_fReset% извлекает из шлема %_fBYellow%APK, OBB и DATA%_fReset% файлы и копирует
+rem @echo   их на ПК. Данные копируются напрямую из каталога %_fBYellow%Android/data%_fReset%. При невозможности их скопировать
+rem @echo   "как есть", программа использует альтернативный способ извлечение и копирования данных.
+rem @echo.
+rem @echo   %_fBGreen%Опция "Сохранение APK"%_fReset% извлекает только %_fBYellow%APK%_fReset% на ПК.
+rem @echo.
+rem @echo   %_fBGreen%Опция "Сохранение APK+OBB"%_fReset% извлекает и копирует на ПК файлы %_fBYellow%APK и OBB%_fReset%
+rem @echo.
+rem @echo   %_fBGreen%Опция "Копирование данных"%_fReset% извлекает игровые данные точто так же, как и в случае %_fBGreen%Полного бэкапа%_fReset%.
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo.
 @echo.
 @echo   This section is intended for backing up and restoring application data, including
 @echo   game saves, settings, and other app-related information. Here, you can back up this
@@ -325,17 +359,21 @@ rem StartEngTextBlock
 @echo   If the app has no data, the backup is not created. The list of such apps is saved to
 @echo   the file %_fBYellow%ZeroSizeBackups.txt%_fReset%.
 @echo.
-@echo   %_fBGreen%The "Selective Backup" option%_fReset% opens a list of installed unofficial apps. Select
-@echo   an app, and its backup will begin. You may then select another, and so on.
-@echo   App selection is done via cursor or mouse. All backups are stored in the %_fBYellow%Backups%_fReset% folder with
-@echo   a subfolder named after the current date and time. Archive names match app package names.
+@echo   %_fBGreen%The "Selective backup" option%_fReset% will display the full list of applications from
+@echo   the selected category (%_fBYellow%System, Third-party%_fReset%, etc.). Then select the desired applications 
+@echo   in a special window by checking them, and they will be archived. This window
+@echo   also supports search, allowing you to filter applications by name or package name.
+@echo   All archives are placed in the %_fBYellow%Backups%_fReset% directory with a subdirectory named
+@echo   by the current date and time. Archive names will match the application names.
 @echo.       
 @echo   %_fBGreen%The "Backup from List" option%_fReset% allows you to back up only specific apps. 
 @echo   To use it, create a text file named %_fBYellow%ListForBackups.txt%_fReset% and list
 @echo   the app package names line by line, for example:
+@echo.       
 @echo   %_fCyan%com.Armature.VR4
 @echo   com.BlueBrainGames.TheHouseofDaVinciVR
 @echo   com.fallen.manorquest%_fReset%
+@echo.       
 @echo   %_fBYellow%Backups will be created only for apps listed in ListForBackups.txt.%_fReset% You can create multiple
 @echo   such lists (unlimited) for different apps or backup scenarios. To identify a specific list,
 @echo   begin the filename with a number, e.g.: %_fCyan%34%_fBYellow%ListForBackups.txt%_fReset%. After selecting the
@@ -348,7 +386,13 @@ rem StartEngTextBlock
 @echo   %_fBGreen%The "Backup All Applications" option%_fReset% is for quickly backing up all unofficial apps.
 @echo   After selection and confirmation, backup of all app data on the headset will begin.
 @echo   This is useful when migrating to a new headset.
-@echo.       
+@echo.
+@echo   %_fBRed%VERY IMPORTANT: During backup, the proximity sensor will be DISABLED^!%_fReset%
+@echo                   %_fBYellow%This means that the headset screen will remain on while the backup
+@echo                   is in progress. After the backup is completed, the sensor will be re-enabled.%_fReset%
+@echo.
+@echo   %_fBRed%THEREFORE:%_fReset%     %_fBYellow%Do not interrupt the backup process. But if it does get interrupted,
+@echo                  enable the sensor manually from the Main Menu, option %_fYellow%E-F-E%_fReset%
 @echo ----------------------------------------------------------------
 @echo.
 @echo ^>^>^> Press key for continue ^<^<^<
@@ -381,7 +425,16 @@ cls
 @echo.
 @echo   %_fBGreen%The "Extract data from a backup file" option%_fReset% unpacks the backup file and extracts its contents
 @echo   into the %_fBYellow%Backups%_fReset% directory with a subfolder named after the backup file.
-rem 
+@echo.
+@echo   %_fBGreen%The "Full app backup (APK+OBB+DATA)" option%_fReset% extracts %_fBYellow%APK, OBB and DATA%_fReset% files from the headset
+@echo   and copies them to the PC. The data is copied directly from the %_fBYellow%Android/data%_fReset% directory. If it’s not possible
+@echo   to copy them "as is", the program uses an alternative method to extract and copy the data.
+@echo.
+@echo   %_fBGreen%The "Save APK" option%_fReset% extracts only the %_fBYellow%APK%_fReset% to the PC.
+@echo.
+@echo   %_fBGreen%The "Save APK+OBB" option%_fReset% extracts and copies the %_fBYellow%APK and OBB%_fReset% files to the PC.
+@echo.
+@echo   %_fBGreen%The "Copy Data" option%_fReset% extracts game data in exactly the same way as in the %_fBGreen%Full backup%_fReset% option.
 rem EndEngTextBlock
 call :_exitwindow
 exit /b
@@ -457,6 +510,242 @@ rem EndEngTextBlock
 call :_exitwindow
 exit /b
 
+:_FullApplicationBackupPS
+set "apkbkpproc=1"
+set "obbbkpproc=1"
+set "datbkpproc=1"
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_BackupAndRestoreMenu"
+set "ScriptFinishLabel=_BackupFinishMessage"
+rem StartRusTextBlock
+rem set "action1=бэкапить"
+rem set "action2=бэкапа"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to back up"
+set "action2=the back up"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+:_SaveDATAPS
+set "datbkpproc=1" 
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_BackupAndRestoreMenu"
+set "ScriptFinishLabel=_BackupFinishMessage"
+rem StartRusTextBlock
+rem set "action1=бэкапить"
+rem set "action2=бэкапа"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to back up"
+set "action2=the back up"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+:_SaveAPKPS
+set "apkbkpproc=1" 
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_BackupAndRestoreMenu"
+set "ScriptFinishLabel=_BackupFinishMessage"
+rem StartRusTextBlock
+rem set "action1=бэкапить"
+rem set "action2=бэкапа"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to back up"
+set "action2=the back up"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+
+:_SaveAPKOBBPS
+set "apkbkpproc=1" 
+set "obbbkpproc=1" 
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_BackupAndRestoreMenu"
+set "ScriptFinishLabel=_BackupFinishMessage"
+rem StartRusTextBlock
+rem set "action1=бэкапить"
+rem set "action2=бэкапа"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to back up"
+set "action2=the back up"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+rem Ok!
+:_ViewRunningAppsPS
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_ViewRunningApps"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_AppsManagementMenu"
+set "ScriptFinishLabel=_AppsManagementMenu"
+rem StartRusTextBlock
+rem set "action1=узнать"
+rem set "action2=старта"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to know"
+set "action2=start"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+rem Ok!
+:_ViewAppStatusPS
+rem @echo call %%myfiles%%\backup.cmd :_ViewApkLabelInsideHeadset
+rem set "CallBackupFileProcedure=%myfiles%\backup.cmd :_ViewApkLabelInsideHeadset"
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_ViewAppLabel"
+Set "SelectorParameters=-o"
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+rem set "action1=бэкапить"
+rem set "action2=бэкапа"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to back up"
+set "action2=the back up"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+rem O
+:_StopAppPS
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_StopApps"
+Set "SelectorParameters=-o"
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+rem set "action1=остановить"
+rem set "action2=остановки"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to stop"
+set "action2=for stop"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+rem O
+:_StartAppPS
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_StartApps"
+Set "SelectorParameters=-o"
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+rem set "action1=запустить"
+rem set "action2=старта"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to launch"
+set "action2=to start"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+rem Ok
+:_SoftUninstallAppsPS
+set "cachekey=-k"
+
+rem Ok
+:_UninstallAppsPS
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_UninstallApps"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+rem set "action1=удалить"
+rem set "action2=удаления"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to delete"
+set "action2=deleting"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+
+rem Ok
+:_ClearCacheDataAppsPS
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_ClearCacheDataApps"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+rem set "action1=очистить"
+rem set "action2=очистки"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to clear"
+set "action2=clearing"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+
+
+rem Ok
+:_DisableAppsPS
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_DisableApps"
+Set "SelectorParameters=-o"
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+rem set "action1=отключить"
+rem set "action2=отключения"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to disable"
+set "action2=disabling"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+
+
+rem Ok
+:_EnableAppsPS
+rem Backup
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_EnableApps"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+rem set "action1=включить"
+rem set "action2=включения"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to enable"
+set "action2=enabling"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+
+
+rem Ok
+:_BackupChoisesPS
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_BackupChoises"
+Set "SelectorParameters="
+set "ReturnMenuLabel=_BackupAndRestoreMenu"
+set "ScriptFinishLabel=_BackupFinishMessage"
+rem StartRusTextBlock
+rem set "action1=бэкапить"
+rem set "action2=бэкапа"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to back up"
+set "action2=the back up"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+
+
 
 :_EnterListNumber
 set ListNumber=
@@ -465,7 +754,6 @@ rem set /p "ListNumber=Введите номер списка, Enter для де
 rem EndRusTextBlock
 rem StartEngTextBlock
 set /p "ListNumber=Enter list number, press Enter for the default list or 0 to return to the menu: "
-rem 
 rem EndEngTextBlock
 if /i "%ListNumber%"=="0" (GOTO _BackupAndRestoreMenu)
 if not exist %ListNumber%ListForBackups.txt (goto _BackupListNotFound)
@@ -477,33 +765,79 @@ goto _BackupFinishMessage
 call :_cdc
 call :_SetColours
 setlocal enableextensions enabledelayedexpansion
-rem @for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
-rem set "archivename=%%~na"
-rem )
-rem set applabel=%archivename%
-call %myfiles%\backup.cmd :_VirePackageNmaeForExtract
+call %myfiles%\backup.cmd :_ViewPackageNameForExtract
+@del /q /f returnmark.txt 1>nul 2>nul
 call :_prevmenu
 goto _BackupAndRestoreMenu
 
 
-:_BackupChoisesQ
+rem Backup
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_BackupChoises"
+Set "SelectorParameters=o"
+set "ReturnMenuLabel=_BackupAndRestoreMenu"
+set "ScriptFinishLabel=_BackupFinishMessage"
+rem StartRusTextBlock
+rem set "action1=бэкапить"
+rem set "action2=бэкапа"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "action1=to back up"
+set "action2=the back up"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+:_UniversalAppsHanflerScript
+call :_AppsInstallMenu
 call :_SetColours
-rem @echo Пока не готово
-set newbackup=1
-set "listpackages=-3"
-call :_ApplicationactionManageMenu
-call :_StartEndAppsMenu
-goto _BackupFinishMessage
+@echo  -----------------------------------------------------------------------------------------
+rem StartRusTextBlock
+rem @echo  %_fBYellow%.. Идет подготовка списка, это займет несколько секунд...
+rem @echo.
+rem @echo  В открывшемся окне выберите приложения, которые хотите %action1%. После завершения выбора
+rem @echo  нажмите кнопку %_fYellow%Confirm %_fBYellow%для %action2%. Для отмены нажмите кнопку %_fYellow%Cancel.
+rem @echo.
+rem @echo  %_fBYellow%Для поиска приложений по имени или названию пакета используйте поле в верхней части окна.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  %_fBYellow%.. Preparing the list, this will take a few seconds...
+@echo.
+@echo  In the window that opens, select the applications you want %action1%. After making your selection,
+@echo  click the %_fYellow%Confirm %_fBYellow%button %action2%. To cancel click the %_fYellow%Cancel button.
+@echo.
+@echo  %_fBYellow%Use the field at the top of the window to search for applications by name or package name.%_fReset%
+rem EndEngTextBlock
+@echo  -----------------------------------------------------------------------------------------
+set shscriptname=aaptname.sh
+@echo #!/system/bin/sh>>%shscriptname%
+@echo aapt^=/data/local/tmp/aapt-arm-pie2>>%shscriptname%
+@echo pm list packages %listpackages% ^| sed 's^/^^^package://g' ^| while read line; do>>%shscriptname%
+@echo     path^=$(pm path $line ^| sed 's^/^^^package^://g'^);>>%shscriptname%
+@echo     label^=$($aapt d badging ^$path  ^| grep 'application: label^=' ^| cut -d "'" -f2^);>>%shscriptname%
+rem @echo     printf "app $label having package name $line\n";>>%shscriptname%
+@echo     printf "app $label;$line\n";>>%shscriptname%
+rem @echo     printf "\n";>>%shscriptname%
+@echo done>>%shscriptname%
+@%myfiles%\adb push %myfiles%\aapt-arm-pie2 /data/local/tmp/ 1>nul
+@%myfiles%\adb push %shscriptname% /data/local/tmp/ 1>nul
+@%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname%
+@%myfiles%\adb shell chmod 0755 /data/local/tmp/aapt-arm-pie2
+@%myfiles%\adb shell sh /data/local/tmp/%shscriptname% >apps-source.txt 2>nul
+rem @%MYFILES%\adb shell pm list packages %listpackages% >packages-list-source.txt
+powershell -ExecutionPolicy Bypass -File "%MYFILES%\selector.ps1" "apps-source.txt" "packages-list.txt" %SelectorParameters%
+@del /q /f apps-source.txt 1>nul 2>nul
+@del /q /f %shscriptname%  1>nul 2>nul
+if not exist packages-list.txt goto %ReturnMenuLabel%
+call %CallBackupFileProcedure%
+@del /q /f packages-list.txt  1>nul 2>nul
+goto %ScriptFinishLabel%
+
 
 
 :_BackupListsQ
 call :_SetColours
 set ListNumber=%choice:~2%
 if not exist %ListNumber%ListForBackups.txt (goto _BackupListNotFound)
-rem if [%ListNumber%]==[] goto _backuplistDefault
-rem call :_BackupListCheckExist
 call %myfiles%\backup.cmd :_BackupLists
-rem if defined ExitAfterBackup exit
 goto _BackupFinishMessage
 
 
@@ -511,11 +845,7 @@ goto _BackupFinishMessage
 call :_SetColours
 setlocal enableextensions enabledelayedexpansion
 if not exist %ListNumber%ListForBackups.txt (goto _BackupListNotFound)
-rem if [%ListNumber%]==[] goto _backuplistDefault
-rem call :_BackupListCheckExist
 call %myfiles%\backup.cmd :_BackupListsSelected
-rem if defined ExitAfterBackup exit
-rem goto _BackupFinishMessage
 exit
 
 :_BackupAllAppsQ
@@ -527,11 +857,14 @@ goto _BackupFinishMessage
 cls
 @echo.
 @echo.
+@echo.
+@echo.
 @echo   ===================================================
 rem StartRusTextBlock
-rem @echo      %_fBRed%Списка %_fBYellow%%ListNumber%ListForBackups.txt%_fReset% %_fBRed%не существует%_fReset%.
-rem @echo    Проверьте наличие этого файла рядом с программой
-rem @echo    и перезапустите процесс бэкапа.
+rem @echo      %_fBRed%Список %_fCyan%%ListNumber%ListForBackups.txt%_fReset% %_fBRed%не найден%_fReset%.
+rem @echo.
+rem @echo    %_fBYellow%Проверьте наличие этого файла рядом с программой
+rem @echo    и перезапустите процесс бэкапа%_fReset%.
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo      %_fBRed%The list %_fBYellow%%ListNumber%ListForBackups.txt%_fReset% %_fBRed%does not exist%_fReset%.
@@ -539,8 +872,8 @@ rem StartEngTextBlock
 @echo    and restart the backup process.
 rem EndEngTextBlock
 @echo   ===================================================
-@echo.
-@echo.
+rem @echo.
+rem @echo.
 goto _returnmenu
 
 :_BackupFinishMessage
@@ -590,6 +923,9 @@ goto _returnmenu
 :_Restoring
 cls
 call %myfiles%\backup.cmd :_ViewABPackageAppName
+set /p returnmark=<returnmark.txt
+@del /q /f returnmark.txt 1>nul 2>nul
+if defined returnmark call :_prevmenu && goto :_BackupAndRestoreMenu
 set choice=1
 @echo.
 @echo.
@@ -618,7 +954,12 @@ rem if /i "%choice%"=="0" (exit)
 @echo.
 @echo.
 @echo %_fBYellow%
-@Set /p choice="Еще раз подтвердите восстановление нажатием Enter или введите 0 и Enter для возврата в меню: "
+rem StartRusTextBlock
+rem @Set /p choice="Еще раз подтвердите восстановление нажатием Enter или введите 0 и Enter для возврата в меню: "
+rem EndRusTextBlock
+rem StartEngTextBlock
+@Set /p choice="Confirm the restore again by pressing Enter, or enter 0 and press Enter to return to the menu: "
+rem EndEngTextBlock
 @echo %_fReset%
 if /i "%choice%"=="0" (GOTO _beginn)
 if /i "%choice%"=="1" (call %myfiles%\backup.cmd :_RestoreApplicationDataAB)
@@ -636,48 +977,88 @@ rem EndEngTextBlock
 goto _returnmenu
 
 :_ServiceInformation
+call :_cdc
 cls
 rem start cmd /k "cd /d %TEMP%"
 call :_hat
 @echo.
 @echo.
-@echo       SERVICE INFORMATION
-@echo    -----------------------------
+@echo           SERVICE INFORMATION
 @echo.
+@echo  =============================================
+rem @echo.
 @for /f "tokens=* usebackq" %%a in (`@%MYFILES%\adb shell date +"%%Y.%%m.%%d-%%H:%%M:%%S"`) do (set ths=%%a)
 @call :_SETTIME
 if %ths:~0,-3%==%dppt:~0,-3% (
-set "timecheck=%_fBGreen%Time is correct%_fReset%"
+set "timecheck=%_fBGreen%Correct%_fReset%"
 ) else (
-set "timecheck=%_fBRed%Time differs%_fReset%"
+set "timecheck=%_fBRed%Differs%_fReset%"
 )
 @echo   %_fBYellow%Time%_fReset%		: %timecheck%
 @reg query "HKU\S-1-5-19" >NUL 2>&1 && (set "adminmsg=%_fBGreen%Admin%_fReset%") || (set "adminmsg=%_fBRed%User%_fReset%")
 rem @echo.
 @echo   %_fBYellow%Rights%_fReset%	: %adminmsg%
-@echo.
-@echo    -----------------------------
+rem @echo.
+@curl.exe 1>nul 2>nul
+if %errorlevel%==2 (set "curlinst=%_fBGreen%installed%_fReset%") else ("curlinst=%_fBRed%Not installed%_fReset%")
+@echo   %_fBYellow%Curl%_fReset%		: %curlinst%
+@echo ----------------------------------------------
+For /F %%a In ('@%MYFILES%\adb shell getprop ro.build.version.incremental 2^>nul') Do set hsenvironment=%%a
+@FOR /F "tokens=1,2 delims==" %%a IN ('@%MYFILES%\adb shell dumpsys package com.oculus.systemux 2^>nul ^| findstr /i /c:"VersionName"') DO (
+@FOR /F "tokens=1,2,3,4 delims=." %%a IN ("%%b") DO set "fwnewhsversion=%%a.%%b.%%c.%%d"
+)
+@echo   %_fBYellow%Firmware%_fReset% 	: %_fBGreen%!fwnewhsversion!%_fReset%
+@echo   %_fBYellow%Environment%_fReset%	: %_fBGreen%!hsenvironment!%_fReset%
+@echo ----------------------------------------------
+for /f "tokens=1-7 delims=|" %%a in ('@%MYFILES%\adb.exe shell dumpsys DumpsysProxy OculusUpdater ^| findstr /i /c:"Oculus Integrity"') do (
+set okintn=%%b
+set okintc=%%g
+)
+for /f "tokens=1-7 delims=|" %%a in ('@%MYFILES%\adb.exe shell dumpsys DumpsysProxy OculusUpdater ^| findstr /i /c:"Oculus Core Mobile Services"') do (
+set ocmsn=%%b
+set ocmsc=%%g
+)
+for /f "tokens=1-7 delims=|" %%a in ('@%MYFILES%\adb.exe shell dumpsys DumpsysProxy OculusUpdater ^| findstr /i /c:"Oculus Library Quest"') do (
+set olqn=%%b
+set olqc=%%g
+)
+for /f "tokens=1-7 delims=|" %%a in ('@%MYFILES%\adb.exe shell dumpsys DumpsysProxy OculusUpdater ^| findstr /i /c:"Oculus Device Settings"') do (
+set odsn=%%b
+set odsc=%%g
+)
+for /f "tokens=1-7 delims=|" %%a in ('@%MYFILES%\adb.exe shell dumpsys DumpsysProxy OculusUpdater ^| findstr /i /c:"Oculus Presence Service"') do (
+set opsn=%%b
+set opsc=%%g
+)
+@echo %_fBYellow%!okintn!%_fReset%		: %_fBGreen%!okintc!%_fReset%
+@echo %_fBYellow%!ocmsn!%_fReset%	: %_fBGreen%!ocmsc!%_fReset%
+@echo %_fBYellow%!olqn!%_fReset%		: %_fBGreen%!olqc!%_fReset%
+@echo %_fBYellow%!odsn!%_fReset%	: %_fBGreen%!odsc!%_fReset%
+@echo %_fBYellow%!opsn!%_fReset%	: %_fBGreen%!opsc!%_fReset%
+@echo  =============================================
 @echo   %_fBYellow%ADB devices:%_fReset%
-@echo.
-%myfiles%\adb devices
-@echo    -----------------------------
+rem @echo.
+@echo %_fBGreen%
+rem @%myfiles%\adb devices | findstr "device"$ 1>nul 2>nul
+@FOR /F "skip=1 tokens=*" %%G IN ('@%MYFILES%\adb devices ^| findstr /i /c:"device"') DO set adbdevices=%%G
+@echo   %adbdevices%
+rem %myfiles%\adb devices
+@echo %_fReset%
+@echo ----------------------------------------------
 %myfiles%\devcon_x64 find *VID_2833* 2>nul
-@echo    -----------------------------
+@echo ----------------------------------------------
 %myfiles%\devcon_x64 find *Quest* 2>nul
-@echo.
-rem @echo    -----------------------------
-@echo  =============================
-@echo   %_fBYellow%This is folder %%cd%%%_fReset%	: %cd%
-@echo   %_fBYellow%This is folder %%~dp0%_fReset%	: %~dp0
-@echo   %_fBYellow%This is folder %%temp%%%_fReset%	: %temp%
-@echo  =============================
+@echo ----------------------------------------------
+@echo   %_fBYellow%This is folder %%cd%%%_fReset%	: %_fBGreen%%cd%%_fReset%
+@echo   %_fBYellow%This is folder %%~dp0%_fReset%	: %_fBGreen%%~dp0%_fReset%
+@echo   %_fBYellow%This is folder %%temp%%%_fReset%	: %_fBGreen%%temp%%_fReset%
+@echo ----------------------------------------------
 @echo    %_fBYellow%Check paths for cyrillic:
-@echo.
+rem @echo.
 @echo.   %_fBRed%%cyrmsgtemp%
 @echo.   %cyrmsgdp%
 @echo.   %cyrmsgtcd%%_fReset%
 @echo ----------------------------------------------
-
 goto _returnmenu
 
 
@@ -704,6 +1085,7 @@ pause
 if %errorlevel%==0 (set "updateServersStatusMsg=%_fBGreen%Available%_fReset%"&&goto _UpdServStatus)
 )
 set "updateServersStatusMsg=%_fBRed%Not Available%_fReset%"
+
 :_UpdServStatus
 @echo  = Update server status	: %updateServersStatusMsg%
 @%myfiles%\adb shell rm -R /data/local/tmp/ 1>nul 2>nul
@@ -865,6 +1247,7 @@ rem @echo    S.  Управление параметрами Планирова�
 rem @echo    T.  Проверка статуса загрузки шлема
 rem @echo    U.  Мониторинг нагрузки и диагностика компонентов	[EXP]
 rem @echo    V.  Принудительный старт нижней панели приложений
+rem @echo    W.  Мониторинг загрузки CPU в реальном времени
 rem @echo.
 rem @echo    X.  Открыть консоль cmd
 rem @echo    Z.  Помощь в решении проблем.
@@ -894,6 +1277,7 @@ rem StartEngTextBlock
 @echo    T.  Check boot status
 @echo    U.  Load monitoring and component diagnostics [EXP]
 @echo    V.  Force start of the bottom application bar
+@echo    W.  Realtime CPU monitoring
 @echo.
 @echo    X.  Open cmd console
 rem EndEngTextBlock
@@ -928,10 +1312,26 @@ if /i "%choice%"=="s" (GOTO _hwagamecontrol)
 if /i "%choice%"=="t" (GOTO _bootstatusviewermenu)
 if /i "%choice%"=="u" (GOTO _alltempmenu)
 if /i "%choice%"=="v" (GOTO _StartApplicationsPanel)
+if /i "%choice%"=="w" (GOTO _CPURealTimeMonitoring)
 if /i "%choice%"=="x" (GOTO _opencmd)
 rem if /i "%choice%"=="z" (GOTO _helplinksmenu)
 @cls
 goto _shellmenu
+
+:_CPURealTimeMonitoring
+set intervaltempsav=5
+start "ADB Top" cmd /k %MYFILES%\adb shell top -m 20 -d 2
+rem StartRusTextBlock
+rem @echo   Результаты будут обновляться каждые две секунды
+rem @echo   Мониторинг откроется в отдельно окне. Просто закройте его, когда захотите закончить.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   Results will be updated every two seconds
+@echo   Monitoring will open in a separate window. Simply close it when you want to finish.
+rem EndEngTextBlock
+call :_prevmenu
+goto _shellmenu
+
 
 :_StartApplicationsPanel
 @%MYFILES%\adb shell monkey -p com.oculus.panelapp.kiosk -c android.intent.category.LAUNCHER 1 1>nul 2>nul
@@ -955,42 +1355,48 @@ call :_hatmenu
 rem StartRusTextBlock
 rem @echo    A.  Fasboot devices			: Проверка доступности устройства
 rem @echo    B.  Fastboot oem device-info		: Собрать и сохранить OEM информацию устройства
-rem @echo    C.  Fastboot getvar all		: Собрать и сохранить  всю возможную информацию устройства
-rem @echo    D.  Fastboot continue		: Продолжить загрузку шлема
-rem @echo    E.  Fastboot reboot-fastboot		: Перезагрузить шлем в режим Fastboot
-rem @echo    F.  Fastboot reboot-recovery		: Перезагрузить шлем в режим Recovery
-rem @echo    G.  Fastboot reboot-bootloader	: Перезагрузить шлем в режим Bootloader
+rem @echo    C.  Fastboot getvar all (bootloader)	: Сохранить информацию об устройстве в режиме bootloader
+rem @echo    D.  Fastboot getvar all (fastboot)	: Сохранить информацию об устройстве в режиме fastboot
+rem @echo    E.  Fastboot continue		: Продолжить загрузку шлема
+rem @echo    F.  Fastboot reboot-fastboot		: Перезагрузить шлем в режим Fastboot
+rem @echo    G.  Fastboot reboot-recovery		: Перезагрузить шлем в режим Recovery
+rem @echo    H.  Fastboot reboot-bootloader	: Перезагрузить шлем в режим Bootloader
+rem @echo.
+rem @echo    K. Информация о прошивке шлема, слотах загрузки, ревизии и батарее
+rem @echo    S. Отключить сенсоры шлема
+rem @echo    Q. Включить сенсоры шлема
 rem @echo.
 rem @echo.
+rem @echo    ВАЖНО:
+rem @echo    Перед выполнением команд в этом меню убедитесь, что устройство может на них отвечать.
+rem @echo    Проверьте это с помощью пункта A - команды fastboot device
 rem @echo.
-rem @echo	ВАЖНО:
-rem @echo.
-rem @echo     В этом разделе нет проверок на подключение и определение режима устройства.
-rem @echo     Чтобы убедиться, что устройство может отвечать на команды fastboot,
-rem @echo     выберите первую команду - fastboot device. Если в ответ увидите строку 
-rem @echo     с серийным номером, значит устройство может отвечать на некоторые команды,
-rem @echo     а если видите строку ^< waiting for any device ^>, значит устройство
-rem @echo     недоступно для команд fastboot, увы.
+rem @echo    %_fBRed%Сенсоры после перезагрузки не включаются автоматически^!%_fReset%
+rem @echo    %_fBYellow%После отключения сенсоров шлем всякий раз перез загрузкой в окружение
+rem @echo    будет просить вас нажать кнопку Питание для включения сенсоров.
+rem @echo    Для того чтобы они снова были включены по умолчанию, воспользуйтесь
+rem @echo    опцией %_fYellow%Q - Включить сенсоры шлема.%_fReset%
+rem 
+rem 
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo    A.  Fasboot devices                  : Check device availability
 @echo    B.  Fastboot oem device-info         : Collect and save device OEM information
-@echo    C.  Fastboot getvar all              : Collect and save all possible device information
-@echo    D.  Fastboot continue                : Continue headset boot
-@echo    E.  Fastboot reboot-fastboot         : Reboot headset into Fastboot mode
-@echo    F.  Fastboot reboot-recovery         : Reboot headset into Recovery mode
-@echo    G.  Fastboot reboot-bootloader       : Reboot headset into Bootloader mode
+@echo    C.  Fastboot getvar all (bootloader) : Collect device information in bootloader mode
+@echo    D.  Fastboot getvar all (gastboot)	  : Collect device information in fastboot mode
+@echo    E.  Fastboot continue                : Continue headset boot
+@echo    F.  Fastboot reboot-fastboot         : Reboot headset into Fastboot mode
+@echo    G.  Fastboot reboot-recovery         : Reboot headset into Recovery mode
+@echo    H.  Fastboot reboot-bootloader       : Reboot headset into Bootloader mode
 @echo.
+@echo    K. Headset Firmware and Boot Slot Information
+@echo    S. Disable headset sensors
+@echo    Q. Enable headset sensors
 @echo.
 @echo.
 @echo    IMPORTANT:
-@echo.
-@echo     This section does not check for device connection and mode detection.
-@echo     To ensure the device can respond to fastboot commands,
-@echo     select the first command - fastboot device. If you see a line 
-@echo     with the serial number in response, the device can respond to some commands.
-@echo     If you see the line ^< waiting for any device ^>, the device
-@echo     is not available for fastboot commands, unfortunately.
+@echo    Before executing the commands in this menu, make sure the device
+@echo    is able to respond to them. Check this using option A - fastboot device commands.
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -1003,13 +1409,20 @@ if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _fbdevices)
 if /i "%choice%"=="b" (GOTO _fbgetoeminfo)
-if /i "%choice%"=="c" (GOTO _fbgetvar)
-if /i "%choice%"=="d" (GOTO _fbcontinue)
-if /i "%choice%"=="e" (GOTO _fbrebootfb)
-if /i "%choice%"=="f" (GOTO _fbrebootrc)
-if /i "%choice%"=="g" (GOTO _fbrebootbl)
+if /i "%choice%"=="c" (GOTO _fbgetvarbl)
+if /i "%choice%"=="d" (GOTO _fbgetvarfb)
+if /i "%choice%"=="e" (GOTO _fbcontinue)
+if /i "%choice%"=="f" (GOTO _fbrebootfb)
+if /i "%choice%"=="g" (GOTO _fbrebootrc)
+if /i "%choice%"=="h" (GOTO _fbrebootbl)
+if /i "%choice%"=="k" (set "fastbotcommand=:_FastbootFirmwareExtractCont"&&call :_FastbootCheckDevice)
+if /i "%choice%"=="s" (set "fastbotcommand=:_DisableHeadsetSensorsConfirm"&&call :_FastbootCheckDevice)
+if /i "%choice%"=="q" (set "fastbotcommand=:_EnableHeadsetSensors"&&call :_FastbootCheckDevice)
+
 rem if /i "%choice%"=="g" (GOTO _guardian)
 rem if /i "%choice%"=="h" (GOTO _guardian)
+goto _FastbootCommandList
+
 
 :_fbdevices
 rem StartRusTextBlock
@@ -1046,12 +1459,13 @@ rem EndEngTextBlock
 call :_prevmenu
 goto _FastbootCommandList
 
-:_fbgetvar
+:_fbgetvarbl
 setlocal enableextensions enabledelayedexpansion
+@%myfiles%\fastboot reboot-bootloader 1>nul 2>nul
 call :_settime
 for /f "tokens=*" %%a in ('@%myfiles%\fastboot getvar all 2^>^&1') do (
 set txt=%%a
-@echo !txt! >> getvar-all-%dt%.txt
+@echo !txt! >> getvar-all-bootloader%dt%.txt
 )
 @echo.
 @echo ---
@@ -1059,13 +1473,41 @@ rem StartRusTextBlock
 rem @echo Команда Fastboot getvar all выполнена
 rem @echo.
 rem @echo  ----------------------------------------------------------------------
-rem @echo  = Информация getvar сохранена в файле getvar-all-%dt%.txt
+rem @echo  = Информация getvar сохранена в файле getvar-all-bootloader%dt%.txt
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo Fastboot getvar command executed
 @echo.
 @echo  ----------------------------------------------------------------------
-@echo  = getvar information saved in getvar-%dt%.txt file
+@echo  = getvar information saved in getvar-bootloader%dt%.txt file
+rem EndEngTextBlock
+@echo.
+call :_prevmenu
+goto _FastbootCommandList
+
+:_fbgetvarfb
+setlocal enableextensions enabledelayedexpansion
+@%myfiles%\fastboot reboot-fastboot 1>nul 2>nul
+
+call :_settime
+for /f "tokens=*" %%a in ('@%myfiles%\fastboot getvar all 2^>^&1') do (
+set txt=%%a
+@echo !txt! >> getvar-all-fastboot%dt%.txt
+)
+@%myfiles%\fastboot reboot-bootloader 1>nul 2>nul
+@echo.
+@echo ---
+rem StartRusTextBlock
+rem @echo Команда Fastboot getvar all выполнена
+rem @echo.
+rem @echo  ----------------------------------------------------------------------
+rem @echo  = Информация getvar сохранена в файле getvar-all-fastboot%dt%.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo Fastboot getvar command executed
+@echo.
+@echo  ----------------------------------------------------------------------
+@echo  = getvar information saved in getvar-fastboot%dt%.txt file
 rem EndEngTextBlock
 @echo.
 call :_prevmenu
@@ -1388,7 +1830,7 @@ rem StartEngTextBlock
 @echo    J.  Solution to the problem with fba files
 @echo    K.  Turn on the screen and disable the proximity sensor
 @echo    L.  Delete old Quas files and directories
-@echo    N.  
+@echo    N.  Open the hosts file in Notepad
 rem EndEngTextBlock
 @echo.    
 @echo.
@@ -1908,10 +2350,13 @@ rem StartRusTextBlock
 rem @echo    A. Установить ключ "Bypass Info Table" в реестр
 rem @echo    B. Установить ключ "Bypass Wireless Warning" в реестр
 rem @echo    C. Установить ключ "Bypass Initial Status" в реестр
+rem @echo    D. Установить ключ "iPerf Temp Dir" в реестр
+rem 
 rem @echo.
 rem @echo    G. Удалить ключ "Bypass Info table" из реестра
 rem @echo    H. Удалить ключ "Bypass Wireless Warning" из реестра
 rem @echo    I. Удалить ключ "Bypass Initial Status" из реестра
+rem @echo    J. Удалить ключ "iPerf Temp Dir" из реестра
 rem @echo.
 rem @echo    T. Проверить наличие ключей в реестре
 rem @echo.
@@ -1921,10 +2366,12 @@ rem StartEngTextBlock
 @echo    A. Set the "Bypass Info Table" key in the registry
 @echo    B. Set the "Bypass Wireless Warning" key in the registry
 @echo    C. Set the "Bypass Initial Status" key in the registry
+@echo    C. Set the "iPerf Temp Dir" key in the registry
 @echo.
 @echo    G. Remove the "Bypass Info Table" key from the registry
 @echo    H. Remove the "Bypass Wireless Warning" key from the registry
 @echo    I. Remove the "Bypass Initial Status" key from the registry
+@echo    I. Remove the "iPerf Temp Dir" key from the registry
 @echo.
 @echo    T. Check for the presence of keys in the registry
 @echo.
@@ -1946,8 +2393,12 @@ rem @echo.
 rem @echo  Ключ "Bypass Initial Status" полностью убирает все первичные проверки статуса шлема.
 rem @echo  Программа стартует сразу. В этом режиме отсутствует информационная таблица,
 rem @echo  а буквенно-цветовой индикатор будет таким: [NO]
-rem @echo.
 rem @echo  Зачения индикаторов в любой момент можно узнать из Главного меню, пункт H.
+rem @echo.
+rem @echo  Ключ "iPerf Temp Dir" устанавливает папку "C:\Temp" каталогом запуска iPerf
+rem @echo  на постоянной основе. После этого сервер iPerf будет запускаться только
+rem @echo  из этого каталога.
+rem @echo.
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  The "Bypass Info Table" key allows skipping the display of the information table
@@ -1979,9 +2430,11 @@ if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _setbypassinfokey)
 if /i "%choice%"=="b" (GOTO _setbypasswfattkey)
 if /i "%choice%"=="c" (GOTO _setbypassinistatuskey)
+if /i "%choice%"=="d" (GOTO _setiperfdirkey)
 if /i "%choice%"=="g" (GOTO _delbypassinfokey)
 if /i "%choice%"=="h" (GOTO _delbypasswfattkey)
 if /i "%choice%"=="i" (GOTO _delbypassinistatuskey)
+if /i "%choice%"=="j" (GOTO _deliperfdirkey)
 if /i "%choice%"=="t" (GOTO _checkbypasskey)
 if /i "%choice%"=="x" (GOTO _deletehivequas)
 goto _RegistryKeysSettings
@@ -2024,6 +2477,20 @@ call :_prevmenu
 goto _RegistryKeysSettings
 
 
+:_setiperfdirkey
+reg add "HKEY_CURRENT_USER\Software\Quas" /v iPerfTempDir /t REG_SZ /d "%SYSTEMDRIVE%\Temp" /f 1>nul 2>nul
+@echo -----------------------------------------------------
+rem StartRusTextBlock
+rem @echo Ключ "iPerf Temp Dir" записан в реестр
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo The "iPerf Temp Dir" key is written to the registry
+rem EndEngTextBlock
+call :_prevmenu
+goto _RegistryKeysSettings
+
+
+
 :_delbypassinfokey
 @reg delete "HKEY_CURRENT_USER\Software\Quas" /v BypassInfoTable /f 1>nul 2>nul
 @echo -----------------------------------------------------
@@ -2060,14 +2527,30 @@ rem EndEngTextBlock
 call :_prevmenu
 goto _RegistryKeysSettings
 
+:_deliperfdirkey
+@reg delete "HKEY_CURRENT_USER\Software\Quas" /v iPerfTempDir /f 1>nul 2>nul
+@echo -----------------------------------------------------
+rem StartRusTextBlock
+rem @echo Ключ "iPerf Temp Dir" удален из реестра
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo The "iPerf Temp Dir" key has been removed from the registry
+rem EndEngTextBlock
+call :_prevmenu
+goto _RegistryKeysSettings
+
+
 
 :_checkbypasskey
 set bpinfotable=
 set bpwfatt=
 set bpinitialstatus=
+set iperfdir=
 For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassInfoTable 2^>nul') do set bpinfotable=%%a
 For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassWLWarning 2^>nul') do set bpwfatt=%%a
 For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BypassInitialStatus 2^>nul') do set bpinitialstatus=%%a
+For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v iPerfTempDir 2^>nul') do set iperfdir=%%a
+
 @echo -----------------------------------------------------
 rem StartRusTextBlock
 rem @if [%bpinfotable%]==[] set "keyinfomess=Не установлен"
@@ -2076,9 +2559,11 @@ rem @if [%bpwfatt%]==[] set "keywfattmess=Не установлен"
 rem @if [%bpwfatt%]==[0xb] set "keywfattmess=Записан в реестре"
 rem @if [%bpinitialstatus%]==[] set "keyinistatus=Не установлен"
 rem @if [%bpinitialstatus%]==[0xb] set "keyinistatus=Записан в реестре"
+rem @if not defined iperfdir (set "keyiperfdir=Не установлен") else (set "keyiperfdir=%iperfdir%")
 rem @echo Ключ Bypass Info Table		: %keyinfomess%
 rem @echo Ключ Bypass Wireless Warning	: %keywfattmess%
 rem @echo Ключ Bypass Initial Status	: %keyinistatus%
+rem @echo Ключ iPerf Temp Dir		: %keyiperfdir%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @if [%bpinfotable%]==[] set "keyinfomess=Not set"
@@ -5368,7 +5853,7 @@ call :_hat
 @echo.
 @echo.
 rem StartRusTextBlock
-rem @echo     +++ Шлем в режиме Bootloader! +++
+rem @echo     %_fBlack%%_bDGray%+++ Шлем в режиме Bootloader! +++%_fReset%
 rem @echo.
 rem @echo.
 rem @echo.
@@ -5386,6 +5871,9 @@ rem @echo      0. Выход из программы
 rem @echo      M. Выход в Главное меню
 rem @echo      R. Перезагрузка шлема
 rem @echo      F. Выход в общее прошивочное меню прошивки
+rem @echo      K. Информация о прошивке шлема, слотах загрузки, ревизии и батарее
+rem @echo      S. Отключить сенсоры шлема
+rem @echo      Q. Включить сенсоры шлема
 rem @echo.
 rem @echo  Enter. Перейти непосредственно к меню прошивки (Кнопочный режим)
 rem EndRusTextBlock
@@ -5408,6 +5896,9 @@ rem StartEngTextBlock
 @echo      M. Exit to Main Menu 
 @echo      R. Reboot
 @echo      F. Exit to Firmware Menu
+@echo      K. Headset Firmware and Boot Slot Information
+@echo      S. Disable headset sensors
+@echo      Q. Enable headset sensors
 @echo.
 @echo  Enter. Switch to button flashing mode
 rem EndEngTextBlock
@@ -5429,10 +5920,276 @@ if /i "%choice%"=="1" (GOTO _firmwarebutton)
 if /i "%choice%"=="f" (GOTO _fwmenuskip)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="r" (GOTO _RebootFromBootLoader)
+if /i "%choice%"=="k" (set "fastbotcommand=:_FastbootFirmwareExtractCont"&&call :_FastbootCheckDevice)
+if /i "%choice%"=="s" (set "fastbotcommand=:_DisableHeadsetSensorsConfirm"&&call :_FastbootCheckDevice)
+if /i "%choice%"=="q" (set "fastbotcommand=:_EnableHeadsetSensors"&&call :_FastbootCheckDevice)
 goto _bootloadermode
 
 :_RebootFromBootLoader
 @%myfiles%\fastboot reboot  1>nul 2>nul& call :_rebootmessage & goto  _returnmenu
+
+
+:_DisableHeadsetSensorsConfirm
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo      %_fBRed%ОБРАТИТЕ ВНИМАНИЕ:
+rem @echo.
+rem @echo          %_fBRed%Сенсоры после перезагрузки шлема не включаются автоматически^!%_fReset%
+rem @echo.
+rem @echo          %_fBYellow%После отключения сенсоров шлем всякий раз перез загрузкой в окружение
+rem @echo          будет просить вас нажать кнопку %_fYellow%Питание %_fBYellow%для включения сенсоров.
+rem @echo          Для того чтобы они снова были активны по умолчанию, воспользуйтесь
+rem @echo          опцией %_fYellow%Q - Включить сенсоры шлема.%_fReset%
+rem @echo.
+rem @echo.
+rem @Set /p choice="Подтвердите отключение нажатием Enter или введите 0 и Enter для возврата в меню: "
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo      %_fBRed%ATTENTION:
+@echo.
+@echo          %_fBRed%Sensors do not turn on automatically after rebooting the headset^!%_fReset%
+@echo.
+@echo          %_fBYellow%After disabling the sensors, each time you reboot into the environment,
+@echo          the headset will ask you to press the %_fYellow%Power %_fBYellow%button to enable the sensors.
+@echo          To make them active by default again, use the
+@echo          option %_fYellow%Q - Enable headset sensors.%_fReset%
+@echo.
+@echo.
+@Set /p choice="Confirm disabling by pressing Enter, or enter 0 and press Enter to return to the menu: "
+rem EndEngTextBlock
+if not defined choice call :_DisableHeadsetSensors
+if /i "%choice%"=="0" (exit /b)
+
+
+:_DisableHeadsetSensors
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Отключение сенсоров..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%= Disabling sensors..%_fReset%
+rem EndEngTextBlock
+%MYFILES%\fastboot reboot-bootloader 1>nul 2>nul
+timeout 5 >nul
+rem pause
+%MYFILES%\fastboot oem set-sensorlock 1 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Сенсоры отключены%_fReset%
+rem @echo     Теперь попробуйте загрузить шлем, выбрав пункт R.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Sensors disabled
+@echo     Try to reboot the headset with R option
+rem EndEngTextBlock
+call :_prevmenu
+exit /b
+)
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBRed%= Сенсоры отключить не удалось.%_fReset%
+rem @echo     Возможно шлем не поддерживает эту команду
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBRed%= Failed to disable sensors.%_fReset%
+@echo     The headset may not support this command
+rem EndEngTextBlock
+call :_prevmenu
+exit /b
+
+
+:_EnableHeadsetSensors
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Включение сенсоров..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%= Enabling sensors..%_fReset%
+rem EndEngTextBlock
+%MYFILES%\fastboot reboot-bootloader 1>nul 2>nul
+timeout 5 >nul
+rem pause
+%MYFILES%\fastboot oem set-sensorlock 0 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Сенсоры включены%_fReset%
+rem @echo     Теперь попробуйте загрузить шлем, выбрав пункт R.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Sensors enabled
+@echo     Try to reboot the headset with R option
+rem EndEngTextBlock
+call :_prevmenu
+exit /b
+)
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBRed%= Сенсоры включить не удалось.%_fReset%
+rem @echo     Возможно шлем не поддерживает эту команду
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBRed%= Failed to enable sensors.%_fReset%
+@echo     The headset may not support this command
+rem EndEngTextBlock
+call :_prevmenu
+exit /b
+
+
+
+
+:_FastbootCheckDevice
+cls
+call :_hat
+echo off
+setlocal enabledelayedexpansion
+@echo.
+@echo.
+@echo off
+for /f "tokens=1" %%i in ('fastboot devices ^| findstr /i /c:"fastboot"') do (
+rem StartRusTextBlock
+rem @echo   %_fBYellow%Найдено устройство:%_fReset% %_fBCyan%%%i%_fReset%
+rem @call %fastbotcommand%
+rem exit /b
+rem )
+rem @echo ===============================================
+rem @echo %_fBRed%+++ Шлем не отвечает на команды fastboot +++%_fReset%
+rem @echo Загрузите его в bootloader, fastboot или recovery режимы.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%Device found: %_fReset% %_fBCyan%%%i%_fReset%
+call %fastbotcommand%
+xit /b
+)
+@echo ===============================================
+@echo %_fBRed%+++ Headset is not responding to fastboot commands +++%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+exit /b 
+rem goto _returnmenu
+
+
+:_FastbootFirmwareExtractCont
+%MYFILES%\fastboot reboot-bootloader 1>nul 2>nul
+@timeout 2 >nul
+@echo.
+@echo   -----------------------------------------------
+for /f "tokens=2" %%i in ('fastboot oem battery-capacity 2^>^&1 ^| findstr /i "(bootloader)"') do set battlevel=%%i
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Уровень батареи: %_fReset%%_fBCyan%%battlevel%%%%_fReset% (данные не всегда верны)
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%= Battery level:%_fReset%%_fBCyan%%battlevel%%%%_fReset% (data can be wrong)
+rem EndEngTextBlock
+%MYFILES%\fastboot oem battery-capacity 2>nul
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Извлекаем информацию о слотах и ревизии.%_fReset%
+rem @echo     Немного терпения, это займет некоторое время..
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Extracting information about the slots.
+@echo     Please be patient, this will take some time..
+rem EndEngTextBlock
+@echo   -----------------------------------------------
+for /f "tokens=*" %%A in ('%MYFILES%\fastboot getvar all 2^>^&1') do (
+    echo %%A | findstr /i "slot- has-slot:boot current-slot model-revision" >nul
+    if not errorlevel 1 (
+        set "fp=%%A"
+echo     %_fBCyan%!fp:~12!%_fReset%
+
+    )
+)
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Переключаемся в режим fastboot%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Switching to fastboot mode
+rem EndEngTextBlock
+
+%MYFILES%\fastboot reboot-fastboot 1>nul 2>nul
+@timeout 3 >nul
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Извлекаем информацию о прошивке..%_fReset%
+rem @echo     Придется подождать еще несколько секунд..
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Retrieving firmware information...
+@echo     Just a second..
+rem EndEngTextBlock
+for /f "tokens=*" %%A in ('%MYFILES%\fastboot getvar all 2^>^&1') do (
+    echo %%A | findstr /i "vendor-fingerprint" >nul
+    if not errorlevel 1 (
+        set "fp=%%A"
+    )
+)
+
+
+set "fp=!fp:*vendor-fingerprint:=!"
+
+for /f "tokens=2,6 delims=/:" %%B in ("!fp!") do (
+    set "device=%%B"
+    set "number=%%C"
+)
+
+call :_FastbootFirmwareTable
+@del /q /f %ftpfile% 1>nul 2>nul
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo     %_fBYellow%Модель шлема%_fReset%		: %_fBCyan%Meta %DevModelNm%%_fReset%
+rem @echo     %_fBYellow%Версия среды шлема%_fReset%		: %_fBCyan%!fbenv!%_fReset%
+rem @echo     %_fBYellow%Версия прошивки шлема%_fReset%	: %_fBCyan%!fbfwr!%_fReset%
+rem @echo   -----------------------------------------------
+rem @echo   %_fBYellow%= Возвращаемся в bootloader..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   Headset Model          	: Meta %DevModelNm%
+@echo   Headset Environment Ver	: !fbenv!
+@echo   Headset Firmware Ver   	: !fbfwr!
+@echo   -----------------------------------------------
+@echo   = Return to bootloader mode
+rem EndEngTextBlock
+%MYFILES%\fastboot reboot-bootloader 1>nul 2>nul
+@echo   -----------------------------------------------
+rem StartRusTextBlock
+rem @echo     %_fBGreen%Извлечение завершено.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo     %_fBGreen%Extracting complete.%_fReset%
+rem EndEngTextBlock
+rem @echo   -----------------------------------------------
+call :_prevmenu
+exit /b
+rem goto _returnmenu
+rem goto _beginn
+
+
+:_FastbootFirmwareTable
+
+set IntProductName=!device!
+
+call :_SetCompareDeviceModelName
+
+set ftpfile=%fwtxt%
+set "fbfwr=Not found in database"
+set "fbenv="
+
+call :_GetFTP
+
+for /F "tokens=1,2 delims= " %%a in (%ftpfile%) do (
+    echo %%a | findstr /i "%number%" >nul
+    if not errorlevel 1 (
+        set "fbenv=%%a"
+        set "fbfwr=%%b"
+        exit /b
+    )
+)
+set fbenv=%number%
+@del /q /f %ftpfile% 1>nul 2>nul
+exit /b
+
 
 :_NOTEXIST
 @%verbecho%
@@ -5469,7 +6226,7 @@ call :_hatqut
 @echo.
 @echo.
 rem StartRusTextBlock
-rem @echo    ++++ Файл прошивки не корректен ++++
+rem @echo    %_fBRed%++++ Файл прошивки не корректен ++++%_fReset%
 rem @echo.
 rem @echo.
 rem @echo.
@@ -5597,15 +6354,19 @@ rem EndEngTextBlock
 @if %hsnumb% GTR %lsnumb% (
 @echo.
 rem StartRusTextBlock
-rem @echo +++  Прошивка в шлеме новее, чем в таблице  +++
-rem @echo.
-rem @echo = Дополняем таблицу соответствия версий прошивок
+rem @echo     +++ Версия прошивки шлема актуальна +++
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo +++ Firmware in the headset is newer than in the table +++
-@echo.
-@echo = Updating the firmware version mapping table
+@echo     +++ The firmware version in the headset is up to date +++
 rem EndEngTextBlock
+
+rem @echo +++  Прошивка в шлеме новее, чем в базе данных  +++
+rem @echo.
+rem rem @echo = Дополняем локальную базу данных версий прошивок
+rem @echo +++ Firmware in the headset is newer than in the table +++
+rem rem @echo.
+rem rem rem @echo = Updating the firmware version mapping table
+
 @echo %hsenvironment% %hsversion% >>%fwtxt%
 call :_SetCompareDeviceModelName
 rem call :_SetFWtxtFileName
@@ -7635,6 +8396,7 @@ goto _resolutionfix
 
 :_installmenugen
 call :_checkcurlexists
+:_installmenugenc
 call :_hat
 call :_hatmenu
 @echo.
@@ -7645,14 +8407,12 @@ rem @echo    A.  Запустить утилиту установки прило
 rem @echo    B.  Запустить приложения на шлеме
 rem @echo    C.  Узнать команду ADB для запуска приложения на шлеме
 rem @echo    D.  Отобразить и сохранить список установленных приложений
-rem @echo    E.  Управление выбранными приложениями	   [EXPERIMENTAL]
-rem @echo.
+rem @echo    E.  Управление приложениями на шлеме	   [EXPERIMENTAL]
+rem echo.
 rem @echo    V.  Установка VPN клиентов и драйверов Oculus
 rem @echo    S.  Установка медиа приложений
 rem @echo    P.  Установка прикладных приложений
-rem @echo    G.  Установка игровых приложений
-rem @echo.
-rem @echo.   %curldownloadmenu%
+rem @echo    R.  Установка игровых приложений
 rem @echo.
 rem @echo.
 rem @echo    ВАЖНО:
@@ -7660,13 +8420,6 @@ rem @echo.
 rem @echo       Для установки приложений требуется интернет на ПК.
 rem @echo       Если какие-то приложения не скачиваются, установите последнюю версию Quas
 rem @echo       по ссылке: https://vrcomm.ru/files/file/7-quest-adb-scripts-quas/
-rem @echo.
-rem @echo.
-rem @echo.   %curldownloadmess1%
-rem @echo.   %curldownloadmess2%
-rem @echo.   %curldownloadmess3%
-rem @echo.
-rem @echo.   %curldownloadmess4%
 rem @echo.
 rem @echo.
 rem @echo.
@@ -7678,14 +8431,13 @@ rem StartEngTextBlock
 @echo    B.  Run applications on the headset
 @echo    C.  Get ADB command to launch an application on the headset
 @echo    D.  Show list of installed applications
-@echo    E.  Managing selected applications        [EXPERIMENTAL]
+@echo    E.  Managing applications        [EXPERIMENTAL]
 @echo.
 @echo    V.  VPN clients and Oculus driver installation
 @echo    S.  Media applications installation
 @echo    P.  Utility applications installation
-@echo    G.  Gaming applications installation
+@echo    R.  Gaming applications installation
 @echo.
-@echo.   %curldownloadmenu%
 @echo.
 @echo.
 @echo    IMPORTANT:
@@ -7695,11 +8447,7 @@ rem StartEngTextBlock
 @echo       via the link: https://vrcomm.ru/files/file/7-quest-adb-scripts-quas/
 @echo.
 @echo.
-@echo.   %curldownloadmess1%
-@echo.   %curldownloadmess2%
-@echo.   %curldownloadmess3%
 @echo.
-@echo.   %curldownloadmess4%
 @echo.
 @echo.
 @echo.
@@ -7718,43 +8466,100 @@ if /i "%choice%"=="b" (GOTO _StartingApps)
 if /i "%choice%"=="c" (GOTO _CommandLaunchApp)
 rem if /i "%choice%"=="d" (GOTO _AppsInstalledList)
 if /i "%choice%"=="d" (GOTO _ApplicationActionMenu)
-rem if "%choice%"=="e" (call :_AppsInstallMenu && call :_packageslistselonly && pause && goto _ApplicationActionManageMenu)
-if "%choice%"=="e" (set cmdsel=1&& call :_AppsInstallMenu && call :_ApplicationActionManageMenu & call :_StartEndAppsMenu)
-
-rem if /i "%choice%"=="e" (GOTO _ApplicationActionMenu)
-
+if /i "%choice%"=="e" (GOTO _AppsManagementMenu)
 if /i "%choice%"=="v" (GOTO _InstallVPNClients)
 if /i "%choice%"=="s" (GOTO _InstallMediaApps)
 if /i "%choice%"=="p" (GOTO _InstallSoftwareApps)
-if /i "%choice%"=="h" (GOTO _curldownload)
-if /i "%choice%"=="g" (GOTO _InstallGamesApps)
+if /i "%choice%"=="r" (GOTO _InstallGamesApps)
 @cls
 goto _installmenugen
+
+
+
+
+:_AppsManagementMenu
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo       МЕНЮ УПРАВЛЕНИЯ ПРИЛОЖЕНИЯМИ
+rem @echo       ============================
+rem @echo.
+rem @echo.
+rem @echo    A.  Удаление приложений		
+rem @echo    B.  Мягкое удаление приложений (кэш и данные не удаляются)
+rem @echo    C.  Очистка кэша и данных приложений
+rem @echo    D.  Отключение приложений
+rem @echo    E.  Включение приложений
+rem @echo    F.  Запуск приложения
+rem @echo    G.  Остановка приложения
+rem @echo    I.  Просмотр статуса приложения
+rem @echo    J.  Просмотр запущенных приложений
+rem @echo.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo        APPLICATION MANAGEMENT MENU
+@echo       ============================
+@echo.
+@echo.
+@echo    A.  Uninstall applications		
+@echo    B.  Soft uninstall of applications (cache and data are not deleted)
+@echo    C.  Clear application cache and data
+@echo    D.  Disable applications
+@echo    E.  Enable applications
+@echo    F.  Start application
+@echo    G.  Stop application
+@echo    I.  Apps status view
+@echo    J.  View running apps
+@echo.
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+@echo.
+call :_MenuChoiceEnter
+@echo.
+if not defined choice goto _AppsManagementMenu
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="a" (goto _UninstallAppsPS)
+if /i "%choice%"=="b" (goto _SoftUninstallAppsPS)
+if /i "%choice%"=="c" (goto _ClearCacheDataAppsPS)
+if /i "%choice%"=="d" (goto _DisableAppsPS)
+if /i "%choice%"=="e" (goto _EnableAppsPS)
+if /i "%choice%"=="f" (goto _StartAppPS)
+if /i "%choice%"=="g" (goto _StopAppPS)
+if /i "%choice%"=="i" (goto _ViewAppStatusPS)
+if /i "%choice%"=="j" (goto _ViewRunningAppsPS)
+@cls
+goto _AppsManagementMenu
+
 
 :_checkcurlexists
 @%verbecho%
 @curl.exe 1>nul 2>nul
 if %errorlevel%==2 exit /b
 rem StartRusTextBlock
-rem set "curldownloadmenu=H.  Скачать Curl"
-rem set "curldownloadmess1======================================================================================="
-rem set "curldownloadmess2=^|  +++ Curl отсутствует в операционной системе, установка приложений невозможна +++  ^|"
-rem set "curldownloadmess3======================================================================================="
-rem set "curldownloadmess4=Выберите пункт H чтобы скачать, затем распакуйте содержимое каталога bin в каталог Windows"
+@echo   =======================================================================================
+rem @echo     %_fBRed%+++ Curl отсутствует в операционной системе, установка приложений невозможна +++%_FReset%
+@echo   =======================================================================================
+rem @echo   %_fBYellow%Скачайте curl по этой ссылке:   %_fCyan%https://curl.se/windows/latest.cgi?p=win64-mingw.zip
+rem @echo   %_fBYellow%и распакуйте его в каталог Windows. Затем перезапустите эту программу.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-set "curldownloadmenu=H.  Download Curl"
-set "curldownloadmess1================================================================================================="
-set "curldownloadmess2=^|  +++ Curl is missing from the operating system, application installation is impossible  +++  ^|"
-set "curldownloadmess3================================================================================================="
-set "curldownloadmess4=Select H to download, then extract the contents of the bin directory to your Windows directory"
+@echo   =================================================================================================
+@echo   ^|  +++ Curl is missing from the operating system, application installation is impossible  +++  ^|
+@echo   =================================================================================================
+@echo.
+@echo.
+@echo   Download the curl this link:   https://curl.se/windows/latest.cgi?p=win64-mingw.zip
+@echo   and extract it to Windows directory. After then restart the program.
 rem EndEngTextBlock
+call :_prevmenu
+goto _installmenugenc
 
-exit /b
-
-:_curldownload
-start " " "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
-goto _installmenugen
 
 
 :_InstallGamesApps
@@ -8060,8 +8865,6 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 @echo.
 @echo.
-::@@echo.
-@echo.
 call :_MenuChoiceEnter
 @echo.
 if not defined choice goto _InstallVPNClients
@@ -8115,11 +8918,8 @@ if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 rem if "%choice%"=="1" (goto _packageslist)
 rem if "%choice%"=="2" (goto _StartAppsInstalledScript)
-rem if "%choice%"=="3" (goto _ApplicationactionManageMenu)
 if "%choice%"=="1" (call :_AppsInstallMenu && goto _packageslistselmenu)
 if "%choice%"=="2" (call :_AppsInstallMenu && goto _StartAppsInstalledScript)
-rem if "%choice%"=="3" (call :_AppsInstallMenu && call :_packageslistselonly && pause && goto _ApplicationActionManageMenu)
-rem if "%choice%"=="4" (goto _ApplicationactionManageMenu)
 goto _applicationactionmenu
 
 :_packageslist
@@ -8386,14 +9186,14 @@ call :_cdc
 @echo.
 @echo.
 rem StartRusTextBlock
-rem @echo     Для вывода приложений с фильтрацией введите название пакета или его часть,
-rem @echo     например "facebook" или "face" без кавычек.
+rem @echo     %_fBYellow%Для вывода приложений с фильтрацией введите название пакета или его часть,
+rem @echo     например "%_fYellow%facebook%_fBYellow%" или "%_fYellow%face%_fBYellow%" без кавычек.%_fReset%
 rem @echo.
-rem @echo    ОБРАТИТЕ ВНИМАНИЕ:
+rem @echo    %_fCyan%ОБРАТИТЕ ВНИМАНИЕ:%_fReset%
 rem @echo.
-rem @echo         Поиск РЕГИСТРОЗАВИСИМЫЙ. Пример поиска: Предположим, название пакета "com.Armature.VR4"
-rem @echo         Поисковая фраза с частью названия "arma" (без кавычек) выведет пустой список. 
-rem @echo         Для успешного поиска фильтр следует указывать с точным регистром букв: "Arma" (без кавычек)
+rem @echo       %_fBYellow%Поиск %_fYellow%РЕГИСТРОЗАВИСИМЫЙ%_fBYellow%. Пример поиска: Предположим, название пакета "%_fYellow%com.Armature.VR4%_fBYellow%"
+rem @echo       Поисковая фраза с частью названия "%_fYellow%arma%_fBYellow%" (без кавычек) выведет пустой список. 
+rem @echo       Для успешного поиска фильтр следует указывать с точным регистром букв: "%_fReset%%_fYellow%Arma%_fBYellow%" (без кавычек)%_fReset%
 rem @echo.
 rem @echo     Для выхода в меню введите любую скобку и нажмитте Enter
 rem EndRusTextBlock
@@ -8473,6 +9273,11 @@ rem @echo     printf "\n";>>%shscriptname%
 @%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname%
 @%myfiles%\adb shell chmod 0755 /data/local/tmp/aapt-arm-pie2
 @%myfiles%\adb shell sh /data/local/tmp/%shscriptname% >o.txt 2>nul
+
+rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+rem powershell -ExecutionPolicy Bypass -File "%myfiles%\selector.ps1" "o.txt" "AppsInstalled-%pkgchoice%.txt"
+rem pause
+
 rem :_testconv
 rem set listpackages=-3
 rem setlocal enabledelayedexpansion
@@ -8490,6 +9295,7 @@ set second=%%B
 Call :EchoTab "!first!" 6 "!second!"  >>AppsInstalled-%pkgchoice%.txt 2>nul
 )
 )
+
 @del /q o.txt 2>nul 1>nul
 rem @del /q aapt-arm-pie2
 @del /q %shscriptname%
@@ -8530,12 +9336,17 @@ goto _returnmenu
   @echo %text%%~3
 exit /B
 
+
+rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 :_cdc
 @%myfiles%\adb shell getprop ro.boot.serialno 1>NUL 2>&1
 rem @echo %errorlevel%
 rem exit /b
 IF %errorlevel%==1 goto _NoDevice
 exit /b
+
 
 :_hatapps
 @echo ==================================================================================================
@@ -9492,9 +10303,81 @@ goto _InstallGamesApps
 :: Секция установки прикладных приложений
 :: Section for installing application software
 
+:_curlinstall
+call :_cdc
+call :_CheckAdminRights
+if defined adminmsg  echo %adminmsg% && goto _returnmenu
+set dlappl=curl.zip
+set dlcat=%dlappl:~0,-4%
+rem set dlcat=%dlappl:~0,-4%
+rem StartRusTextBlock
+rem @echo Скачивание...
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo Downloading...
+rem EndEngTextBlock
+set curllink=https://www.dropbox.com/scl/fi/ikrvln73est94e165v96r/curl.zip?rlkey=r5wu5n0s7qq0dyi9c7ivwgcur
+@curl -LJkO %curllink%  -# 1>nul
+@%myfiles%\7z.exe x "%cd%\%dlappl%" -o"%cd%\%dlcat%\" 1>NUL 2>&1
+@xcopy %cd%\%dlcat%\*.* %windir%\*.* /Y 1>NUL 2>&1
+rd %cd%\%dlcat%\ /q /s 1>NUL 2>&1
+@del /y /f %dlappl%  1>NUL 2>&1
+rem call :_prevmenu
+rem goto _InstallSoftwareApps
+exit /b
+
+:_checksystemcurl
+@%verbecho%
+@curl.exe 1>nul 2>nul
+if %errorlevel%==2 goto _setdrivers
+rem StartRusTextBlock
+rem @echo  ================================================================================
+rem @echo  ^|  %_fBRed%+++ Curl отсутствует в операционной системе, автоскачивание невозможно +++%_fReset%  ^|
+rem @echo  ================================================================================
+rem @echo.
+rem @echo    %_fBYellow%Сначала требуется скачать и установить %_fYellow%Curl %_fBYellow%вручную.
+rem @echo    Нажмите %_fYellow%Enter %_fBYellow%чтобы скачать с помощью браузера, 
+rem @echo    затем распакуйте содержимое каталога %_fYellow%bin %_fBYellow%в каталог Windows.%_fReset% 
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  =================================================================================================
+@echo  ^|  +++ Curl is missing from the operating system, application installation is impossible  +++  ^|
+@echo  =================================================================================================
+@echo.
+@echo  Press Enter to download, then extract the contents of the bin directory to your Windows directory
+rem EndEngTextBlock
+set dlcurl=
+set dlcurl=1
+@echo  ----------------
+@echo.
+rem StartRusTextBlock
+rem @Set /p dlcurl="Нажмите Enter для скачивания или 0 для возврата >>> "
+rem EndRusTextBlock
+rem StartEngTextBlock
+@Set /p dlcurl="Press Enter to download or 0 to return >>> "
+rem EndEngTextBlock
+if %dlcurl%==0 (goto :_NormalStart)
+if %dlcurl%==1 (goto :_curldownloadbrowser)
+goto :_checksystemcurl
+
+:_curldownloadbrowser
+start " " "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
+@echo  ----------------
+rem StartRusTextBlock
+rem @echo  %_fBCyan% Распакуйте архив %_fCyan%win64-mingw.zip %_fBCyan%и содержимое каталога %_fCyan%bin %_fBCyan%скопируйте в каталог %_fCyan%Windows%_fBCyan%
+rem @echo   Затем нажмите любую кнопку для выхода в начальное окно программы%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  %_fBCyan% Unpack the archive %_fCyan%win64-mingw.zip %_fBCyan%and copy the contents of the %_fCyan%bin %_fBCyan%folder into the %_fCyan%Windows%_fBCyan% directory
+@echo   Then press any key to return to the main window of the program%_fReset%
+rem EndEngTextBlock
+pause >nul
+goto _NormalStart
+
+
 :_mqdhinstall
 call :_cdc
-set dlappl=LightningLauncher.apk
+set dlappl=Meta-Quest-Developer-Hub-5.5.0.exe.zip
 set curllink=https://securecdn.oculus.com/binaries/download/?id=9659320600819602
 set "instmess=Распакуйте архив и запустите exe файл"
 call :_dlwingamesapps
@@ -9941,11 +10824,14 @@ rem @echo A browser will open on the headset with a website where you can get a 
 @%MYFILES%\adb shell am start -n "com.oculus.vrshell/.MainActivity" -d apk://com.oculus.browser -e uri https://outlinekeys.com/ 1>nul 2>nul
 exit /b
 
+
+
 :_setdrivers
+rem call :_checkcurlexists
 call :_CheckAdminRights
 call :_CheckOSVersion
 if defined adminmsg  echo %adminmsg% && goto _returnmenu
-if %osversion%==10 goto _setdrivers10
+if [%osversion%]==[10] goto _setdrivers10
 
 :_setdrivers7
 set dlappl=ocdrv7.zip
@@ -10046,7 +10932,7 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 @curl -LJkO %curllink%  -# 1>nul
 @%myfiles%\7z.exe x "%cd%\%dlappl%" -o"%cd%\%dlcat%\" 1>NUL 2>&1
-if %errorlevel% NEQ 0 set "instmess=%_fBlack%%_fBRed%Ошибка установки. Проверьте подключение к интернет и права администратора.%_fReset%"&&goto _dlwinappsend
+if %errorlevel% NEQ 0 goto _dlwinappsend
 rem StartRusTextBlock
 rem @echo ---
 rem @echo Установка... Ждите около минуты...
@@ -10060,9 +10946,34 @@ rem EndEngTextBlock
 @ping localhost -n 50 1>nul 2>&1
 @rd %cd%\%dlcat% /Q /S 1>nul 2>nul
 @del %dlappl% /Q 1>nul 2>nul
+rem StartRusTextBlock
+rem set "instmess=Готово. Драйверы Oculus установлены."
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "instmess=Done. Oculus drivers installed."
+rem EndEngTextBlock
 :_dlwinappsend
 @echo ----------------------------------------
-@echo %instmess%
+rem StartRusTextBlock
+rem @echo %_fBRed%Ошибка установки. Проверьте подключение к интернет и права администратора.%_fReset%
+rem @echo.
+rem @echo  %_fBYellow%Если при скачивании появляется ошибка, попробуйте установать драйверы вручную:
+rem @echo.
+rem @echo  1. Скачать файл %_fYellow%oculus-home-drivers-1.71.0.000017-w10.rar %_fBYellow%по ссылке: 
+rem @echo     %_fBGreen%https://vrcomm.ru/files/file/5-драйверы-oculus-quest/
+rem @echo  %_fBYellow%2. Распаковать архив и запустить файл %_fYellow%oculus-drivers.exe
+rem @echo  %_fBYellow%3. Подождать ровно одну минуту.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBRed%Installation error. Please check your internet connection and administrator privileges.%_fReset%
+@echo.
+@echo  %_fBYellow%If an error occurs during download, try installing the drivers manually:
+@echo.
+@echo  1. Download the file %_fYellow%oculus-home-drivers-1.71.0.000017-w10.rar %_fBYellow%from the link: 
+@echo     %_fBGreen%https://vrcomm.ru/files/file/5-драйверы-oculus-quest/
+@echo  %_fBYellow%2. Extract the archive and run the file %_fYellow%oculus-drivers.exe
+@echo  %_fBYellow%3. Wait exactly one minute.%_fReset%
+rem EndEngTextBlock
 call :_returnmenu
 GOTO _tabBegin
 
@@ -10101,6 +11012,9 @@ exit /b
 @%verbecho%
 
 :_SendToMenu
+goto _ResetEnv 
+
+:_SendToMenuEndLocal
 set sendtolnk=
 set qtarget=
 set sendtofoldercmdfile=
@@ -10216,6 +11130,13 @@ if /i "%choice%"=="y" (explorer shell:sendto & explorer c:\temp)
 
 @cls
 goto _SendToMenu
+
+:_ResetEnv
+(
+  endlocal
+)
+goto _SendToMenuEndLocal
+
 
 :_SendToSDCARD
 call :_SetVariableContext
@@ -10367,7 +11288,7 @@ del "%appdata%\Microsoft\Windows\SendTo\Files to Quest in the root of Sdcard*" /
 del "%appdata%\Microsoft\Windows\SendTo\APK+OBB Installation*" /q 1>nul 2>nul
 del "%appdata%\Microsoft\Windows\SendTo\Installation via INSTALL.TXT*" /q 1>nul 2>nul
 rem EndEngTextBlock
-endlocal
+rem endlocal
 @echo  =====================================================
 rem StartRusTextBlock
 rem @echo  = Все установленные ранее ярлыки и программы удалены
@@ -10383,7 +11304,10 @@ rem EndEngTextBlock
 @echo.
 goto :_SendToMenu
 
+
+
 :_CreateCmdForLink
+rem endlocal 
 call :_SetVariableContext
 @del %sendtofoldercmdfolder%\%sendtofoldercmdfile% /q 1>nul 2>nul
 @echo @echo off>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
@@ -10428,8 +11352,10 @@ rem EndEngTextBlock
 @echo :_sendcopy>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @setlocal enableextensions enabledelayedexpansion>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @for ^/f "tokens=*" %%%%e in ^("%ap%"^) do ^( >> %sendtofoldercmdfolder%\%sendtofoldercmdfile%
-@echo @set "fullpathfile=%%%%~dpe">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
-@echo @set "file=%%%%~nxe">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+
+@echo @set "fullpathfile=%%%%~fe">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+
+rem @echo @set "file=%%%%~nxe">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @echo ------------->>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 rem StartRusTextBlock
 rem @echo @echo = Копируем в %copyname%..>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
@@ -10439,9 +11365,12 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 @echo @echo.>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 rem rem @echo @%sendtofoldercmdfolder%\adb.exe push "!fullpathfile!!file!" -p "/sdcard/">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
-endlocal
-@echo @%sendtofoldercmdfolder%\adb.exe push -p "!fullpathfile!!file!" "%qtarget%">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+
+rem @echo @%sendtofoldercmdfolder%\adb.exe push -p "!fullpathfile!!file!" "%qtarget%">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+@echo @%sendtofoldercmdfolder%\adb.exe push -p "!fullpathfile!" "%qtarget%">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+
 rem rem @echo @%sendtofoldercmdfolder%\adb shell mv "/sdcard/!file!" "%qtarget%">>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+
 @echo ^)>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo.>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @echo.>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
@@ -10476,7 +11405,7 @@ rem StartEngTextBlock
 @echo @echo ^^^>^^^>^^^> Press any key to exit the program ^^^<^^^<^^^<>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @echo               or wait for five seconds>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 rem EndEngTextBlock
-@echo @timeout ^5>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
+@echo @timeout ^5 ^>nul>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 @echo @exit>>%sendtofoldercmdfolder%\%sendtofoldercmdfile%
 exit /b
 
@@ -10498,7 +11427,6 @@ rem @xcopy %~dp0ocgr.ico %sendtofoldercmdfolder% /y 1>nul 2>nul
 
 @xcopy %myfiles%\qidcontext%qtlang%.cmd %sendtofoldercmdfolder% /y 1>nul 2>nul
 rem @xcopy %~dp0qidcontext.cmd %sendtofoldercmdfolder% /y 1>nul 2>nul
-
 exit /b
 
 :_InstallLnkMessage
@@ -10512,7 +11440,7 @@ rem EndEngTextBlock
 @echo  -----
 
 :_InstallLnkMessageAll
-@setlocal enableextensions enabledelayedexpansion
+rem @setlocal enableextensions enabledelayedexpansion
 @echo  ==================================================
 rem StartRusTextBlock
 rem @echo  = Установлены все ярлыки.
@@ -10539,6 +11467,7 @@ rem @set myfiles=d:\Quest2\adb
 @set percents=%%%
 @set ap=%%%^*
 rem set "exclmark=^!"
+rem endlocal
 exit /b
 
 :_DescriptionContextTool
@@ -11265,6 +12194,8 @@ rem StartEngTextBlock
 @echo       Don't forget to enable the sensor.
 @echo.
 rem EndEngTextBlock
+@echo.
+@echo.
 call :_MenuChoiceEnter
 @echo.
 if not defined choice goto _proxsensor
@@ -12746,8 +13677,17 @@ goto _beginn
 :_openshell
 @%verbecho%
 ::@start cmd /c @echo. & @adb shell
-@start cmd /c @%MYFILES%\adb shell
+rem @start cmd /c @%MYFILES%\adb shell
+start " " /min powershell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File ""%myfiles%\adbgui.ps1"" -AdbPath %myfiles%
 goto _beginn
+
+:_openshellgui
+@%verbecho%
+::@start cmd /c @echo. & @adb shell
+rem @start cmd /c @%MYFILES%\adb shell
+start " " /min powershell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File ""%myfiles%\guishell.ps1"" -AdbPath %myfiles%
+goto _beginn
+
 
 
 :_backupdatamenu
@@ -12865,6 +13805,7 @@ rem @echo    O.  Скачать прошивки для Quest 1/2/3/Pro
 rem @echo    P.  WebADB: Управление шлемом в браузере
 rem @echo    Q.  Телеграм-канал VR Games RUS
 rem @echo.
+rem @echo    R.  Некоторые инструкции
 rem @echo ---------------------------------------------------------------------
 rem @echo  Ссылки будут открываться в браузере по умолчанию.
 rem EndRusTextBlock
@@ -12882,6 +13823,7 @@ rem StartEngTextBlock
 @echo    O.  Download firmware for Quest 1/2/3/Pro
 @echo    P.  WebADB: Headset management in the browser
 @echo.
+@echo    R.  Some Instructions
 @echo ---------------------------------------------------------------------
 @echo  Links will open in the default browser.
 rem EndEngTextBlock
@@ -12915,8 +13857,52 @@ rem EndEngTextBlock
 ::if /i "%choice%"=="qq" (start " " chrome "_____")
 ::if /i "%choice%"=="r" (start " " "_____")
 ::if /i "%choice%"=="rr" (start " " chrome "_____")
+if /i "%choice%"=="r" (goto _helpmanuals)
 @cls
 goto _helplinksmenu
+
+
+
+:_helpmanuals
+cls
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo             ИНСТРУКЦИИ
+rem @echo         =========================
+rem @echo.
+rem @echo   %_fBGreen%Как загрузить шлем в Bootloader.%_fReset%
+rem @echo   %_fBYellow%Если шлем выключен, зажимаем кнопку %_fYellow%Громкость минус %_fBYellow%(ближняя к носу)
+rem @echo   затем жмем и удерживаем кнопку %_fYellow%Питание%_fBYellow% до появления меню %_fYellow%USB Update Mode.
+rem @echo   %_fBYellow%Если шлем включен, отправляем его в перезагрузку, нажимаем и удерживаем
+rem @echo   кнопку %_fYellow%Громкость минус%_fBYellow% до появления меню %_fYellow%USB Update Mode%_fReset%
+rem @echo.
+rem @echo   %_fBGreen%Как загрузить шлем в Recovery.
+rem @echo   %_fBYellow%Если шлем выключен, нажимаем и удерживаем кнопку %_fYellow%Громкость плюс %_fBYellow%(дальняя от носа), затем
+rem @echo   жмем и удерживаем кнопку %_fYellow%Питание%_fBYellow% до появления %_fYellow%сломанного Андроида%_fBYellow% и надписи %_fYellow%No command.
+rem @echo   %_fBYellow%Послеэтого снова держим кнопку %_fYellow%Питание%_fBYellow% и кратко жмем ту же кнопку %_fYellow%Громкость плюс.
+rem @echo   %_fBYellow%Должно появиться сине-желтое меню %_fYellow%Android Recovery%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo             INSTRUCTIONS
+@echo         =========================
+@echo.
+@echo   %_fBGreen%How to boot the headset into Bootloader.%_fReset%
+@echo   %_fBYellow%If the headset is turned off, hold the %_fYellow%Volume Down %_fBYellow%button (the one closer to the nose)
+@echo   and then press and hold the %_fYellow%Power%_fBYellow% button until the %_fYellow%USB Update Mode%_fBYellow% menu appears.
+@echo   %_fBYellow%If the headset is on, initiate a reboot and hold the %_fYellow%Volume Down%_fBYellow% button
+@echo   until the %_fYellow%USB Update Mode%_fYellow% menu appears.%_fReset%
+@echo.
+@echo   %_fBGreen%How to boot the headset into Recovery.
+@echo   %_fBYellow%If the headset is turned off, press and hold the %_fYellow%Volume Up %_fBYellow%button (the one farther from the nose), then
+@echo   press and hold the %_fYellow%Power%_fBYellow% button until you see a %_fYellow%broken Android%_fBYellow% and the message %_fYellow%No command.
+@echo   %_fBYellow%After that, hold the %_fYellow%Power%_fBYellow% button again and briefly press the same %_fYellow%Volume Up%_fBYellow% button.
+@echo   %_fBYellow%This should bring up the blue-yellow %_fYellow%Android Recovery%_fReset% menu.
+rem EndEngTextBlock
+@echo.
+call :_prevmenu
+goto _helplinksmenu
+
 
 :_syscommenu
 call :_settime
@@ -13591,8 +14577,17 @@ set skntempconst=Skin temperatures:
 set fanspedconst=Fan speed:
 set /a cpuusagesum=0
 
-@For /f "tokens=*" %%a in ('%MYFILES%\adb.exe shell dumpsys FanMonitorService') do set fancheck=%%a
+rem @For /f "tokens=*" %%a in ('%MYFILES%\adb.exe shell dumpsys FanMonitorService') do set fancheck=%%a
 @%MYFILES%\adb.exe shell dumpsys hardware_properties >hwp.txt
+
+rem >>>>>>>>>>>>>>>>>
+@For /f "tokens=*" %%a in ('%MYFILES%\adb.exe shell dumpsys hardware_properties ^| find "Fan speed:"') do set fanspeed=%%a
+@For /f "tokens=1,2 delims=:" %%a in ('%MYFILES%\adb.exe shell dumpsys FanMonitorService ^| findstr "pwm-tach-fan0:"') do set "fanpwm=%%b"
+@For /f "tokens=1-5 delims=: " %%a in ('%MYFILES%\adb.exe shell dumpsys FanMonitorService ^| findstr /c:"fan status:"') do (
+set fanstatus=%%c
+set fanwarnings=%%e
+)
+
 
 %myfiles%\adb.exe shell top -m 20 -n 1 -d 10 -bqH >top.txt
 @For /f "tokens=9 delims= " %%a in (top.txt) do (
@@ -13616,7 +14611,7 @@ if [%gpulevel%]==[] set gpulevel=Auto
 @IF !tempvar! == !gputempconst! set gputemp=!cc!
 @IF !tempvar! == !battempconst! set battemp=!cc!
 @IF !tempvar! == !skntempconst! set skntemp=!cc!
-@IF !tempvar! == !fanspedconst! set fansped=!cc!
+rem @IF !tempvar! == !fanspedconst! set fansped=!cc!
 )
 
 set usbnumb=1
@@ -13646,9 +14641,10 @@ rem StartRusTextBlock
 rem @echo  Мониторинг нагрузки и диагностика компонентов
 rem @echo.
 rem @echo --------------------------------------------
-rem @echo  Статус вентилятора		: !fancheck:~11,-11!
-rem @echo  Скорость вентилятора		: !fansped:~1,3!
-rem @echo  Варнинги вентилятора		: !fancheck:~27!
+rem @echo  PWM статус вентилятора		: %fanpwm%
+rem @echo  Статус вентилятора		: !fanstatus!
+rem @echo  Скорость вентилятора		: !fanspeed:~12,-1!
+rem @echo  Варнинги вентилятора		: !fanwarnings!
 rem @echo.
 rem @echo  Температура CPU		: !cputemp:~1,4!°
 rem @echo  Температура GPU		: !gputemp:~1,4!°
@@ -13667,9 +14663,10 @@ rem StartEngTextBlock
 @echo  Monitoring load and component diagnostics
 @echo.
 @echo --------------------------------------------
-@echo  Fan status             : !fancheck:~11,-11!
-@echo  Fan speed              : !fansped:~1,3!
-@echo  Fan warnings           : !fancheck:~27!
+@echo  PWM Fan status		: %fanpwm%
+@echo  Fan status		: !fanstatus!
+@echo  Fan speed		: !fanspeed:~12,-1!
+@echo  Fan warnings		: !fanwarnings!
 @echo.
 @echo  CPU Temperature        : !cputemp:~1,4!°
 @echo  GPU Temperature        : !gputemp:~1,4!°
@@ -14113,17 +15110,19 @@ rem @call :_GetIP ipaddr
 if not exist ipaddr.txt call :_CreateIPaddressTxt
 call :_ExtractIPaddress
 if [%ipaddrtxt%]==[] goto :_IPaddrEmpty
-if "%copytotemp%"=="1" (
-set iperfdirview=%SYSTEMDRIVE%\Temp
-) else (
-set iperfdirview=%MYFILES%
-)
 
 :_iperftestmenu
-if "%copytotemp%"=="1" (
-set iperfdirview=%SYSTEMDRIVE%\Temp
+@echo off
+set iperfdir=
+for /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v iPerfTempDir 2^>nul') do set "iperfdir=%%a"
+if defined iperfdir (
+set "iperfdirview=%iperfdir%"
 ) else (
-set iperfdirview=%MYFILES%
+if defined copytotemp (
+set "iperfdirview=%SYSTEMDRIVE%\Temp"
+) else (
+set "iperfdirview=%MYFILES%"
+)
 )
 
 call :_CheckAdminWiFiTest
@@ -14169,7 +15168,8 @@ rem @echo    Для тестирования качества WiFi соедин�
 rem @echo.
 rem @echo    Каталог iperf отображает текущее местоположение сервера iperf, из которого он будет запущен.
 rem @echo    %_fBYellow%Если тестирование не начинается или вылетат с ошибкой, попробуйте сменить каталог из пункта V%_fReset%.
-rem @echo.
+rem @echo    Каталог запуска iperf %SYSTEMDRIVE%\Temp с помощью ключа реестра можно сделать постоянным по умолчанию,
+rem @echo    и он не будет сбрасываться после выхода из программы. Из Главного меню пункты F-H-D
 rem @echo. %_fBRed%%adminmsg%%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -14203,7 +15203,8 @@ rem
 @echo.
 @echo    iperf directory displays current location of the iperf server from which it will be launched.
 @echo    If testing does not start or crashes with an error, try changing the directory using option V.
-@echo.
+@echo    The iperf launch directory %SYSTEMDRIVE%\Temp can be set as the default permanent directory using a registry key,
+@echo    and it will not reset after exiting the program. From the Main Menu, go to options F-H-D
 rem EndEngTextBlock
 @echo  ---------
 set tabanalize=
@@ -14344,8 +15345,10 @@ call :_hatmenu
 @echo.
 @echo.
 rem StartRusTextBlock
-rem @echo    R.  Гистограмма результатов реверсивной проверки
-rem @echo    D.  Гистограмма результатов прямой проверки
+rem @echo    R.  Гистограмма результатов реверсивной проверки (консольная)
+rem @echo    D.  Гистограмма результатов прямой проверки (консольная)
+rem @echo    E.  Графическая диаграмма результатов прямой реверсивной проверки с "гребенкой"
+rem @echo    F.  Графическая диаграмма результатов прямой реверсивной проверки без "гребенки"
 rem @echo    T.  Расчет тренда по результатам реверсивной проверки
 rem @echo    S.  Расчет тренда по результатам прямой проверки
 rem @echo    G.  Как построить диаграмму в Таблицах Google (инструкция)
@@ -14386,6 +15389,8 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo    R.  Histogram of reverse test results
 @echo    D.  Histogram of direct test results
+@echo    E.  Graphical chart of direct reverse check results with "comb"
+@echo    F.  Graphical chart of direct reverse check results without "comb"
 @echo    T.  Trend calculation based on reverse test results
 @echo    S.  Trend calculation based on direct test results
 @echo    G.  How to Create a Chart in Google Sheets (Instructions)
@@ -14433,6 +15438,8 @@ if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="r" (set vector=reverse&&set "VectorMessage=Histogram of Reverse Test Results [From PC to Headset]"&&GOTO _BuildHistogramAction)
 if /i "%choice%"=="d" (set vector=direct&&set "VectorMessage=Histogram of Direct Test Results [From Headset to PC]"&&GOTO _BuildHistogramAction)
+if /i "%choice%"=="e" (goto _BuildDiagramActionG)
+if /i "%choice%"=="f" (goto _BuildDiagramAction)
 if /i "%choice%"=="t" (set vector=reverse&&set "VectorMessage=Trend of Reverse Test Results [From PC to Headset]"&&GOTO _TrendAction)
 if /i "%choice%"=="s" (set vector=direct&&set "VectorMessage=Trend of Direct Test Results [From Headset to PC]"&&GOTO _TrendAction)
 if /i "%choice%"=="g" goto _GoogleHistoManual
@@ -14500,6 +15507,39 @@ rem StartEngTextBlock
 @echo   To close the histogram, press any key in its window.
 rem EndEngTextBlock
 @echo.
+call :_prevmenu
+goto _iperftestmenu
+
+
+:_BuildDiagramActionG
+set "grebenka=-p"
+
+:_BuildDiagramAction
+setlocal enableextensions enabledelayedexpansion
+if not exist *.csv goto _notestcsvfiles
+
+rem Reverse
+set vector=reverse
+set "VectorMessage=Reverse Test Results [From PC to Headset]"
+for /f "delims=" %%a in ('dir /b /a-d *%vector%*.csv') do (
+set csvfile=%%a
+)
+if not defined csvfile goto _notestcsvfiles
+set "datafile=!csvfile!"
+start " " powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "%myfiles%\diagram.ps1" -csv "%datafile%" -title "%VectorMessage%" %grebenka%
+
+rem Direct
+set vector=direct
+set "VectorMessage=Direct Test Results [From Headset to PC]"
+
+set "offsetwindow=-offsetX 500 -offsetY 300"
+for /f "delims=" %%a in ('dir /b /a-d *%vector%*.csv') do (
+set csvfile=%%a
+)
+if not defined csvfile goto _notestcsvfiles
+rem if "!csvfile!"==""  goto _notestcsvfiles
+set "datafile=!csvfile!"
+start " " powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "%myfiles%\diagram.ps1" -csv "%datafile%" -title "%VectorMessage%" %grebenka% %offsetwindow%
 call :_prevmenu
 goto _iperftestmenu
 
@@ -16788,7 +17828,7 @@ call :_hat
 @echo.
 @echo.
 rem StartRusTextBlock
-rem @echo       ++++ Шлем не авторизован! ++++
+rem @echo       %_fBRed%++++ Шлем не авторизован! ++++%_fReset%
 rem @echo.
 rem @echo.
 rem @echo.
@@ -16852,8 +17892,9 @@ rem @echo       ==============================================================
 rem @echo.
 rem @echo       %_fBlack%%_fBBlue%Возможные решения:%_fBlack%
 rem @echo.
-rem @echo      %_fBlack%%_fBYellow% - подключите кабель от шлема к ПК в задний USB порт компьютера или поменяйте порт.
-rem @echo       - проверьте работоспособность кабеля или поменяйте на другой.
+rem @echo      %_fBlack%%_fBYellow% - проверьте работоспособность кабеля или поменяйте на другой.
+rem @echo       - подключите кабель от шлема к ПК в задний USB порт компьютера или поменяйте порт.
+rem @echo       - переверните разъем Type-C кабеля на 180 градусов и подключите снова.
 rem @echo       - откройте Диспетчер устройств и посмотрите, есть ли там устройство XSRP или Quest.
 rem @echo         Диспетчер устройств можно открыть из меню чуть ниже, пункт D.%_fReset%
 rem @echo.
@@ -16923,11 +17964,11 @@ call :_hat
 @echo.
 @echo.
 rem StartRusTextBlock
-rem @echo               %_fBlack%%_fBRed%+++++ Шлем найден, но Режим разработчика не включен! +++++%_fReset%
+rem @echo               %_fBRed%+++++ Шлем найден, но Режим разработчика не включен! +++++%_fReset%
 rem @echo.
 rem @echo.
 rem @echo.
-rem @echo      %_fBlack%%_fBYellow%Проверьте, включен ли рычажок %_fBlack%%_fBBlue%Режим разработчика %_fBYellow%в мобильном приложении Meta Horizon.
+rem @echo      %_fBYellow%Проверьте, включен ли рычажок %_fBlack%%_fBBlue%Режим разработчика %_fBYellow%в мобильном приложении Meta Horizon.
 @echo      
 rem @echo      Если включен, попробуйте его выключить и включить, а также перезагрузить шлем.
 rem @echo      Можете также перезагрузить ПК, если это сообщение появилось после установки драйверов%_fReset%.
@@ -16951,7 +17992,7 @@ IF %ERRORLEVEL% NEQ 1 goto _erlvlnot
 @echo.
 @echo =====================================================================
 rem StartRusTextBlock
-rem @echo              +++ Ошибка, что-то пошло не так +++
+rem @echo              %_fBRed%+++ Ошибка, что-то пошло не так +++%_fReset%
 rem @echo  На всякий случай проверьте соединение со шлемом и Режим разработчика 
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -16969,7 +18010,7 @@ goto _returnmenu
 @echo.
 @echo.
 rem StartRusTextBlock
-rem @echo     +++++ Не удалось загрузить прошивку! +++++
+rem @echo     %_fBRed%+++++ Не удалось загрузить прошивку! +++++%_fReset%
 rem @echo.
 rem @echo.
 rem @echo.
@@ -17103,13 +18144,12 @@ rem EndEngTextBlock
 @echo.
 call :_MenuChoiceEnter
 @echo.
-if not defined choice goto _RunMenuNoDevice
+if not defined choice goto _DoubleConnect
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="s" (GOTO _beginn)
 if /i "%choice%"=="t" (GOTO _tabBegin)
 if /i "%choice%"=="r" (goto _reconnect)
-cls
-goto _RunMenuNoDevice
+goto _DoubleConnect
 
 :_ListConnections
 setlocal enabledelayedexpansion
@@ -17276,7 +18316,7 @@ if "%choice%"=="0" (exit)
 if /i "%choice%"=="s" (GOTO _beginn)
 if /i "%choice%"=="t" (GOTO _tabBegin)
 if /i "%choice%"=="d" (start mmc.exe devmgmt.msc)
-if /i "%choice%"=="i" (GOTO _setdrivers)
+if /i "%choice%"=="i" (GOTO :_checksystemcurl)
 @cls
 goto :_NoDriversInstalled
 
@@ -17438,6 +18478,15 @@ goto _PoweredOffMessage
 @%verbecho%
 @SetLocal EnableDelayedExpansion
 
+:_tabSysFilesVersion
+for /f "tokens=1-7 delims=|" %%a in ('%MYFILES%\adb.exe shell dumpsys DumpsysProxy OculusUpdater ^| findstr /i /c:"Oculus Core Mobile Services"') do (
+rem set ocmsn=%%b
+set ocmsc=%%g
+set sfn=!ocmsc:~1,4!
+)
+rem set sfn=
+if not defined sfn set "sfn=   0"
+
 :_tabSizeCheck
 @For /F "skip=1 tokens=2,3,4,5" %%a In ('%MYFILES%\adb shell df -h /sdcard/') Do (
 cls
@@ -17470,9 +18519,12 @@ cls
 if [%sn%]==[] set sn=---------------------
 :_tebDatetime
 @For /F %%q In ('@%MYFILES%\adb shell date +"%%Y.%%m.%%d-%%H:%%M:%%S" 2^<nul') Do set qdt=%%q
+call :_settime
+
 cls
 ::set qdt=
 if [%qdt%]==[] set qdt=---------------------
+if [%qdt:~0,-4%]==[%dppt:~0,-4%] (set qdt=%_fBGreen%%qdt%%_fReset%) else (set set qdt=%_fBRed%%qdt%%_fReset%)
 
 :_tabIP
 @FOR /F "tokens=2" %%G IN ('@%MYFILES%\adb.exe shell ip addr show wlan0 2^<nul ^|findstr /i /c:"inet "') DO set ipfull=%%G
@@ -17483,14 +18535,14 @@ cls
 
 :_tabConnectType
 rem @set /a connectsum=%cableconnect%+%wificheck%
-@IF [%connectsum%] EQU [2] set "ctype=Double  " & goto _tabFWdltable
+@IF [%connectsum%] EQU [2] set "ctype=%_fBRed%Double%_fReset%  " & goto _tabFWdltable
 @%MYFILES%\adb devices 2>NUL | findstr offline 2>nul 1>nul
 @IF %errorlevel% EQU 0 set ctype=%_fBlack%%_fBRed%Offline%_fReset% & goto _tabFWdltable
 @%MYFILES%\adb devices 2>NUL | findstr ":" 2>nul 1>nul
-@IF %errorlevel% EQU 0 set "ctype=Wi-Fi   "& goto _tabFWdltable
+@IF %errorlevel% EQU 0 set "ctype=%_fYellow%Wi-Fi%_fReset%   "& goto _tabFWdltable
 @FOR /F "skip=1 tokens=1" %%j IN ('%MYFILES%\adb devices 2^<nul') DO set sernum=%%j
 cls
-@if [%sernum%] NEQ [] set "ctype=Cable   "& goto _tabFWdltable
+@if [%sernum%] NEQ [] set "ctype=%_fBGreen%Cable%_fReset%   "& goto _tabFWdltable
 
 @set "ctype=-----   "
 
@@ -17508,32 +18560,57 @@ if [%hsversion%]==[] (set fwnumb=-------------) else (set fwnumb=%hsversion%)
 if [%hsenvironment%]==[] (set fwsys=---------------------) else (set fwsys=%hsenvironment%)
 
 :_teabCheckAdmin
-rem StartRusTextBlock
 rem @reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=Ну а то) || (set adminaccess=Не в этот раз)
+
+rem StartRusTextBlock
+rem @reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=%_fBGreen%Ну а то%_fReset%) || (set adminaccess=%_fBYellow%Не в этот раз%_fReset%)
 rem EndRusTextBlock
 rem StartEngTextBlock
-@reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=Of coz) || (set adminaccess=Not this time)
+@reg query "HKU\S-1-5-19" >NUL 2>&1 && (set adminaccess=%_fBGreen%Of coz%_fReset%) || (set adminaccess=%_fBYellow%Not this time%_fReset%)
 rem EndEngTextBlock
 call :_CheckEnvVarTemp
 call :_BatteryStatsCheck
 rem call :_setfwtxt
 call :_UpdateStatus
 call :_hat
+
+if %batlevel% LEQ 15 (
+set "colorbat=%_fBRed%%batlevel%%%%_fReset%"
+) else (
+if %batlevel% LEQ 50 (
+set "colorbat=%_fBYellow%%batlevel%%%%_fReset%"
+) else (
+set "colorbat=%_fBGreen%%batlevel%%%%_fReset%"
+)
+)
+
+
+if %dd% GEQ 90 (
+set "dc=%_fBRed%%dd%%_fReset%"
+) else (
+if %dd% GEQ 50 (
+set "dc=%_fBYellow%%dd%%_fReset%"
+) else (
+set "dc=%_fBGreen%%dd%%_fReset%"
+)
+)
+
+
 rem StartRusTextBlock
-rem @echo  Дата в шлеме	: %qdt%	^| Общий объем : !aa:~,-1!!sz!	^| Емкость акк.	: %opcouprom% %mahh%
-rem @echo  Серийный номер	: %sn%	^| Занято      : !bb:~,-1!!sz!	^| Потеряно емк.	: %izgcou% %mahh%
-rem @echo  Верcия системы	: %fwsys%	^| Свободно    : !cc:~,-1!!sz!	^| Деградация	: %degostcou%%pr%
-rem @echo  Прошивка	: %fwnumb%		^| Заполнено   : !dd!	^| Заряд		: %batlevel%%pr% [%batinfo%]
-rem @echo  IP шлема	: %ip%     	^| Подключение : %ctype%^| От админа?	: %adminaccess%
-rem @echo  Модель шлема	: %DevModelNm%   	^| EnvVar TEMP : %evt%	^| Обновления    : %updstatus%
+rem @echo  %_fCyan%Дата в шлеме%_fReset%	: %qdt%	^| %_fCyan%Общий объем%_fReset% : %_fBCyan%!aa:~,-1!!sz!%_fReset%	^| %_fCyan%Емкость акк.%_fReset%	: %_fBCyan%%opcouprom% %mahh%%_fReset%
+rem @echo  %_fCyan%Серийный номер%_fReset%	: %_fBCyan%%sn%%_fReset%	^| %_fCyan%Занято%_fReset%      : %_fBCyan%!bb:~,-1!!sz!%_fReset%	^| %_fCyan%Потеряно емк.%_fReset%	: %_fBCyan%%izgcou% %mahh%%_fReset%
+rem @echo  %_fCyan%Верcия системы%_fReset%	: %_fBCyan%%fwsys%%_fReset%	^| %_fCyan%Свободно%_fReset%    : %_fBCyan%!cc:~,-1!!sz!%_fReset%	^| %_fCyan%Деградация%_fReset%	: %_fBCyan%%degostcou%%pr%%_fReset%
+rem @echo  %_fCyan%Прошивка%_fReset%	: %_fBCyan%%fwnumb% (%sfn%)%_fReset%	^| %_fCyan%Заполнено%_fReset%   : !dc!	^| %_fCyan%Заряд%_fReset%		: %colorbat% %batinfo%
+rem @echo  %_fCyan%IP шлема%_fReset%	: %_fBCyan%%ip%%_fReset%     	^| %_fCyan%Подключение%_fReset% : %ctype%^| %_fCyan%От админа?%_fReset%	: %adminaccess%
+rem @echo  %_fCyan%Модель шлема%_fReset%	: %_fBCyan%%DevModelNm%%_fReset%   	^| %_fCyan%EnvVar TEMP%_fReset% : %evt%	^| %_fCyan%Обновления%_fReset%    : %updstatus%
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  Headset date	: %qdt%	^| Total volume	: !aa:~,-1!!sz!	  ^| Batt capacity : %opcouprom%%mahh%
-@echo  Serial number	: %sn%	^| Occupied      : !bb:~,-1!!sz!   ^| Lost capacity : %izgcou%%mahh%
-@echo  System version	: %fwsys%	^| Free space    : !cc:~,-1!!sz!   ^| Degradation	  : %degostcou%%pr%
-@echo  FW version	: %fwnumb%		^| Filled        : !dd!	  ^| Charge	  : %batlevel%%pr% [%batinfo%]
-@echo  Headset IP	: %ip%     	^| Connection 	: %ctype%^| From admin?	  : %adminaccess%
-@echo  Headset model	: %DevModelNm%  	^| EnvVar TEMP	: %evt% ^| Updates	  : %updstatus%
+@echo  %_fCyan%Headset date%_fReset%	: %qdt%	^| %_fCyan%Total volume%_fReset%	: %_fBCyan%!aa:~,-1!!sz!%_fReset%	  ^| %_fCyan%Batt capacity%_fReset% : %_fBCyan%%opcouprom%%mahh%%_fReset%
+@echo  %_fCyan%Serial number%_fReset%	: %_fBCyan%%sn%%_fReset%	^| %_fCyan%Occupied%_fReset%      : %_fBCyan%!bb:~,-1!!sz!%_fReset%   ^| %_fCyan%Lost capacity%_fReset% : %_fBCyan%%izgcou% %mahh%%_fReset%
+@echo  %_fCyan%System version%_fReset%	: %_fBCyan%%fwsys%%_fReset%	^| %_fCyan%Free space%_fReset%    : %_fBCyan%!cc:~,-1!!sz!%_fReset%   ^| %_fCyan%Degradation%_fReset%	  : %_fBCyan%%degostcou%%pr%%_fReset%
+@echo  %_fCyan%FW version%_fReset%	: %_fBCyan%%fwnumb% (%sfn%)%_fReset%	^| %_fCyan%Filled%_fReset%        : !dc!	  ^| %_fCyan%Charge%_fReset%	  : %colorbat% %batinfo%
+@echo  %_fCyan%Headset IP%_fReset%	: %_fBCyan%%ip%%_fReset%     	^| %_fCyan%Connection%_fReset% 	: %ctype%^| %_fCyan%From admin?%_fReset%	  : %adminaccess%
+@echo  %_fCyan%Headset model%_fReset%	: %_fBCyan%%DevModelNm%%_fReset%  	^| %_fCyan%EnvVar TEMP%_fReset%	: %evt% ^| %_fCyan%Updates%_fReset%	  : %updstatus%
 rem EndEngTextBlock
 @echo --------------------------------------------------------------------------------------------------
 goto _tabReturn
@@ -17542,17 +18619,21 @@ rem @exit /b
 :_CheckEnvVarTemp
 set "perc=%%%"
 For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Environment /v TEMP 2^>nul') do set envvartemp=%%a
-if /i %envvartemp%==%perc%userprofile%perc%\AppData\Local\Temp (set "evt=Std    ") else (set "evt=Non Std")
+rem if /i %envvartemp%==%perc%userprofile%perc%\AppData\Local\Temp (set "evt=Std    ") else (set "evt=Non Std")
+if /i %envvartemp%==%perc%userprofile%perc%\AppData\Local\Temp (set "evt=%_fBGreen%Std%_fReset%    ") else (set "evt=%_fBYellow%Non Std%_fReset%")
 exit /b
 
 :_UpdateStatus
 %myfiles%\adb shell pm list packages -d 2>&1 | findstr /i /c:"com.oculus.updater" 2>nul 1>nul
 rem rem @echo %DevModelNm%
-rem StartRusTextBlock
+
 rem if %errorlevel%==1 (set updstatus=Включены) else (set updstatus=Отключены)
+
+rem StartRusTextBlock
+rem if %errorlevel%==1 (set updstatus=%_fBGreen%Включены%_fReset%) else (set updstatus=%_fBYellow%Отключены%_fReset%)
 rem EndRusTextBlock
 rem StartEngTextBlock
-if %errorlevel%==1 (set updstatus=Enabled) else (set updstatus=Disabled)
+if %errorlevel%==1 (set updstatus=%_fBGreen%Enabled%_fReset%) else (set updstatus=%_fBYellow%Disabled%_fReset%)
 rem EndEngTextBlock
 if %sn%==--------------------- set updstatus=-------- && exit /b
 exit /b
@@ -17747,14 +18828,17 @@ rem @FOR /F "tokens=2" %%G IN ('@%MYFILES%\adb shell dumpsys battery ^| findstr 
 @FOR /F "tokens=2" %%G IN ('findstr /i "level:" battery.txt') DO set batlevel=%%G
 @FOR /F "tokens=2" %%G IN ('findstr /i "status:" battery.txt') DO set bstatus=%%G
 rem StartRusTextBlock
-rem if %bstatus%==2 set "batinfo=Зарядка"
-rem if %bstatus%==3 set "batinfo=Разряд"
-rem if %bstatus%==5 set "batinfo=Полная"
+rem if %bstatus%==2 set "batinfo=%_fGreen%[Зарядка]%_fReset%"
+rem if %bstatus%==3 set "batinfo=%_fYellow%[Разряд]%_fReset%"
+rem if %bstatus%==5 set "batinfo=%_fBGreen%[Полная]%_fReset%"
+rem if %bstatus%==4 set "batinfo=%_fRed%[Нет зарядки]%_fReset%"
+rem 
 rem EndRusTextBlock
 rem StartEngTextBlock
-if %bstatus%==2 set "batinfo=Charge"
-if %bstatus%==3 set "batinfo=Discharg"
-if %bstatus%==5 set "batinfo=Full"
+if %bstatus%==2 set "batinfo=%_fGreen%[Charge]%_fReset%"
+if %bstatus%==3 set "batinfo=%_fYellow%[Discharg]%_fReset%"
+if %bstatus%==5 set "batinfo=%_fBGreen%[Full]%_fReset%"
+if %bstatus%==4 set "batinfo=%_fRed%[No charg]%_fReset%"
 rem EndEngTextBlock
 @del charged.txt /q /f
 @del battery.txt /q /f
@@ -17772,6 +18856,15 @@ set /a lostestimated=%batfull%-%batestimated%
 set mahe=mAh
 set mahp=mAh
 set pre=%%%
+rem StartRusTextBlock
+rem if not defined degostestimated set "degostestimated=Не определена"&&set pr=&&exit /b
+rem if %degostestimated% LEQ 0 set "degostestimated=Отсутствует"&&set pr=
+rem EndRusTextBlock
+rem StartEngTextBlock
+if %degostestimated% LEQ 0 set "degostestimated=No degradation"&&set pr=
+if not defined degostestimated set "degostestimated=Not defined"&&set pr=&&exit /b
+rem EndEngTextBlock
+
 :: ------------------------------
 
 :_Count
@@ -17793,9 +18886,6 @@ rem StartEngTextBlock
 if %degostcou% LEQ 0 set "degostcou=No degradation"&&set pr=
 if not defined degostcou set "degostcou=Not defined"&&set pr=&&exit /b
 rem EndEngTextBlock
-
-
-
 @exit /b
 
 :_EmptyBatParameters
@@ -17860,543 +18950,14 @@ set model=Unknown
 rem EndEngTextBlock
 exit /b
 
-:_ApplicationactionManageMenu
-
-@set numb=1
-@set menufile=appsmenu.cmd
-@del %menufile% /q /f 1>nul 2>nul
-@del packages-list.txt /q /f 1>nul 2>nul
-@del pnames.txt /q /f 1>nul 2>nul
-@del applist.txt /q /f 1>nul 2>nul
-
-@echo :_mainmenu>>%menufile%
-@echo @chcp 866 1^>nul 2^>nul>>%menufile%
-@echo cls>>%menufile%
-@echo @echo off>>%menufile%
-@echo set "erl=%%%%%%">>%menufile%
-@echo set "outnull=1>NUL 2>&1">>%menufile%
-@echo setlocal enableextensions enabledelayedexpansion>>%menufile%
-@echo call :_setlines>>%menufile%
-
-set "erl=%%%"
-@echo @mode con:cols=100 lines=%%qlines%%>>%menufile%
-
-call :_packageslistcreate
-setlocal enableextensions enabledelayedexpansion
-set "var2= "
-@echo @echo. >>%menufile%
-@echo @echo. >>%menufile%
-@echo @echo    APPLICATIONS LIST>>%menufile%
-@echo @echo    ================= >>%menufile%
-@echo @echo. >>%menufile%
-
-set "pnames=packages-list.txt"
-
-<nul set /p a="%%myfiles%%\cmdMenuSel f870 ">>%menufile%
-
-@for /f "tokens=*" %%a in (%pnames%) do (
-set packname=%%a
-set packname=!packname:~8!
-<nul set /p b="%var2%"!packname!"%var2%">>%menufile%
-
-@echo !numb! !packname! >>applist.txt
-set /a numb=!numb!+1
-)
-<nul set /p b="%var2%"+++ All Applications +++"%var2%">>%menufile%
-<nul set /p b="%var2%"==============================="%var2%">>%menufile%
-
-<nul set /p b="%var2%"EXIT MAIN MENU"%var2%">>%menufile%
-@echo.>>%menufile%
-set /a numb=!numb!-1
-for /l %%i in (1,1,!numb!) do ( 
-set menunumb=%%i
-set "erl=%%%"
-
-@echo if "%%errorlevel%%"=="!menunumb!" goto _actionmenu>>%menufile%
-)
-set /a allappsnumb=!menunumb!+1
-set /a testnumb=!menunumb!+2
-set /a exitnumb=!menunumb!+3
-@echo if "%%errorlevel%%"=="!allappsnumb!" goto _allappsactionmenu>>%menufile%
-@echo if "%%errorlevel%%"=="!testnumb!" goto _testblock>>%menufile%
-@echo if "%%errorlevel%%"=="!exitnumb!" goto _deleteoldfiles>>%menufile%
-@echo.>>%menufile%
-
-@echo :_allappsactionmenu>>%menufile%
-
-@echo set "allappscase=1">>%menufile%
-rem @echo if [%%newbackup%%]==[1] call %%myfiles%%\backup.cmd :_BackupAllApps^&^&exit /b>>%menufile%
-@echo goto _actionsubmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_actionmenu>>%menufile%
-@echo set "choisedapp=%%errorlevel%%">>%menufile%
-@echo @for /f "tokens=1,2" %%%%a in (applist.txt) do (>>%menufile%
-@echo set "packnumber=%%%%a">>%menufile%
-@echo set "packagename=%%%%b">>%menufile%
-rem >>>>>>>>>>>>
-rem @echo if "^!choisedapp^!"=="^!packnumber^!" goto :_actionsubmenu>>%menufile%
-@echo if "^!choisedapp^!"=="^!packnumber^!" goto :_CheckBackupMode>>%menufile%
-@echo )>>%menufile%
-@echo goto _actionmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_CheckBackupMode>>%menufile%
-@echo if [%%newbackup%%]==[1] goto :_BackupABdata>>%menufile%
-rem @echo exit /b>>%menufile%
-
-rem @echo call %%myfiles%%\backup.cmd :_ViewApkLabelInsideHeadset>>%menufile%
-
-
-@echo :_actionsubmenu>>%menufile%
-@echo cls>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo  = Package name selected: "^!packagename^!">>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo      ACTION MENU >>%menufile%
-@echo @echo      =========== >>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo.>>%menufile%
-
-@echo %%myfiles%%\cmdMenuSel f870 "Application backup menu" "Restore application data" "Clear application data" "Uninstall application" "Start application" "Stop application" "Disable application" "Enable application" "View application status" "==============================" "BACK TO APPS MENU">>%menufile%
-rem @echo %%myfiles%%\cmdMenuSel f870 "Application backup menu" "Application backup menu  [AB version]" "Extract application data" "Clear application data" "Uninstall application" "Start application" "Stop application" "Disable application" "Enable application" "View application status" "==============================" "BACK TO APPS MENU">>%menufile%
-@echo if "%%errorlevel%%"=="1" goto _backupappmenu>>%menufile%
-rem @echo if "%%errorlevel%%"=="2" goto _backupappmenuab>>%menufile%
-rem @echo if "%%errorlevel%%"=="3" goto _extractappdata>>%menufile%
-@echo if "%%errorlevel%%"=="2" goto _restoredata>>%menufile%
-@echo if "%%errorlevel%%"=="3" goto _cleardata>>%menufile%
-@echo if "%%errorlevel%%"=="4" goto _uninstallapp>>%menufile%
-@echo if "%%errorlevel%%"=="5" goto _startapp>>%menufile%
-@echo if "%%errorlevel%%"=="6" goto _stopapp>>%menufile%
-@echo if "%%errorlevel%%"=="7" goto _appdisable>>%menufile%
-@echo if "%%errorlevel%%"=="8" goto _appenable>>%menufile%
-@echo if "%%errorlevel%%"=="9" goto _appinfolabel>>%menufile%
-@echo if "%%errorlevel%%"=="10" goto _actionsubmenu>>%menufile%
-@echo if "%%errorlevel%%"=="11" goto _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_backupappmenu>>%menufile%
-@echo cls>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo  = Package name selected: "^!packagename^!">>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo      BACKUP MENU >>%menufile%
-@echo @echo      =========== >>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-
-@echo %%myfiles%%\cmdMenuSel f870 "Full application backup" "Save application data" "Save APK" "Save APK and OBB" "==================" "BACK TO ACTION MENU">>%menufile%
-
-@echo if "%%errorlevel%%"=="1" goto _fullbackupapp>>%menufile%
-@echo if "%%errorlevel%%"=="2" goto _saveappdata>>%menufile%
-@echo if "%%errorlevel%%"=="3" goto _saveapk>>%menufile%
-@echo if "%%errorlevel%%"=="4" goto _saveapkobb>>%menufile%
-@echo if "%%errorlevel%%"=="5" goto _testmenu>>%menufile%
-@echo if "%%errorlevel%%"=="6" goto _actionsubmenu>>%menufile%
-
-@echo.>>%menufile%
-
-@echo :_BackupABdata>>%menufile%
-@echo call %%myfiles%%\backup.cmd :_BackupChoises>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-rem @echo exit /b>>%menufile%
-
-@echo :_fullbackupapp>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Saving full backup..>>%menufile%
-@echo set "apkbkpproc=1" >>%menufile%
-@echo set "obbbkpproc=1" >>%menufile%
-@echo set "datbkpproc=1" >>%menufile%
-@echo call %%myfiles%%\backup.cmd :_BackupBegin>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_saveappdata>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Saving application data..>>%menufile%
-@echo set "datbkpproc=1" >>%menufile%
-@echo call %%myfiles%%\backup.cmd :_BackupBegin>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_saveapk>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Saving apk file..>>%menufile%
-@echo set "apkbkpproc=1" >>%menufile%
-@echo call %%myfiles%%\backup.cmd :_BackupBegin>>%menufile%
-@echo @echo.>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-
-@echo :_saveapkobb>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Saving apk and obb files..>>%menufile%
-@echo set listpackages="^!packagename^!">>%menufile%
-@echo set "obbbkpproc=1" >>%menufile%
-@echo call %%myfiles%%\backup.cmd :_BackupBegin>>%menufile%
-@echo @echo.>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_restoredata>>%menufile%
-
-call :_optiondev
-
-
-rem >>>>>>>>  App Backup AB Start <<<<<<<<<<<<<<<<<
-
-
-rem @echo :_BackupAppMenuAB>>%menufile%
-rem @echo cls>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo  ------------------------------------------------------------->>%menufile%
-rem @echo @echo  = Package name selected: "^!packagename^!">>%menufile%
-rem @echo @echo  ------------------------------------------------------------->>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo      BACKUP MENU >>%menufile%
-rem @echo @echo      =========== >>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo.>>%menufile%
-
-rem @echo %%myfiles%%\cmdMenuSel f870 "Full application backup" "Backup application data" "Restore application" "View backups content" "Extract app data from backups" "==================" "BACK TO ACTION MENU">>%menufile%
-
-rem @echo if "%%errorlevel%%"=="1" goto _fullbackupappab>>%menufile%
-rem @echo if "%%errorlevel%%"=="1" goto _backupappdataab>>%menufile%
-rem @echo if "%%errorlevel%%"=="2" goto _restoredataab>>%menufile%
-rem @echo if "%%errorlevel%%"=="3" goto _viewbackupcontentab>>%menufile%
-rem @echo if "%%errorlevel%%"=="3" goto _extractdatafrombackupab>>%menufile%
-rem @echo if "%%errorlevel%%"=="4" goto _backupappmenuab>>%menufile%
-rem @echo if "%%errorlevel%%"=="5" goto _actionsubmenu>>%menufile%
-
-rem @echo.>>%menufile%
-
-rem @echo :_fullbackupappab>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo  ---------------------------------->>%menufile%
-rem @echo @echo  ..Saving full backup..>>%menufile%
-rem @echo set "apkbkpproc=1" >>%menufile%
-rem @echo set "obbbkpproc=1" >>%menufile%
-rem @echo set "datbkpproc=1" >>%menufile%
-rem @echo call %%myfiles%%\backup.cmd :_BackupBegin>>%menufile%
-rem @echo call :_KeyReturnAppsMenu>>%menufile%
-rem @echo GOTO _mainmenu>>%menufile%
-rem @echo.>>%menufile%
-
-rem @echo :_restoredataab>>%menufile%
-rem call :_optiondev
-rem @echo @echo.>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo set "actionchoise=restore application">>%menufile%
-rem @echo call :_actionchoisemenu>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo set "choice=1">>%menufile%
-rem @echo @Set /p choice="Choose something and press Enter: ">>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo if not defined choice goto _restoredata>>%menufile%
-rem @echo if /i "%%choice%%"=="0" (exit)>>%menufile%
-rem @echo if /i "%%choice%%"=="m" (GOTO _restoredata)>>%menufile%
-rem @echo if /i "%%choice%%"=="1" (GOTO _restoredataaction)>>%menufile%
-rem @echo goto _restoredata>>%menufile%
-rem @echo.>>%menufile%
-
-rem @echo :_restoredataactionab>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo @echo  ---------------------------------->>%menufile%
-rem @echo @echo  ..Restoring application data..>>%menufile%
-rem @echo @%%myfiles%%\adb push "%%cd%%\BackupsData\^!packagename^!" /sdcard/Android/data/ %%outnull%%>>%menufile%
-rem @echo @echo  --->>%menufile%
-rem @echo @echo  = Done.>>%menufile%
-rem @echo @echo.>>%menufile%
-rem @echo pause>>%menufile%
-rem @echo GOTO _mainmenu>>%menufile%
-rem @echo.>>%menufile%
-
-rem @echo :_viewbackupcontentab>>%menufile%
-
-
-rem >>>>>>> App Backup AB End <<<<<<<<<<<<<<
-rem =====================================
-
-
-@echo :_cleardata>>%menufile%
-@echo cls>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo  = Package name selected: "^!packagename^!">>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  Action : Clear application data>>%menufile%
-@echo @echo.>>%menufile%
-@echo set "actionchoise=clear data">>%menufile%
-@echo call :_actionchoisemenu>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo set "choice=1">>%menufile%
-@echo @Set /p choice="Choose something and press Enter: ">>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo if not defined choice goto _cleardata>>%menufile%
-@echo if /i "%%choice%%"=="0" (exit)>>%menufile%
-@echo if /i "%%choice%%"=="m" (GOTO _mainmenu)>>%menufile%
-@echo if /i "%%choice%%"=="1" (GOTO _cleardataaction)>>%menufile%
-@echo goto _cleardata>>%menufile%
-@echo.>>%menufile%
-
-@echo :_cleardataaction>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Clearing application data..>>%menufile%
-@echo @%%myfiles%%\adb shell pm clear "^!packagename^!" %%outnull%%>>%menufile%
-@echo @echo  --->>%menufile%
-@echo @echo  = Done>>%menufile%
-@echo @echo.>>%menufile%
-@echo pause>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_uninstallapp>>%menufile%
-@echo cls>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo  = Package name selected: "^!packagename^!">>%menufile%
-@echo @echo  ------------------------------------------------------------->>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  Action : Uninstall application>>%menufile%
-@echo @echo.>>%menufile%
-@echo set "actionchoise=uninstall application">>%menufile%
-@echo call :_actionchoisemenu>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo set "choice=1">>%menufile%
-@echo @Set /p choice="Choose something and press Enter: ">>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo if not defined choice goto _uninstallapp>>%menufile%
-@echo if /i "%%choice%%"=="0" (exit)>>%menufile%
-@echo if /i "%%choice%%"=="m" (GOTO _mainmenu)>>%menufile%
-@echo if /i "%%choice%%"=="1" (GOTO _uninstallappaction)>>%menufile%
-@echo goto _uninstallapp>>%menufile%
-@echo.>>%menufile%
-
-@echo :_uninstallappaction>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Uninstalling application..>>%menufile%
-@echo @%%myfiles%%\adb uninstall "^!packagename^!" %%outnull%%>>%menufile%
-@echo @echo  --->>%menufile%
-@echo @echo  = Done>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo returnlabel ^> rlflag.txt>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo exit>>%menufile%
-@echo.>>%menufile%
-
-@echo :_startapp>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Starting application...>>%menufile%
-@echo @%%myfiles%%\adb shell monkey -p "^!packagename^!"  -c android.intent.category.LAUNCHER 1 %%outnull%%>>%menufile%
-@echo @timeout 2 %%outnull%%>>%menufile%
-@echo @echo  --->>%menufile%
-@echo @echo  = Done>>%menufile%
-@echo @echo  --------------------------------------------------->>%menufile%
-@echo @echo  +++ Put on headset, application must be opened +++>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  --------------------------------------------------->>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ^^^>^^^>^^^> Press any key to return main menu ^^^<^^^<^^^<>>%menufile%
-@echo pause ^>nul>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_stopapp>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  ---------------------------------->>%menufile%
-@echo @echo  ..Stopping application...>>%menufile%
-@echo @%%myfiles%%\adb shell am force-stop "^!packagename^!" %%outnull%%>>%menufile%
-@echo @echo  --->>%menufile%
-@echo @echo  = Done>>%menufile%
-@echo @echo.>>%menufile%
-@echo pause>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_appdisable>>%menufile%
-@echo @echo.>>%menufile%
-@echo @%%MYFILES%%\adb shell pm disable-user --user 0 "^!packagename^!" %%outnull%%>>%menufile%
-@echo @echo  --->>%menufile%
-@echo @echo  = Done>>%menufile%
-@echo @echo.>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_appenable>>%menufile%
-@echo @echo.>>%menufile%
-@echo @%%MYFILES%%\adb shell pm enable --user 0 "^!packagename^!" %%outnull%%>>%menufile%
-@echo @echo  --->>%menufile%
-@echo @echo  = Done>>%menufile%
-@echo @echo.>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_appinfolabel>>%menufile%
-@echo @echo.>>%menufile%
-@echo @set "namelabel=1">>%menufile%
-@echo set listpackages="^!packagename^!">>%menufile%
-@echo call %%myfiles%%\backup.cmd :_ViewApkLabelInsideHeadset>>%menufile%
-@echo call :_KeyReturnAppsMenu>>%menufile%
-@echo GOTO _mainmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_setlines>>%menufile%
-@echo set /a qlines=^!menunumb^!+15>>%menufile%
-@echo exit /b>>%menufile%
-@echo.>>%menufile%
-@echo :_actionchoisemenu>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo		0. Exit application module>>%menufile%
-@echo @echo		M. Exit application menu>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo	    Enter. Confirm %actionchoise%>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo exit /b>>%menufile%
-@echo.>>%menufile%
-
-@echo :_deleteoldfiles>>%menufile%
-@echo @del packages-list.txt /q %%outnull%% >>%menufile%
-@echo @del pnames.txt /q /f %%outnull%% >>%menufile%
-@echo @del applist.txt /q /f %%outnull%% >>%menufile%
-@echo @exit>>%menufile%
-@echo.>>%menufile%
-
-@echo :_testmenu>>%menufile%
-@echo cls>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo  --------------------------------------->>%menufile%
-@echo @echo     +++ Press RETURN TO MENU now^! +++>>%menufile%
-@echo @echo  --------------------------------------->>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo       TEST MENU >>%menufile%
-@echo @echo      =========== >>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo %%myfiles%%\cmdMenuSel f870 "   Test option 1" "   Test option 2" "   ==================" "   RETURN TO MENU">>%menufile%
-@echo if "%%errorlevel%%"=="1" goto _test1>>%menufile%
-@echo if "%%errorlevel%%"=="2" call :_test2>>%menufile%
-@echo if "%%errorlevel%%"=="3" goto _testmenu>>%menufile%
-@echo if "%%errorlevel%%"=="4" goto _backupappmenu>>%menufile%
-@echo.>>%menufile%
-
-@echo :_test1>>%menufile%
-@echo echo 111>>%menufile%
-@echo pause>>%menufile%
-@echo exit>>%menufile%
-
-@echo :_test2>>%menufile%
-@echo echo 222>>%menufile%
-@echo pause>>%menufile%
-@echo exit /b>>%menufile%
-
-@echo :_KeyReturnAppsMenu>>%menufile%
-@echo @echo   ------------------------------------------->>%menufile%
-@echo @echo   ^^^>^^^>^^^> Press any key for return apps menu ^^^<^^^<^^^<>>%menufile%
-@echo @pause ^>nul>>%menufile%
-@echo exit /b>>%menufile%
-@echo.>>%menufile%
-exit /b
-
-:_StartEndAppsMenu
-rem @start cmd /c appsmenu.cmd
-start "" /wait cmd /k appsmenu.cmd
-rem cmd /k appsmenu.cmd
-@del packages-list.txt /q /f 1>NUL 2>&1
-@del appsmenu.cmd /q /f 1>NUL 2>&1
-@del pnames.txt /q /f 1>NUL 2>&1 
-@del applist.txt /q /f 1>NUL 2>&1
-if exist rlflag.txt (
-@del packages-list.txt /q /f 1>NUL 2>&1
-@echo   ---
-@echo   Just a second
-@echo   Application list is updating..
-@del rlflag.txt /q /f 1>NUL 2>&1
-call :_ApplicationactionManageMenu
-call :_StartEndAppsMenu
-) else (
-@del packages-list.txt /q /f 1>NUL 2>&1
-exit /b
-)
-exit /b
 
 :_packageslistcreate
-@%MYFILES%\adb shell pm list packages %listpackages% >>packages-list.txt
+rem powershell -ExecutionPolicy Bypass -File "%MYFILES%\selector.ps1" "o.txt" "packages-list.txt"
+rem pause
+@%MYFILES%\adb shell pm list packages %listpackages% >>packages-list-unsorted.txt
+@sort packages-list-unsorted.txt > packages-list.txt
 exit /b
 
-:_optiondev
-@echo cls>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo     =============================>>%menufile%
-@echo @echo     ^^^|   Option is developing    ^^^|>>%menufile%
-@echo @echo     =============================>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo %%myfiles%%\cmdMenuSel f870 "EXIT MENU" >>%menufile%
-@echo if "%%errorlevel%%"=="1" goto _actionsubmenu>>%menufile%
-@echo.>>%menufile%
-exit /b
-
-:_optiondevsub
-@echo cls>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo     =============================>>%menufile%
-@echo @echo     ^^^|   Option is developing    ^^^|>>%menufile%
-@echo @echo     =============================>>%menufile%
-@echo @echo.>>%menufile%
-@echo @echo.>>%menufile%
-@echo %%myfiles%%\cmdMenuSel f870 "EXIT MENU" >>%menufile%
-@echo if "%%errorlevel%%"=="1" goto _backupappmenu>>%menufile%
-@echo.>>%menufile%
-exit /b
-
-::>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 :_userright
 ::taskkill /f /im %~nx0 1>NUL 2>&1
@@ -18469,7 +19030,7 @@ rem call :_cdcb
 @cls
 rem @echo ==================================================================================================
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     QUest ADB Scripts - created by Varset - v4.3.3 - 27.05.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     %_fBWhite%QUest ADB Scripts - created by Varset - v5.0.0%_fReset% - 21.06.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 rem @echo ==================================================================================================
@@ -18570,10 +19131,14 @@ exit /b
 @Set _fBRed=[91m
 @Set _bRed=[41m
 @Set _bBRed=[101m
+@Set _fRed=[31m
+
 
 @Set _fBGreen=[92m
 @Set _bGreen=[42m
 @Set _bBGreen=[102m
+@Set _fGreen=[32m
+
 
 @set _fCyan=[36m
 @Set _bBCyan=[106m

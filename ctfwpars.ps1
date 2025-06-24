@@ -1,3 +1,5 @@
+# This code was written by GPT Chat.
+
 param (
     [string]$InputFile,
     [string]$OutputFile
@@ -29,4 +31,8 @@ foreach ($row in $rowMatches) {
 }
 
 # Сохраняем в файл
-Set-Content -Path $OutputFile -Value $result -Encoding UTF8
+#Set-Content -Path $OutputFile -Value $result -utf8NoBOM
+#[System.IO.File]::WriteAllLines($OutputFile, $result, [System.Text.Encoding]::UTF8)
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllLines($OutputFile, $result, $utf8NoBom)
+

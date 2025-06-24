@@ -1,3 +1,5 @@
+# This code was written by GPT Chat.
+
 param (
     [string]$DataFile,
     [string]$VectorMessage,

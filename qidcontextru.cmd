@@ -1,3 +1,4 @@
+
 ::@set myfiles=d:\Quest2\adb
 @echo off
 @chcp 65001 1>nul  2>&1
@@ -26,10 +27,10 @@ if /i !extname!==install.txt call :_InstallCmdCreate
 @echo ================================================
 @echo.
 rem StartRusTextBlock
-@echo      +++ Установка завершена +++
+@echo      %_fBGreen%+++ Установка завершена +++%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo +++ Installation is complete +++
+rem @echo %_fBGreen%+++ Installation is complete +++%_fReset%
 rem EndEngTextBlock
 @echo.
 goto :_exittimeout
@@ -39,20 +40,21 @@ goto :_exittimeout
 @echo.
 @echo ===============================================================
 rem StartRusTextBlock
-@echo       +++ Это не каталог, не apk файл и не install.txt +++
+@echo       %_fBYellow%+++ Это не каталог, не apk файл и не install.txt +++
 @echo.
-@echo                   Установить не получится
+@echo                   Установить не получится%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo +++ This is not a directory, not an apk file, and not an install.txt +++
+rem @echo %_fBYellow%+++ This is not a directory, not an apk file, and not an install.txt +++
 rem @echo.
-rem @echo                   Installation will not be possible
+rem @echo                   Installation will not be possible%_fReset%
 rem EndEngTextBlock
 @echo --------------------------------------------------------------
 @echo.
 goto :_exitout
 
 :_MultiApkInstall
+call :_SetColours
 @cls
 @echo.
 set "gPath=%installname%"
@@ -73,21 +75,21 @@ call :_MultiInstallProcess
 @echo ================================================
 @echo.
 rem StartRusTextBlock
-@echo  +++ Установка завершена +++
+@echo  %_fBGreen%+++ Установка завершена +++%_fReset%
 @echo.
-@echo   Установлено		: !MultiCounterOk!
-@echo   Не установлено	: %MultiCounterEr%
+@echo   %_fBYellow%Установлено		: !MultiCounterOk!%_fReset%
+@echo   %_fYellow%Не установлено	: %MultiCounterEr%%_fReset%	
 @echo --------------------------------------------
 @echo.
-@echo   Список не установленных приложений сохранен в %sendtofoldercmdfolder%\notinstalled.txt
-@echo   Попробуйте установить их вручную. Также возможно, что в имени файла или каталога
-@echo   есть восклицательный знак - в этом случае попробуйте удалить его.
+@echo   %_fBYellow%Список не установленных приложений сохранен в%_fReset% %_fYellow%%sendtofoldercmdfolder%\notinstalled.txt
+@echo   %_fBYellow%Попробуйте установить их вручную. Также возможно, что в имени файла или каталога
+@echo   есть восклицательный знак - в этом случае попробуйте удалить его.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo +++ Installation completed +++
+rem @echo %_fBGreen%+++ Installation completed +++%_fReset%
 rem @echo.
-rem @echo   Installed		: !MultiCounterOk!
-rem @echo   Not installed	: %MultiCounterEr%
+rem @echo   %_fBGreen%Installed		: !MultiCounterOk!%_fReset%
+rem @echo   %_fBRed%Not installed	: %MultiCounterEr%%_fReset%
 rem @echo --------------------------------------------
 rem @echo.
 rem @echo   The list of not installed applications is saved in %sendtofoldercmdfolder%\notinstalled.txt
@@ -103,10 +105,10 @@ set hidescndp=2^>NUL
 if not defined applabel exit /b
 set /a MultiCounterOk=%MultiCounterOk%+1
 rem StartRusTextBlock
-@echo  %MultiCounterOk%. Устанавливаем  "%applabel%"
+@echo  %_fBYellow%%MultiCounterOk%%_fReset%. = Устанавливаем  "%_fBCyan%%applabel%%_fReset%"
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo %MultiCounterOk%. Installing "%applabel%"
+rem @echo %_fBYellow%%MultiCounterOk%%_fReset%. = Installing "%_fBCyan%%applabel%%_fReset%"
 rem EndEngTextBlock
 @%MYFILES%\ADB install -r -g --no-streaming "%apkname%" %hidefrstp% %hidescndp%
 @IF !ERRORLEVEL!==0 (call :_MultiCopyObbInslallApk) else (call :_MultiInstallApkErr)
@@ -115,49 +117,52 @@ set pkgname=
 exit /b
 
 :_MultiCopyObbInslallApk
-if not exist "%PathGame%%pkgname%" call :_MultiInstalledOk && exit /b
-@echo --
+call :_SetColours
+for /r "%PathGame%" %%i in (.) do (
+if /i "%%~nxi"=="%pkgname%" (
+set "FoundPath=%%i"
 rem StartRusTextBlock
-@echo = Копируем "%pkgname%" в каталог OBB на шлем..
+@echo     = Копируем "%_fCyan%%pkgname%%_fReset%" в каталог OBB на шлем..
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = Copying "%pkgname%" to the OBB directory on the headset..
+rem @echo     = Copying "%_fCyan%%pkgname%%_fReset%" to the OBB directory on the headset..
 rem EndEngTextBlock
 @%MYFILES%\ADB shell mkdir -p /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
-@%MYFILES%\ADB push "%PathBeforeObbPath%%pkgname%" /sdcard/Android/obb/ %hidefrstp% %hidescndp%
+@%MYFILES%\ADB push "!FoundPath!" /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
+call :_MultiInstalledOk
+exit /b
+)
+)
 call :_MultiInstalledOk
 exit /b
 
 :_MultiInstallApkErr
-@echo.
-@echo.
 rem StartRusTextBlock
-@echo  +++ Ошибка установки !apknamefile! +++
-@echo.
-@echo  == Продолжаем установку
+@echo   %_fBRed%+++ Ошибка установки %_fBCyan%!apknamefile! +++%_fReset%
+rem @echo.
+@echo   %_fBYellow%= Продолжаем установку%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  +++ Installation error !apknamefile! +++
+rem @echo  %_fBRed%+++ Installation error %_fBCyan%!apknamefile! +++%_fReset%
 rem @echo.
-rem @echo  == Continuing installation
+rem @echo  %_fBYellow%= Continuing installation%_fReset%
 rem EndEngTextBlock
-@echo.
-@echo.
 set /a MultiCounterEr=%MultiCounterEr%+1
 @echo  !apkname! >>%sendtofoldercmdfolder%\notinstalled.txt
 exit /b
 
 :_MultiInstalledOk
-@echo --
+rem @echo --
 rem StartRusTextBlock
-@echo = Установлено успешно
+@echo     %_fBGreen%= Установлено успешно%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = Successfully installed
+rem @echo     %_fBGreen%= Successfully installed%_fReset%
 rem EndEngTextBlock
 exit /b
 
 :_SingleApkInstall
+call :_SetColours
 rem call :_DeleteWrongSymbolsOk
 set hidefrstp=1^>NUL
 set hidescndp=2^>NUL
@@ -173,61 +178,71 @@ for /f "tokens=*" %%a in ('%myfiles%\aapt2 dump packagename !apkname!') do set p
 FOR /F "tokens=2 delims='" %%g IN ('@%MYFILES%\aapt2 dump badging !apkname! ^| findstr /i /c:"application-label:"') DO set applabel=%%g
 @echo -----------------------------------------------
 rem StartRusTextBlock
-@echo = Устанавливаем "%applabel%"
+@echo  = Устанавливаем "%_fBCyan%%applabel%%_fReset%"
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = Installing "%applabel%"
+rem @echo = Installing "%_fBCyan%%applabel%%_fReset%"
 rem EndEngTextBlock
 %MYFILES%\ADB install -r -g %down% --no-streaming !apkname! %hidefrstp% %hidescndp%
 @IF !ERRORLEVEL!==0 (call :_SingleCopyObbInslallApk) else (call :_SingleErrInstallApk)
-@echo --
+rem @echo --
 rem StartRusTextBlock
-@echo = Установлено успешно
+@echo  %_fBGreen%= Установлено успешно%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = Successfully installed
+rem @echo  %_fBGreen%= Successfully installed%_fReset%
 rem EndEngTextBlock
 @echo ===========================================
 echo.
 goto :_exittimeout
 
 :_SingleCopyObbInslallApk
-if not exist "%PathIncludePathGame%%pkgname%" exit /b
-@echo --
+for /r "%PathIncludePathGame%" %%i in (.) do (
+if /i "%%~nxi"=="%pkgname%" (
+set "FoundPath=%%i"
+rem @echo !FoundPath!
 rem StartRusTextBlock
-@echo   Копируем "%pkgname%" в каталог OBB в шлем...
+rem @echo --
+@echo  = Копируем "%_fCyan%%pkgname%%_fReset%" в каталог OBB на шлем..
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = Copying "%pkgname%" to the OBB directory on the headset..
+rem @echo  = Copying "%_fCyan%%pkgname%%_fReset%" to the OBB directory on the headset..
 rem EndEngTextBlock
 @%MYFILES%\ADB shell mkdir -p /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
-@%MYFILES%\ADB push "%PathIncludePathGame%%pkgname%" /sdcard/Android/obb/ %hidefrstp% %hidescndp%
+%MYFILES%\ADB push "!FoundPath!" /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
+rem call :_MultiInstalledOk
 exit /b
+)
+)
+rem call :_MultiInstalledOk
+exit /b
+
 
 :_SingleErrInstallApk
 @echo ===========================================
 rem StartRusTextBlock
-@echo 	    +++ Ошибка установки +++
+@echo 	    %_fBRed%+++ Ошибка установки +++%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo +++ Installation Error +++
+rem @echo %_fBRed%+++ Installation Error +++%_fReset%
 rem EndEngTextBlock
 echo.
 @goto _exitout
 
 :_InstallCmdCreate
+call :_SetColours
 @echo  ===========================================
 rem StartRusTextBlock
-@echo  = Установка по сценарию install.txt
+@echo  %_fBYellow%= Установка по сценарию%_fReset% %_fYellow%install.txt%_fReset%
 @echo.
-@echo    Если во время установки возникнут ошибки,
-@echo    они будут записаны в файл errors.txt в каталоге с игрой.
+@echo    %_fBYellow%Если во время установки возникнут ошибки,
+@echo    они будут записаны в файл %_fYellow%errors.txt%_fReset% %_fBYellow%в каталоге с игрой.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = Installation via install.txt script
+rem @echo %_fBYellow%== Installation via install.txt script
 rem @echo.
 rem @echo    If errors occur during installation,
-rem @echo    they will be recorded in the errors.txt file in the game directory.
+rem @echo    they will be recorded in the errors.txt file in the game directory.%_fReset%
 rem EndEngTextBlock
 @echo  -----
 @echo @echo off>>"%PathIncludePathGame%install.cmd
@@ -285,26 +300,27 @@ rem EndEngTextBlock
 exit /b
 
 :_NF
+call :_SetColours
 @cls
 @echo.
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo     +++++ Шлем не найден +++++
+@echo     %_fBRed%+++++ Шлем не найден +++++%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo     +++++ Headset not found +++++
+rem @echo     %_fBRed%+++++ Headset not found +++++%_fReset%
 rem EndEngTextBlock
 @echo.
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo  Проверьте кабельное соединение и правильность установки драйверов.
-@echo  Затем перезапустите эту программу снова.
+@echo  %_fBYellow%Проверьте кабельное соединение и правильность установки драйверов.
+@echo  Затем перезапустите эту программу снова.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  Check the cable connection and the correctness of the driver installation.
-rem @echo  Then restart this program again.
+rem @echo  %_fBYellow%Check the cable connection and the correctness of the driver installation.
+rem @echo  Then restart this program again.%_fReset%
 rem EndEngTextBlock
 @echo.
 @goto _exitout
@@ -322,4 +338,43 @@ call set "name=%%name::=%%"
 call set "name=%%name:&=%%"
 )
 set installname=%name:~1,-1%
+exit /b
+
+
+:_SetColours
+@set _fReset=[0m
+
+@Set _fBlack=[30m
+@Set _bBlack=[40m
+
+@Set _fBRed=[91m
+@Set _bRed=[41m
+@Set _bBRed=[101m
+
+@Set _fBGreen=[92m
+@Set _bGreen=[42m
+@Set _bBGreen=[102m
+
+@set _fCyan=[36m
+@Set _bBCyan=[106m
+@Set _bCyan=[46m
+@Set _fBCyan=[96m
+
+@set _fBYellow=[93m
+@Set _fYellow=[33m
+@Set _bBYellow=[103m
+@Set _bYellow=[43m
+
+@Set _fBBlue=[94m
+@Set _bBBlue=[104m
+
+@Set _fBMag=[95m
+@Set _bBMag=[105m
+@Set _bMag=[45m
+
+@Set _bLGray=[47m
+@Set _bDGray=[100m
+
+@Set _bBWhite=[107m
+@Set _fBWhite=[97m
 exit /b
