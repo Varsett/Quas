@@ -11617,8 +11617,8 @@ rem StartEngTextBlock
 @echo    D.  Disable AirLink
 @echo    E.  Fix AirLink connection issue
 @echo    F.  Backup AirLink parameters
-@echo    G.  Clean after remove Oculus Home Softtware
-@echo    H.  Calculate dynmaic birate
+@echo    G.  Clean after remove Oculus Home Software
+@echo    H.  Calculate dynamic bitrate
 @echo    I.  Reset Oculus Debug Tools to default
 @echo    J.  Download and run Meta Quest Link Oculus software installer
 rem EndEngTextBlock
