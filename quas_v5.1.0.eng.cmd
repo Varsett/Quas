@@ -3,12 +3,12 @@ REM  QBFC Project Options Begin
 REM HasVersionInfo: Yes
 REM Companyname: 
 REM Productname: QUest ADB Scripts
-REM Filedescription: English version
+REM Filedescription: Russian version
 REM Copyrights: Varset
 REM Trademarks: 
 REM Originalname: Quas
 REM Comments: 
-REM Productversion:  5. 0. 0. 0
+REM Productversion:  5. 1. 0. 0
 REM Fileversion:  0. 0. 0. 0
 REM Internalname: 
 REM ExeType: consoleold
@@ -619,7 +619,11 @@ goto _UniversalAppsHanflerScript
 rem O
 :_StopAppPS
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_StopApps"
+if %choice% == gg (
+Set "SelectorParameters="
+)else (
 Set "SelectorParameters=-o"
+)
 set "ReturnMenuLabel=_installmenugen"
 set "ScriptFinishLabel=_installmenugen"
 rem StartRusTextBlock
@@ -692,7 +696,11 @@ goto _UniversalAppsHanflerScript
 rem Ok
 :_DisableAppsPS
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_DisableApps"
+if %choice% == dd (
+Set "SelectorParameters="
+)else (
 Set "SelectorParameters=-o"
+)
 set "ReturnMenuLabel=_installmenugen"
 set "ScriptFinishLabel=_installmenugen"
 rem StartRusTextBlock
@@ -773,7 +781,7 @@ goto _BackupAndRestoreMenu
 
 rem Backup
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_BackupChoises"
-Set "SelectorParameters=o"
+Set "SelectorParameters="
 set "ReturnMenuLabel=_BackupAndRestoreMenu"
 set "ScriptFinishLabel=_BackupFinishMessage"
 rem StartRusTextBlock
@@ -1009,7 +1017,10 @@ For /F %%a In ('@%MYFILES%\adb shell getprop ro.build.version.incremental 2^>nul
 )
 @echo   %_fBYellow%Firmware%_fReset% 	: %_fBGreen%!fwnewhsversion!%_fReset%
 @echo   %_fBYellow%Environment%_fReset%	: %_fBGreen%!hsenvironment!%_fReset%
+
 @echo ----------------------------------------------
+@echo   %_fBYellow%System files version%_fReset%
+@echo.
 for /f "tokens=1-7 delims=|" %%a in ('@%MYFILES%\adb.exe shell dumpsys DumpsysProxy OculusUpdater ^| findstr /i /c:"Oculus Integrity"') do (
 set okintn=%%b
 set okintc=%%g
@@ -1080,8 +1091,6 @@ set listtxt=appsnumbers.txt
 @%myfiles%\adb push %myfiles%\%shscriptname% /data/local/tmp/ 1>nul
 @%myfiles%\adb shell dos2unix /data/local/tmp/%shscriptname%
 @%myfiles%\adb shell sh /data/local/tmp/%shscriptname%
-echo %errorlevel%
-pause
 if %errorlevel%==0 (set "updateServersStatusMsg=%_fBGreen%Available%_fReset%"&&goto _UpdServStatus)
 )
 set "updateServersStatusMsg=%_fBRed%Not Available%_fReset%"
@@ -1166,6 +1175,8 @@ rem @echo 	G-FF	= Дополнительное пояснение об инкр�
 rem @echo 	J-A-d	= Включить установку с возможностью downgrade
 rem @echo 	J-A-v	= Включить отображение подробностей установки
 rem @echo 	J-A-l	= Включить запись в файл лога установки
+rem @echo 	J-E-dd  = Отключение приложений в пакетном режиме
+rem @echo 	J-E-gg  = Остановка приложений в пакетном режиме
 rem @echo 	449	= Таблица разделов шлема и их размер в байтах и гигабайтах
 rem @echo 	103	= Таблица разделов шлема и их размер в байтах и гигабайтах
 rem @echo 	77	= Подключение к шлему по случайному порту (аналог пунктов F-G-D)
@@ -1174,11 +1185,10 @@ rem @echo 	qqXX	= Быстрый бэкап по списку с номером 
 rem @echo 	s	= Отладочная информация
 rem @echo 	st	= Окно консоли Quas
 rem @echo.
-rem @echo   Последовательность G-FF означает, что следует сначала выбрать пункт G,
-rem @echo   затем пункт FF. И аналогично J-A-d означает, что следует сначала выбрать пункт J,
-rem @echo   затем пункт A, после этого ввеси (добавить) параметр d.
-rem @echo   Ключи u, c, a, b можно использовать как параметр при запуске программы Quas, например:
-rem @echo   quas_v4.3.1.rus.exe b
+rem @echo   Последовательность G-FF означает, что следует сначала выбрать пункт G, затем пункт FF.
+rem @echo   И аналогично J-A-d означает, что следует сначала выбрать пункт J, затем пункт A, после
+rem @echo   этого ввести параметр d. Ключи u, c, a, b можно использовать как параметр при запуске
+rem @echo   программы Quas, например: quas_v4.3.1.rus.exe b
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo    Command line parameters:
@@ -1197,6 +1207,8 @@ rem StartEngTextBlock
 @echo 	J-A-d	= Enable installation with downgrade capability
 @echo 	J-A-v	= Enable installation details display (verbose)
 @echo 	J-A-l	= Enable installation log file recording
+@echo       J-E-dd  = Disable apps in the batch mode
+@echo       J-E-gg  = Stop apps in the batch mode
 @echo 	449	= Headset partition table and their sizes in bytes and gigabytes
 @echo 	103	= Headset partition table and their sizes in bytes and gigabytes
 @echo 	77	= Connect to the headset via a random port (similar to F-G-D options)
@@ -1226,10 +1238,8 @@ rem StartRusTextBlock
 rem @echo        МЕНЮ ТЕСТИРОВАНИЯ И ДИАГНОСТИКИ
 rem @echo        ===============================
 rem @echo.
-rem @echo    A.  Перезапуск оболочки шлема
-rem @echo    B.  Перезапуск оболочки шлема (второй вариант)
+rem @echo    A.  Перезапуск оболочки и виртуального окружения шлема
 rem @echo    C.  Управление Wi-Fi на шлеме				
-rem @echo    D.  Принудительный старт домашнего окружения шлема
 rem @echo    E.  Управление Защитной системой
 rem @echo    F.  Управление датчиком приближения
 rem @echo    G.  Устранить проблему перезагрузки кнопками громкости (удалить KeyMapper)
@@ -1237,7 +1247,7 @@ rem @echo    H.  Перезапуск ADB сервера на ПК
 rem @echo    I.  Встроить ADB и пакет утилит в систему, а также удалить весь этот хлам из нее
 rem @echo    J.  Выполнение команд Fastboot
 rem @echo    K.  Восстановить настройки отключения экрана (screen timeout)
-rem @echo    L.  Создание расшаренного ресурса на ПК
+rem @echo    L.  Отмена авторизации шлема на текущем ПК (удаление ключей ADB)
 rem @echo    N.  Проверка исправности кабеля
 rem @echo.   O.  Проверка исправности камер (Только Quest 2)
 rem @echo    P.  Измерение скорости Wi-Fi между шлемом и ПК	[EXP]
@@ -1246,7 +1256,7 @@ rem @echo    R.  Диагностика дисплея
 rem @echo    S.  Управление параметрами Планирование GPU, Аппаратное ускорение и Игровой режим
 rem @echo    T.  Проверка статуса загрузки шлема
 rem @echo    U.  Мониторинг нагрузки и диагностика компонентов	[EXP]
-rem @echo    V.  Принудительный старт нижней панели приложений
+rem @echo    V.  Информация об использовании памяти
 rem @echo    W.  Мониторинг загрузки CPU в реальном времени
 rem @echo.
 rem @echo    X.  Открыть консоль cmd
@@ -1256,10 +1266,8 @@ rem StartEngTextBlock
 @echo        TESTING AND DIAGNOSTICS MENU
 @echo        ===============================
 @echo.
-@echo    A.  Restarting the headset shell
-@echo    B.  Restarting the headset shell (second option)
+@echo    A.  Restarting the headset shell and vr environment
 @echo    C.  Managing Wi-Fi on the headset
-@echo    D.  Forcing the start of the headset's home environment
 @echo    E.  Managing the Guardian
 @echo    F.  Proximity sensor management
 @echo    G.  Fix volume button reboot issue (remove KeyMapper)
@@ -1267,16 +1275,16 @@ rem StartEngTextBlock
 @echo    I.  Embed ADB and utility package into the system, as well as remove all this junk from it
 @echo    J.  Starting Fastboot commands
 @echo    K.  Restore screen timeout settings
-@echo    L.  Creating a shared resource on a PC
+@echo    L.  Cancel headset authorization on this PC (remove ADB keys)
 @echo    N.  Cable functionality check
 @echo.   O.  Camera functionality check (Quest 2 only)
 @echo    P.  Measure Wi-Fi speed between the headset and PC [EXP]
 @echo.   Q.  Network connection statistics (netstat)
 @echo    R.  Display diagnostics
-@echo    S.  Management parameters Hardaware Acceleration and Game Mode
+@echo    S.  Management parameters Hardware Acceleration and Game Mode
 @echo    T.  Check boot status
 @echo    U.  Load monitoring and component diagnostics [EXP]
-@echo    V.  Force start of the bottom application bar
+@echo    v.  Memory usage information
 @echo    W.  Realtime CPU monitoring
 @echo.
 @echo    X.  Open cmd console
@@ -1290,9 +1298,9 @@ if not defined choice goto _shellmenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _shellrestart)
-if /i "%choice%"=="b" (GOTO _shellrestart2)
+rem if /i "%choice%"=="b" (GOTO _shellrestart2)
 if /i "%choice%"=="c" (GOTO _wificontrol)
-if /i "%choice%"=="d" (GOTO _homescreen)
+rem if /i "%choice%"=="d" (GOTO _homescreen)
 if /i "%choice%"=="e" (GOTO _guardian)
 if /i "%choice%"=="f" (GOTO _proxsensor)
 if /i "%choice%"=="g" (GOTO _deletekm)
@@ -1300,7 +1308,7 @@ if /i "%choice%"=="h" (GOTO _ADBServerRestart)
 if /i "%choice%"=="i" (GOTO _adbintegr)
 if /i "%choice%"=="j" (GOTO _FastbootCommandList)
 if /i "%choice%"=="k" (GOTO _scrtimeout)
-if /i "%choice%"=="l" (GOTO _setshare)
+if /i "%choice%"=="l" (GOTO _ADBKeysDeleteMenu)
 if /i "%choice%"=="n" (GOTO _TestVrUsvCopy)
 if /i "%choice%"=="o" (GOTO _camtest)
 if /i "%choice%"=="p" (call :_CyrillicPathCheckAll&&GOTO _iperftest)
@@ -1311,12 +1319,104 @@ if /i "%choice%"=="r" (GOTO _displaydiagmain)
 if /i "%choice%"=="s" (GOTO _hwagamecontrol)
 if /i "%choice%"=="t" (GOTO _bootstatusviewermenu)
 if /i "%choice%"=="u" (GOTO _alltempmenu)
-if /i "%choice%"=="v" (GOTO _StartApplicationsPanel)
+if /i "%choice%"=="v" (GOTO _MemoryUsageInfo)
 if /i "%choice%"=="w" (GOTO _CPURealTimeMonitoring)
 if /i "%choice%"=="x" (GOTO _opencmd)
-rem if /i "%choice%"=="z" (GOTO _helplinksmenu)
 @cls
 goto _shellmenu
+
+:_ShellRestartMenu
+cls
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo        МЕНЮ ПЕРЕЗАПУСКА ОБОЛОЧКИ И ВИРТУАЛЬНОГО ОКРУЖЕНИЯ
+rem @echo        ==================================================
+rem @echo.
+rem @echo    A.  Перезапуск оболочки шлема
+rem @echo    B.  Перезапуск оболочки шлема (второй вариант)
+rem @echo    C.  Принудительный старт нижней панели приложений
+rem @echo    D.  Принудительный старт домашнего окружения шлема
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo        VR ENVIRONMENT AND SHELL RESTART MENU
+@echo        =====================================
+@echo.
+@echo    A.  Restarting the headset shell
+@echo    B.  Restarting the headset shell (second option)
+@echo    C.  Force start of the bottom application bar
+@echo    D.  Forcing the start of the headset's home environment
+rem EndEngTextBlock
+
+call :_MenuChoiceEnter
+@echo.
+if not defined choice goto _ShellRestartMenu
+if /i "%choice%"=="0" (exit)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="a" (GOTO _shellrestart)
+if /i "%choice%"=="b" (GOTO _shellrestart2)
+if /i "%choice%"=="d" (GOTO _homescreen)
+if /i "%choice%"=="v" (GOTO _StartApplicationsPanel)
+cls
+goto _ShellRestartMenu
+
+:_ADBKeysDeleteMenu
+cls
+call :_hat
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo       %_FBRed%ВНИМАНИЕ^^!%_FReset%
+rem @echo.
+rem @echo   %_FBYellow%Данное действие отменит авторизацию шлема на данном ПК.
+rem @echo   После этого при подключении шлема вы не сможете использовать
+rem @echo   команды ADB пока заново не разрешите в шлеме отладку по USB.
+rem @echo.
+rem @echo   Для подтверждения отмены авторизации и удаления ключей ADB
+rem @echo   введите в строке запроса слово "%_FYellow%ok%_FReset%%_FBYellow%" без кавычек:%_FReset%
+rem @echo.
+rem @echo.
+rem @Set /p choice="Введите "ok" для подтверждения или 0 для возврата в меню: "
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo       %_FBRed%WARNING^^!%_FReset%
+@echo.
+@echo   %_FBYellow%This action will revoke the headset authorization on this PC.
+@echo   After that, when connecting the headset, you won't be able to use
+@echo   ADB commands until you re-allow USB debugging on the headset.
+@echo.
+@echo   To confirm the deauthorization and removal of ADB keys,
+@echo   enter the word "%_FYellow%ok%_FReset%%_FBYellow%" without quotes in the prompt:%_FReset%
+@echo.
+@echo.
+@Set /p choice="Enter "ok" to confirm or 0 to return to the menu: "
+rem EndEngTextBlock
+if not defined choice goto _ADBKeysDeleteMenu
+if "%choice%"=="0" (GOTO _beginn)
+if "%choice%"=="ok" (GOTO _ADBKeysDelete)
+goto _ADBKeysDeleteMenu
+
+:_ADBKeysDelete
+%myfiles%\adb shell rm -rf /data/misc/adb/  1>nul 2>nul
+@del /q /f %USERPROFILE%\.android\adbkey 1>nul 2>nul
+@del /q /f %USERPROFILE%\.android\adbkey.pub 1>nul 2>nul
+@taskkill /im adb.exe /f 1>nul 2>nul
+@echo.
+@echo   ======================
+rem StartRusTextBlock
+rem @echo    %_FBGreen%Авторизация отменена%_FReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo    %_FBGreen%Authorization revoked%_FReset%
+rem EndEngTextBlock
+@echo   ======================
+call :_prevmenu
+goto _shellmenu
+
 
 :_CPURealTimeMonitoring
 set intervaltempsav=5
@@ -1363,8 +1463,8 @@ rem @echo    G.  Fastboot reboot-recovery		: Перезагрузить шлем
 rem @echo    H.  Fastboot reboot-bootloader	: Перезагрузить шлем в режим Bootloader
 rem @echo.
 rem @echo    K. Информация о прошивке шлема, слотах загрузки, ревизии и батарее
-rem @echo    S. Отключить сенсоры шлема
-rem @echo    Q. Включить сенсоры шлема
+rem @echo    S. Отключить сенсоры шлема (Only Meta Quest 3)
+rem @echo    Q. Включить сенсоры шлема (Only Meta Quest 3)
 rem @echo.
 rem @echo.
 rem @echo    ВАЖНО:
@@ -1390,8 +1490,8 @@ rem StartEngTextBlock
 @echo    H.  Fastboot reboot-bootloader       : Reboot headset into Bootloader mode
 @echo.
 @echo    K. Headset Firmware and Boot Slot Information
-@echo    S. Disable headset sensors
-@echo    Q. Enable headset sensors
+@echo    S. Disable headset sensors (Only Meta Quest 3)
+@echo    Q. Enable headset sensors (Only Meta Quest 3)
 @echo.
 @echo.
 @echo    IMPORTANT:
@@ -1462,6 +1562,7 @@ goto _FastbootCommandList
 :_fbgetvarbl
 setlocal enableextensions enabledelayedexpansion
 @%myfiles%\fastboot reboot-bootloader 1>nul 2>nul
+@timeout 3 >nul
 call :_settime
 for /f "tokens=*" %%a in ('@%myfiles%\fastboot getvar all 2^>^&1') do (
 set txt=%%a
@@ -1486,15 +1587,24 @@ call :_prevmenu
 goto _FastbootCommandList
 
 :_fbgetvarfb
+rem StartRusTextBlock
+rem @echo  = Подождите несколько секунд...
+rem @echo.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  = Just a second..
+@echo.
+rem EndEngTextBlock
 setlocal enableextensions enabledelayedexpansion
 @%myfiles%\fastboot reboot-fastboot 1>nul 2>nul
-
+@timeout 4 >nul
 call :_settime
 for /f "tokens=*" %%a in ('@%myfiles%\fastboot getvar all 2^>^&1') do (
 set txt=%%a
 @echo !txt! >> getvar-all-fastboot%dt%.txt
 )
 @%myfiles%\fastboot reboot-bootloader 1>nul 2>nul
+@timeout 3 >nul
 @echo.
 @echo ---
 rem StartRusTextBlock
@@ -1607,7 +1717,6 @@ rem @echo.
 rem @echo  Проверка выполняется начиная с третьего пункта - Инициализация Android. В этот момент
 rem @echo  становится доступным управление по ADB - первый этап проверки. Затем второй этап
 rem @echo  проверки: Запуск служб и приложений. И третий этап - проверка окончательного завершения загрузки.
-@echo  
 rem @echo.
 rem @echo  Если после всего этого у вас на экране по-прежнему лого, три точки или просто серый экран,
 rem @echo  попробуйте следующие варианты:
@@ -1802,7 +1911,7 @@ rem @echo.
 rem @echo    A.  Смена имени пользователя
 rem @echo    B.  Показать скрытые настройки
 rem @echo    C.  Устранение ошибки OpenSSL SHA Crash Bug
-rem @echo    D.  Перезапуск сервиса Oculus на ПК
+rem @echo    D.  Перезапуск сервиса OVRService на ПК
 rem @echo    E.  Открыть в шлеме настройки VPN
 rem @echo    F.  Установить высокий приоритет сервисам Oculus (только Windows 10 и ниже)
 rem @echo    G.  Комплексная установка приложения Oculus Wireless ADB
@@ -1812,7 +1921,8 @@ rem @echo    J.  Решение проблемы с файлами fba
 rem @echo    K.  Включить экран и отключить датчик приближения
 rem @echo    L.  Удаление старых файлов и каталогов Quas
 rem @echo    N.  Открыть файл hosts в редакторе Notepad
-rem 
+rem @echo    O.  Узнать код сопряжения с мобильным приложением
+rem @echo    P.  Создание расшаренного ресурса на ПК
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo        ADDITIONAL OPTIONS MENU
@@ -1821,7 +1931,7 @@ rem StartEngTextBlock
 @echo    A.  Change global username
 @echo    B.  Show hidden settings
 @echo    C.  Fixing the OpenSSL SHA Crash Bug
-@echo    D.  Restarting the Oculus service on PC
+@echo    D.  Restarting the OVRservice service on PC
 @echo    E.  Open VPN settings on the headset
 @echo    F.  Set high priority for Oculus services (only Windows 10 and below)
 @echo    G.  Oculus Wireless ADB complex	[EXP]
@@ -1831,6 +1941,10 @@ rem StartEngTextBlock
 @echo    K.  Turn on the screen and disable the proximity sensor
 @echo    L.  Delete old Quas files and directories
 @echo    N.  Open the hosts file in Notepad
+@echo    O.  Get the pairing code for the mobile app
+@echo    P.  Creating a shared resource on a PC
+rem 
+rem 
 rem EndEngTextBlock
 @echo.    
 @echo.
@@ -1853,10 +1967,125 @@ if /i "%choice%"=="j" (GOTO _fbafixmenu)
 if /i "%choice%"=="k" (GOTO _DispProxOn)
 if /i "%choice%"=="l" (GOTO _DeleteOldQuasFilesMenu)
 if /i "%choice%"=="n" (GOTO _OpenHosts)
+if /i "%choice%"=="o" (GOTO _CheckConnectDeviceSetSerial)
+if /i "%choice%"=="p" (GOTO _setshare)
+
 
 @cls
 goto _AdditionalOptionsMenu
 
+
+:_CheckConnectDeviceSetSerial
+set serial=
+@for /f "tokens=1" %%i in ('%MYFILES%\fastboot devices ^| findstr /i /c:"fastboot"') do (set serial=%%i)
+if not defined serial (
+@For /F %%a In ('%MYFILES%\adb shell getprop ro.boot.serialno 2^<nul') Do (set serial=%%a)
+if not defined serial goto :_SetSerialNumber
+@echo.
+@echo.
+@echo.
+@echo   ---------------------------------------
+rem StartRusTextBlock
+rem @echo    %_FBGreen%Шлем обнаружен%_FReset%
+rem @echo    %_FBYellow%Определяем код сопряжения...%_FReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo    %_FBGreen%Headset detected%_FReset%
+@echo    %_FBYellow%Determining pairing code...%_FReset%
+rem EndEngTextBlock
+@echo   ---------------------------------------
+goto _CheckValidSerial
+
+:_SetSerialNumber
+cls
+@echo.
+@echo.
+@echo.
+@echo   =============================================
+rem StartRusTextBlock
+rem @echo               %_FBred%Шлем не обнаружен
+rem @echo    %_FBYellow%Автоматическое определение кода невозможно%_FReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo               %_FBred%Headset not detected
+@echo    %_FBYellow%Automatic code detection is not possible%_FReset%
+rem EndEngTextBlock
+@echo   ============================================
+@echo.
+@echo.
+@echo.
+
+rem StartRusTextBlock
+rem @Set /p setserial="  Введите или вставьте серийный номер и нажмите Enter (0 - Выход в меню): "
+rem EndRusTextBlock
+rem StartEngTextBlock
+@Set /p setserial="  Enter or paste the serial number and press Enter (0 - Return to menu): "
+rem EndEngTextBlock
+
+if not defined setserial goto _SetSerialNumber
+if "%setserial%"=="0" (GOTO _beginn)
+set serial=%setserial%
+
+:_CheckValidSerial
+if "%serial:~0,4%" == "2G0Y" (
+set "modeltype=Meta Quest 3"
+goto :_ViewPairingCode
+) else (
+if "%serial:~0,4%" == "1WMH" (
+set "modeltype=Meta Quest 2"
+goto :_ViewPairingCode
+) else (
+if "!serial:~0,4!" == "1PAS" (
+set "modeltype=Meta Quest 1"
+goto :_ViewPairingCode
+) else (
+if "!serial:~0,3!" == "340Y" (
+set "modeltype=Meta Quest 3S"
+goto :_ViewPairingCode
+) else (
+if "!serial:~0,3!" == "230Y" (
+set "modeltype=Meta Quest Pro"
+goto :_ViewPairingCode
+)
+)
+)
+)
+)
+)
+@echo.
+@echo.
+@echo.
+@echo   ===========================================================================
+rem StartRusTextBlock
+rem @echo    %_fBRed%Невозможно определить код сопряжения
+rem @echo    Проверьте правильность ввода серийного номера или подключение шлема к ПК.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo    %_fBRed%Unable to determine the pairing code
+@echo    Check the correctness of the serial number input or the headset connection to the PC.%_fReset%
+rem EndEngTextBlock
+@echo   ===========================================================================
+@echo.
+@echo.
+goto _returnmenu
+
+:_ViewPairingCode
+for /f %%i in ('powershell -ExecutionPolicy Bypass -File "%myfiles%\pcode.ps1" -serial "%SERIAL%"') do set pairingcode=%%i
+@echo.
+@echo.
+@echo   =======================================
+rem StartRusTextBlock
+rem @echo    %_fCyan%Модель шлема		: %_fBCyan%%modeltype%%_fReset%
+rem @echo    %_fCyan%Серийный номер	: %_fBCyan%%serial%%_fReset%
+rem @echo    %_fCyan%Код сопряжения	: %_fBGreen%%pairingcode%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo    %_fCyan%Headset Model        : %_fBCyan%%modeltype%%_fReset%
+@echo    %_fCyan%Serial Number        : %_fBCyan%%serial%%_fReset%
+@echo    %_fCyan%Pairing Code         : %_fBGreen%%pairingcode%%_fReset%
+rem EndEngTextBlock
+@echo   =======================================
+goto _returnmenu
 
 :_OpenHosts
 rem StartRusTextBlock
@@ -1867,10 +2096,10 @@ rem @echo   %_fBRed%Для сохранения изменений в файле
 rem @echo   %_fBRed%программа Quas должна быть открыта с правами администратора^!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo   The hosts file will be opened in a second
+@echo   %_fBYellow%The hosts file will be opened in a second%_fReset%
 @echo   ---
-@echo   To save changes to the hosts file,
-@echo   the Quas program must be run with administrator rights
+@echo   %_fBRed%To save changes to the %_fCyan%hosts file%_fReset%,
+@echo   the Quas program must be run with administrator rights%_fReset%
 rem EndEngTextBlock
 @echo   --------------------------------------------------------
 start "" notepad %WINDIR%\system32\drivers\etc\hosts
@@ -2415,10 +2644,9 @@ rem StartEngTextBlock
 @echo  The program starts immediately. In this mode, the information table is absent,
 @echo  and the letter-color indicator will be as follows: [NO]
 @echo.
-@echo  The meanings of the indicators can be found at any time from the Main Menu, section H.
-@echo.
-@echo  At any time, you can use the menu to remove the key from the registry, and the program
-@echo  will work as usual, displaying the initial information.
+@echo  The "iPerf Temp Dir" key sets the "C:\Temp" folder as the iPerf launch directory
+@echo  on a permanent basis. After that, the iPerf server will only launch
+@echo  from this directory.
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -2572,9 +2800,11 @@ rem StartEngTextBlock
 @if [%bpwfatt%]==[0xb] set "keywfattmess=Written to registry"
 @if [%bpinitialstatus%]==[] set "keyinistatus=Not set"
 @if [%bpinitialstatus%]==[0xb] set "keyinistatus=Written to registry"
+@if not defined iperfdir (set "keyiperfdir=Not set") else (set "keyiperfdir=%iperfdir%")
 @echo Bypass Info Table key          : %keyinfomess%
 @echo Bypass Wireless Warning key     : %keywfattmess%
 @echo Bypass Initial Status key      : %keyinistatus%
+@echo iPerf Temp Dir key		: %keyiperfdir%
 rem EndEngTextBlock
 call :_prevmenu
 goto _RegistryKeysSettings
@@ -3528,6 +3758,8 @@ rem EndEngTextBlock
 @goto _returnmenu
 
 :_reboot
+@echo ========================================
+@echo  Секунду..
 rem call :_cdc
 @%MYFILES%\adb devices | findstr /i /c:"sideload" 1>nul 2>nul
 @If %ERRORLEVEL%==0 @%MYFILES%\adb reboot  1>nul 2>nul& call :_rebootmessage & goto  _returnmenu
@@ -3536,13 +3768,14 @@ rem call :_cdc
 @%MYFILES%\fastboot devices | findstr /i /c:"fastboot" 1>nul 2>nul
 @If %ERRORLEVEL%==0 @%myfiles%\fastboot reboot  1>nul 2>nul& call :_rebootmessage & goto  _returnmenu
 :_rebootmessage
-@echo ========================================
+@echo  ---
 rem StartRusTextBlock
 rem @echo  Шлем отправлен в перезагрузку
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  Headset sent for reboot.
 rem EndEngTextBlock
+@echo ========================================
 exit /b
 rem @goto _returnmenu
 
@@ -3890,13 +4123,13 @@ call :_hat
 @echo.
 rem StartRusTextBlock
 rem @echo  Скриншот сохранен в текущем каталоге.
-rem @echo 
+rem @echo. 
 rem @echo  Нажмите Enter для создания следующего скриншота
 rem @echo  Для завершения и выхода в меню введите 0 и нажмите Enter
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  Screenshot saved in the current directory.
-@echo 
+@echo.
 @echo  Press Enter to create the next screenshot
 @echo  To finish and return to the menu, enter 0 and press Enter
 rem EndEngTextBlock
@@ -4158,10 +4391,10 @@ rem @%MYFILES%\adb.exe devices
 rem StartRusTextBlock
 rem @echo = Шлем переподключен
 rem @echo   Для продолжения работы подключите кабель и перезапустите программу
-rem 
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  Headset reconnected.
+@echo  Headset reconnected
+@echo   To continue, connect the cable and restart the program
 rem EndEngTextBlock
 @goto _returnmenu
 
@@ -5533,7 +5766,7 @@ rem @echo  Нажмите Enter для начала прошивки устро�
 rem @echo  или выберите пункт меню и затем Enter
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo          +++ Firmware file found +++
+@echo          %_fBGreen%+++ Firmware file found +++%_fReset%
 @echo.
 @echo.
 @echo.   %model1% ^ & @echo. ^ & @echo. ^ & @echo. %umodel2%
@@ -5544,7 +5777,7 @@ rem StartEngTextBlock
 @echo		F. Exit to Firmware Menu
 @echo		T. Check %FirmwareFileName% file compatibility
 @echo.
-@echo	    Enter. Start device flashing
+@echo	    %_fBYellow%Enter. Start device flashing%_fReset%
 @echo.
 @echo.
 @echo.
@@ -5575,8 +5808,8 @@ rem @echo  %_fBYellow%= Загружаемся в бутлоадер..%_fReset%
 rem @echo    [ светодиод загорится %_fBRed%оранжевым%_fReset% ]
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  = Booting into bootloader..
-@echo    [LED will light up orange]
+@echo  %_fBYellow%= Booting into bootloader..
+@echo    [LED will light up %_fBRed%orange%_fReset% ]
 rem EndEngTextBlock
 @echo.
 @%MYFILES%\adb.exe reboot bootloader 1>NUL 2>&1
@@ -5587,8 +5820,8 @@ rem @echo  %_fBYellow%= Переключаемся в режим загрузк�
 rem @echo    [ светодиод загорится %_fBWhite%белым%_fReset%, затем %_fBMag%фиолетовым%_fReset% ]
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  = Switching to firmware loading mode..
-@echo    [LED will light up white, then purple]
+@echo  %_fBYellow%= Switching to firmware loading mode..%_fReset%
+@echo    [LED will light up %_fBWhite%white%_fReset%, then %_fBMag%purple%_fReset% ]
 rem EndEngTextBlock
 @echo.
 @%MYFILES%\fastboot.exe oem reboot-sideload 1>NUL 2>&1
@@ -5601,7 +5834,7 @@ rem @echo  %_fBYellow%= Загружаем прошивку в шлем..%_fRese
 rem @echo    [ на %_fCyan%94^%%%_fReset% может на минуту замереть или завершить процесс загрузки, это нормально ]
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  = Loading firmware into the headset..
+@echo  %_fBYellow%= Loading firmware into the headset..
 @echo    [ at 94^%% it may freeze for a minute or complete the loading process, this is normal ]
 rem EndEngTextBlock
 @echo.
@@ -5641,7 +5874,7 @@ rem @echo  Загрузка в окружение может занять до �
 rem @echo  Шлем подаст звуковой сигнал, когда загрузится в Виртуальное окружение.
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  ^|     +++  Firmware loading complete  +++       ^|
+@echo  ^|     %_fBGreen%+++  Firmware loading complete  +++       ^|
 @echo  ---------------------------------------------------
 @echo.
 @echo  Pay attention to the message after loading:
@@ -5872,8 +6105,8 @@ rem @echo      M. Выход в Главное меню
 rem @echo      R. Перезагрузка шлема
 rem @echo      F. Выход в общее прошивочное меню прошивки
 rem @echo      K. Информация о прошивке шлема, слотах загрузки, ревизии и батарее
-rem @echo      S. Отключить сенсоры шлема
-rem @echo      Q. Включить сенсоры шлема
+rem @echo      S. Отключить сенсоры шлема (Only Meta Quest 3)
+rem @echo      Q. Включить сенсоры шлема (Only Meta Quest 3)
 rem @echo.
 rem @echo  Enter. Перейти непосредственно к меню прошивки (Кнопочный режим)
 rem EndRusTextBlock
@@ -5897,8 +6130,8 @@ rem StartEngTextBlock
 @echo      R. Reboot
 @echo      F. Exit to Firmware Menu
 @echo      K. Headset Firmware and Boot Slot Information
-@echo      S. Disable headset sensors
-@echo      Q. Enable headset sensors
+@echo      S. Disable headset sensors (Only Meta Quest 3)
+@echo      Q. Enable headset sensors (Only Meta Quest 3)
 @echo.
 @echo  Enter. Switch to button flashing mode
 rem EndEngTextBlock
@@ -5923,10 +6156,64 @@ if /i "%choice%"=="r" (GOTO _RebootFromBootLoader)
 if /i "%choice%"=="k" (set "fastbotcommand=:_FastbootFirmwareExtractCont"&&call :_FastbootCheckDevice)
 if /i "%choice%"=="s" (set "fastbotcommand=:_DisableHeadsetSensorsConfirm"&&call :_FastbootCheckDevice)
 if /i "%choice%"=="q" (set "fastbotcommand=:_EnableHeadsetSensors"&&call :_FastbootCheckDevice)
+if /i "%choice%"=="t" (goto _HeadsetSensorsCompatCheck)
 goto _bootloadermode
 
 :_RebootFromBootLoader
 @%myfiles%\fastboot reboot  1>nul 2>nul& call :_rebootmessage & goto  _returnmenu
+
+
+:_FastbootCheckDevice
+cls
+call :_hat
+echo off
+setlocal enabledelayedexpansion
+@echo.
+@echo.
+@echo off
+for /f "tokens=1" %%i in ('%MYFILES%\fastboot devices ^| findstr /i /c:"fastboot"') do (
+rem StartRusTextBlock
+rem @echo   %_fBYellow%Найдено устройство:%_fReset% %_fBCyan%%%i%_fReset%
+rem @call %fastbotcommand%
+rem exit /b
+rem )
+rem @echo ===============================================
+rem @echo %_fBRed%+++ Шлем не отвечает на команды fastboot +++%_fReset%
+rem @echo Загрузите его в bootloader, fastboot или recovery режимы.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%Device found: %_fReset% %_fBCyan%%%i%_fReset%
+call %fastbotcommand%
+@exit /b
+)
+@echo ===============================================
+@echo %_fBRed%+++ Headset is not responding to fastboot commands +++%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+exit /b 
+rem goto _returnmenu
+
+:_HeadsetSensorsCompatCheck
+setlocal enabledelayedexpansion
+call :_ViewCodenameBL
+if not !codename:~1!==eurekaa (
+echo NOk
+pause
+goto _bootloadermode
+) else (
+echo Ok
+pause
+goto _bootloadermode
+)
+goto _bootloadermode
+
+:_ViewCodenameBL
+@for /f "tokens=1,2,3 delims=:" %%a in ('@%MYFILES%\fastboot getvar product 2^>^&1') do (
+set "codename=%%b"
+@echo !codename:~1!
+exit /b
+)
+exit /b
 
 
 :_DisableHeadsetSensorsConfirm
@@ -6036,45 +6323,12 @@ call :_prevmenu
 exit /b
 
 
-
-
-:_FastbootCheckDevice
-cls
-call :_hat
-echo off
-setlocal enabledelayedexpansion
-@echo.
-@echo.
-@echo off
-for /f "tokens=1" %%i in ('fastboot devices ^| findstr /i /c:"fastboot"') do (
-rem StartRusTextBlock
-rem @echo   %_fBYellow%Найдено устройство:%_fReset% %_fBCyan%%%i%_fReset%
-rem @call %fastbotcommand%
-rem exit /b
-rem )
-rem @echo ===============================================
-rem @echo %_fBRed%+++ Шлем не отвечает на команды fastboot +++%_fReset%
-rem @echo Загрузите его в bootloader, fastboot или recovery режимы.
-rem EndRusTextBlock
-rem StartEngTextBlock
-@echo   %_fBYellow%Device found: %_fReset% %_fBCyan%%%i%_fReset%
-call %fastbotcommand%
-xit /b
-)
-@echo ===============================================
-@echo %_fBRed%+++ Headset is not responding to fastboot commands +++%_fReset%
-rem EndEngTextBlock
-call :_prevmenu
-exit /b 
-rem goto _returnmenu
-
-
 :_FastbootFirmwareExtractCont
 %MYFILES%\fastboot reboot-bootloader 1>nul 2>nul
 @timeout 2 >nul
 @echo.
 @echo   -----------------------------------------------
-for /f "tokens=2" %%i in ('fastboot oem battery-capacity 2^>^&1 ^| findstr /i "(bootloader)"') do set battlevel=%%i
+for /f "tokens=2" %%i in ('%MYFILES%\fastboot oem battery-capacity 2^>^&1 ^| findstr /i "(bootloader)"') do set battlevel=%%i
 rem StartRusTextBlock
 rem @echo   %_fBYellow%= Уровень батареи: %_fReset%%_fBCyan%%battlevel%%%%_fReset% (данные не всегда верны)
 rem EndRusTextBlock
@@ -6088,7 +6342,7 @@ rem @echo   %_fBYellow%= Извлекаем информацию о слотах
 rem @echo     Немного терпения, это займет некоторое время..
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo   = Extracting information about the slots.
+@echo   %_fBYellow%= Extracting information about the slots.%_fReset%
 @echo     Please be patient, this will take some time..
 rem EndEngTextBlock
 @echo   -----------------------------------------------
@@ -6096,7 +6350,7 @@ for /f "tokens=*" %%A in ('%MYFILES%\fastboot getvar all 2^>^&1') do (
     echo %%A | findstr /i "slot- has-slot:boot current-slot model-revision" >nul
     if not errorlevel 1 (
         set "fp=%%A"
-echo     %_fBCyan%!fp:~12!%_fReset%
+@echo     %_fBCyan%!fp:~12!%_fReset%
 
     )
 )
@@ -6105,7 +6359,7 @@ rem StartRusTextBlock
 rem @echo   %_fBYellow%= Переключаемся в режим fastboot%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo   = Switching to fastboot mode
+@echo   %_fBYellow%= Switching to fastboot mode%_fReset%
 rem EndEngTextBlock
 
 %MYFILES%\fastboot reboot-fastboot 1>nul 2>nul
@@ -6116,7 +6370,7 @@ rem @echo   %_fBYellow%= Извлекаем информацию о прошив
 rem @echo     Придется подождать еще несколько секунд..
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo   = Retrieving firmware information...
+@echo   %_fBYellow%= Retrieving firmware information...%_fReset%
 @echo     Just a second..
 rem EndEngTextBlock
 for /f "tokens=*" %%A in ('%MYFILES%\fastboot getvar all 2^>^&1') do (
@@ -6133,7 +6387,6 @@ for /f "tokens=2,6 delims=/:" %%B in ("!fp!") do (
     set "device=%%B"
     set "number=%%C"
 )
-
 call :_FastbootFirmwareTable
 @del /q /f %ftpfile% 1>nul 2>nul
 @echo   -----------------------------------------------
@@ -6145,11 +6398,11 @@ rem @echo   -----------------------------------------------
 rem @echo   %_fBYellow%= Возвращаемся в bootloader..%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo   Headset Model          	: Meta %DevModelNm%
-@echo   Headset Environment Ver	: !fbenv!
-@echo   Headset Firmware Ver   	: !fbfwr!
+@echo   %_fBYellow%Headset Model%_fReset%          	: %_fBCyan%Meta %DevModelNm%%_fReset%
+@echo   %_fBYellow%Headset Environment Ver%_fReset%	: %_fBCyan%!fbenv!%_fReset%
+@echo   %_fBYellow%Headset Firmware Ver%_fReset%   	: %_fBCyan%!fbfwr!%_fReset%
 @echo   -----------------------------------------------
-@echo   = Return to bootloader mode
+@echo   %_fBYellow%= Return to bootloader mode
 rem EndEngTextBlock
 %MYFILES%\fastboot reboot-bootloader 1>nul 2>nul
 @echo   -----------------------------------------------
@@ -6167,19 +6420,21 @@ rem goto _beginn
 
 
 :_FastbootFirmwareTable
-
 set IntProductName=!device!
-
+set fastbootmark=1
 call :_SetCompareDeviceModelName
-
 set ftpfile=%fwtxt%
-set "fbfwr=Not found in database"
+rem StartRusTextBlock
+rem set "fbfwr=Данные отсутствуют или недоступны"
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "fbfwr=Data not available"
+rem EndEngTextBlock
 set "fbenv="
-
 call :_GetFTP
-
-for /F "tokens=1,2 delims= " %%a in (%ftpfile%) do (
-    echo %%a | findstr /i "%number%" >nul
+if not exist %ftpfile% set fbenv=%number%&& exit /b
+@for /F "tokens=1,2 delims= " %%a in (%ftpfile%) do (
+    @echo %%a | findstr /i "%number%" >nul
     if not errorlevel 1 (
         set "fbenv=%%a"
         set "fbfwr=%%b"
@@ -6471,15 +6726,17 @@ if %ftpfile%==fws.txt set ctlink=Quest_3S_firmware&&set CTSourceFile=cts.txt
 if errorlevel 1 (
 @echo   ===================================
 rem StartRusTextBlock
-rem @echo    %_fBRed%Анализ невозможен, база данных прошивок недоступна.
-rem @echo    Попробуйте использовать VPN на ПК%_fReset%
+rem @echo    %_fBRed%Анализ невозможен, база данных прошивок недоступна.%_fReset%
+rem @echo    %_fBYellow%Убедитесь, что программа запущена от имени администратора.
+rem @echo.
+rem @echo    Также проверьте доступность сайта %_fYellow%https://cocaine.trade%_fReset%
+rem @echo    %_fBYellow%или попробуйте использовать VPN на ПК%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo Firmware database is not accessible
 rem EndEngTextBlock
 @del /q /f metadata 1>nul 2>nul
-call :_prevmenu
-goto _fwmenu
+if defined fastbootmark (exit /b) else (call :_prevmenu && goto _fwmenu)
 )
 powershell -ExecutionPolicy Bypass -File %myfiles%\ctfwpars.ps1 -InputFile "%CTSourceFile%" -OutputFile "%ftpfile%"
 @del /q /f metadata 1>nul 2>nul
@@ -8528,9 +8785,11 @@ if /i "%choice%"=="a" (goto _UninstallAppsPS)
 if /i "%choice%"=="b" (goto _SoftUninstallAppsPS)
 if /i "%choice%"=="c" (goto _ClearCacheDataAppsPS)
 if /i "%choice%"=="d" (goto _DisableAppsPS)
+if /i "%choice%"=="dd" (goto _DisableAppsPS)
 if /i "%choice%"=="e" (goto _EnableAppsPS)
 if /i "%choice%"=="f" (goto _StartAppPS)
 if /i "%choice%"=="g" (goto _StopAppPS)
+if /i "%choice%"=="gg" (goto _StopAppPS)
 if /i "%choice%"=="i" (goto _ViewAppStatusPS)
 if /i "%choice%"=="j" (goto _ViewRunningAppsPS)
 @cls
@@ -8844,7 +9103,9 @@ rem EndEngTextBlock
 
 @echo.
 rem StartRusTextBlock
-rem @echo    P.  Установить драйверы Oculus на ПК
+rem @echo    P.  Установить драйверы Meta на ПК
+rem @echo   PN.  Установить новые драйверы Meta на ПК
+rem @echo   PD.  Скачать новые драйверы Meta на ПК
 rem @echo.
 rem @echo.
 rem @echo  ВАЖНОЕ:
@@ -8854,7 +9115,8 @@ rem @echo     доступа к серверам очень просто и не
 rem @echo     Используйте Пункт 2 в Главном меню.
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo    P.  Install Oculus drivers on PC
+@echo    P.  Install Meta drivers on PC
+@echo   PP.  Install new Meta drivers on PC
 @echo.
 @echo.
 @echo  IMPORTANT:
@@ -8882,7 +9144,8 @@ if /i "%choice%"=="i" (GOTO _freeplanet)
 if /i "%choice%"=="j" (GOTO _byedpi)
 if /i "%choice%"=="k" (GOTO _v2rayng)
 if /i "%choice%"=="p" (GOTO _setdrivers)
-if /i "%choice%"=="pp" (GOTO _setdriverexp)
+if /i "%choice%"=="pn" (GOTO _setdriverexp)
+if /i "%choice%"=="pd" (GOTO _driversdownload)
 rem if /i "%choice%"=="q" (GOTO _setdrivers10)
 @cls
 goto _InstallVPNClients
@@ -10554,8 +10817,8 @@ goto _InstallSoftwareApps
 
 :_autostartapp
 call :_cdc
-set dlappl=com.valvesoftware.steamlinkvr.apk
-set curllink=https://www.dropbox.com/scl/fi/r3leqbxs1t2prltax3hki/AutoStart.apk?rlkey=2ulaav1rffhypi13k9z91ee9j
+set dlappl=AutoStartAppManager.apk
+set curllink=https://www.dropbox.com/scl/fi/g1vqrsm1ecgyyqdxr7jsx/AutoStartAppManager.apk?rlkey=lsk7zavdnu65hcsu7uzbajlwe
 call :_dlinstall
 call :_prevmenu
 goto _InstallSoftwareApps
@@ -10859,44 +11122,97 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 set "instmess=Done. Oculus drivers installed."
 rem EndEngTextBlock
-goto _dlwinapps
+goto :_DriversInstallProcess
 
 :_setdriverexp
-@echo.
-@echo.
-@echo   -------------------------------------------------------------------------
+@echo ----------------------------------------
 rem StartRusTextBlock
-rem @echo   Это самая новая версия драйверов, они могут не установиться. 
-rem @echo   Продолжайте, если только хорошо понимаете, что делаете.
-rem @echo   Если эти драйверы не установятся, поставьте поверх них обычные, пункт P.
-rem @echo. 
-rem @echo  Для продолжения нажмите любуюу кнопку
-rem @echo  Для выхода - закройте программу Quas. 
+rem @echo   %_fBYellow%= Скачивание...%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo   This is the latest version of drivers, they may not install. 
-@echo   Proceed only if you understand what you are doing.
-@echo   If these drivers fail to install, install regular drivers over them, option P.
-@echo. 
-@echo  Press any key to continue
-@echo  To exit - close the Quas program.
+@echo Downloading...
 rem EndEngTextBlock
-@echo. 
-@echo.
-@pause >nul
-set dlappl=ocdrv10-17202.zip
+set dlappl=MetaQuestNewDrivers.zip
 set dlcat=%dlappl:~0,-4%
 @rd %cd%\%dlcat% /Q /S 1>nul 2>nul
 @del %dlappl% /Q 1>nul 2>nul
-set curllink=https://www.dropbox.com/scl/fi/ekedbhs5o2x0qd0vc3wmv/ocdrv10-17202.zip?rlkey=hokszixka1c3sax8m54gl8f6y
-set "startfile=oculus-driver.exe"
+set curllink=https://www.dropbox.com/scl/fi/3xqung5wcr8kz8s3qbd7f/MetaQuestNewDrivers.zip?rlkey=8yswylvmg5v6t9p6quchkqump
+@curl -LJkO %curllink% -# 1>nul
+@%myfiles%\7z.exe x "%cd%\%dlappl%" -o"%cd%\%dlcat%\" 1>NUL 2>&1
+set "startfile=_installdrv.cmd"
+@echo ----------------------------------------
 rem StartRusTextBlock
-rem set "instmess=Готово. Драйверы Oculus установлены."
+rem @echo   %_fBYellow%= Установка...%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-set "instmess=Done. Oculus drivers installed."
+@echo   Installing...
 rem EndEngTextBlock
-goto _dlwinapps
+@ping localhost -n 3 1>nul 2>&1
+@start " " "%cd%\%dlcat%\%startfile%"
+@ping localhost -n 3 1>nul 2>&1
+rem @rd %cd%\%dlcat% /Q /S 1>nul 2>nul
+@del %dlappl% /Q 1>nul 2>nul
+@echo ----------------------------------------
+
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Готово. Драйверы должны быть установлены.%_fReset%
+rem @echo ----------------------------------------
+rem @echo.
+rem @echo      %_fBYellow%Драйверы для Highwind Interface устанавливаются вручную:
+rem @echo.
+rem @echo   Рядом с программой создан каталог MetaQuestNewDrivers, в котором лежат драйверы.
+rem @echo.
+rem @echo   Обновить драйвер - Найти драйверы на этом компе - Выбрать драйвер из списка - Показать все 
+rem @echo   устройства - Далее - Установить с диска - Обзор - выбрать файл android_winusb.inf, выбрать
+rem @echo   Reality Labs Composite Highwind Interface, в окне "Установка этого драйвера 
+rem @echo   не рекомендуется.....Вы хотите установить этот драйвер?" ответить Да.%_fReset%
+rem @echo.
+rem @echo   После установки драйверов можете удалить каталог MetaQuestNewDrivers.
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Done. Drivers must be installed.
+@echo ----------------------------------------
+@echo.
+@echo      %_fBYellow%Drivers for Highwind Interface are installed manually:
+@echo.
+@echo   MetaQuestNewDrivers folder has been created next to the program, containing the drivers.
+@echo.
+@echo   Update driver - Browse my computer for drivers - Let me pick from a list - Show all 
+@echo   devices - Next - Install from disk - Browse - select the file android_winusb.inf, choose
+@echo   Reality Labs Composite Highwind Interface, in the window "Installing this driver 
+@echo   is not recommended.....Do you want to install this driver?" answer Yes.%_fReset%
+@echo.
+@echo   After installing the drivers, you can delete the MetaQuestNewDrivers folder.
+rem EndEngTextBlock
+call :_prevmenu
+goto _installmenugen
+
+:_driversdownload
+@echo ----------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Скачивание...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo Downloading...
+rem EndEngTextBlock
+set dlappl=MetaQuestNewDrivers.zip
+set dlcat=%dlappl:~0,-4%
+@rd %cd%\%dlcat% /Q /S 1>nul 2>nul
+@del %dlappl% /Q 1>nul 2>nul
+set curllink=https://www.dropbox.com/scl/fi/3xqung5wcr8kz8s3qbd7f/MetaQuestNewDrivers.zip?rlkey=8yswylvmg5v6t9p6quchkqump
+@curl -LJkO %curllink% -# 1>nul
+@echo ----------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Готово. Драйверы должны быть скачаны.%_fReset%
+rem @echo     Архив называется %_fCyan%MetaQuestNewDrivers.zip%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBGreen%= Done. Drivers must be downloaded%_fReset%
+@echo     The archive is called %_fCyan%MetaQuestNewDrivers.zip%_fReset%
+@echo    The archive   
+rem EndEngTextBlock
+call :_prevmenu
+goto _installmenugen
 
 :_dlwingamesapps
 @echo ----------------------------------------
@@ -10932,6 +11248,34 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 @curl -LJkO %curllink%  -# 1>nul
 @%myfiles%\7z.exe x "%cd%\%dlappl%" -o"%cd%\%dlcat%\" 1>NUL 2>&1
+rem if %errorlevel% NEQ 0 goto _dlwinappsend
+rem StartRusTextBlock
+rem @echo ---
+rem @echo Установка... Ждите около минуты...
+rem @echo Если появится окно о перезагрузке, нажмите "нет".
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo Installing... Please wait for about a minute...
+@echo If a reboot prompt appears, click "No".
+rem EndEngTextBlock
+@start " " "%cd%\%dlcat%\%startfile%"
+@ping localhost -n 50 1>nul 2>&1
+@rd %cd%\%dlcat% /Q /S 1>nul 2>nul
+@del %dlappl% /Q 1>nul 2>nul
+call :_prevmenu
+goto _installmenugen
+
+
+:_DriversInstallProcess
+@echo ----------------------------------------
+rem StartRusTextBlock
+rem @echo Скачивание...
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo Downloading...
+rem EndEngTextBlock
+@curl -LJkO %curllink%  -# 1>nul
+@%myfiles%\7z.exe x "%cd%\%dlappl%" -o"%cd%\%dlcat%\" 1>NUL 2>&1
 if %errorlevel% NEQ 0 goto _dlwinappsend
 rem StartRusTextBlock
 rem @echo ---
@@ -10947,11 +11291,18 @@ rem EndEngTextBlock
 @rd %cd%\%dlcat% /Q /S 1>nul 2>nul
 @del %dlappl% /Q 1>nul 2>nul
 rem StartRusTextBlock
-rem set "instmess=Готово. Драйверы Oculus установлены."
+rem @echo ---
+rem @echo   %_fBGreen%= Готово. Драйверы Oculus установлены.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-set "instmess=Done. Oculus drivers installed."
+@echo   %_fBGreen%= Done. Oculus drivers installed.%_fReset%
 rem EndEngTextBlock
+@echo ---
+call :_returnmenu
+GOTO _tabBegin
+
+
+
 :_dlwinappsend
 @echo ----------------------------------------
 rem StartRusTextBlock
@@ -10995,7 +11346,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo Installing...
 rem EndEngTextBlock
-@%MYFILES%\ADB install -r -g -d --no-streaming "%dlappl%"  1>NUL
+@%MYFILES%\ADB install -r -g -d --no-streaming "%dlappl%"
 call :_erlvl
 @del /Q /F %dlappl%
 @echo --------------------------------------------------------
@@ -11617,8 +11968,8 @@ rem StartEngTextBlock
 @echo    D.  Disable AirLink
 @echo    E.  Fix AirLink connection issue
 @echo    F.  Backup AirLink parameters
-@echo    G.  Clean after remove Oculus Home Softtware
-@echo    H.  Calculate dynmaic birate
+@echo    G.  Clean after remove Oculus Home Software
+@echo    H.  Calculate dynmaic bitrate
 @echo    I.  Reset Oculus Debug Tools to default
 @echo    J.  Download and run Meta Quest Link Oculus software installer
 rem EndEngTextBlock
@@ -13915,6 +14266,7 @@ rem @echo         МЕНЮ СИСТЕМНОЙ ИНФОРМАЦИИ
 rem @echo         =========================
 rem @echo.
 rem @echo    A.  Работа с dumpsys
+rem @echo    B.  Информация об использовании памяти
 rem @echo    C.  Сохранить в файл все свойства шлема (getprop)
 rem @echo    D.  Показать IP адрес шлема
 rem @echo    E.  Сохранить список установленных пакетов (packages names)
@@ -13922,6 +14274,7 @@ rem @echo    F.  Показать серийный номер шлема
 rem @echo    G.  Сохранить списки системных настроек шлема (system/global/security)
 rem @echo    H.  Работа с Logcat
 rem @echo    I.  Информация об аккумуляторе
+rem @echo    J.  Список запущенных приложений
 rem @echo    K.  Извлечение багрепорта                 		[EXP]
 rem @echo    L.  Просмотр CPU-емких приложений         		[EXP]
 rem @echo    N.  Список файлов/каталогов и их объем    		[EXP]
@@ -13934,6 +14287,7 @@ rem StartEngTextBlock
 @echo         =======================
 @echo.
 @echo    A.  Work with dumpsys
+@echo    B.  Memory usage information
 @echo    C.  Save to file all headset properties (getprop)
 @echo    D.  Show headset IP address
 @echo    E.  Save a list of installed packages (package names)
@@ -13941,6 +14295,7 @@ rem StartEngTextBlock
 @echo    G.  Save a list of system settings (system/global/security)
 @echo    H.  Work with Logcat
 @echo    I.  Battery information
+@echo    J.  Running Apps List
 @echo    K.  Bugreport extraction [EXP]
 @echo    L.  View CPU-intensive applications [EXP]
 @echo    N.  List of files/directories and their size [EXP]
@@ -13948,7 +14303,6 @@ rem StartEngTextBlock
 @echo    P.  USB device connection and disconnection log
 @echo.   R.  Save all system information in bulk into one archive
 rem EndEngTextBlock
-
 @echo.
 @echo.
 @echo.
@@ -13959,6 +14313,7 @@ if not defined choice goto _syscommenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _dumpsysmenu)
+if /i "%choice%"=="b" (GOTO _MemoryUsageInfo)
 if /i "%choice%"=="c" (GOTO _allprop)
 if /i "%choice%"=="d" (GOTO _showip)
 if /i "%choice%"=="e" (GOTO _packageslist)
@@ -13967,6 +14322,7 @@ if /i "%choice%"=="f" (GOTO _showserial)
 if /i "%choice%"=="g" (GOTO _syscomm)
 if /i "%choice%"=="h" (GOTO _adblogcat)
 if /i "%choice%"=="i" (GOTO _batinfo)
+if /i "%choice%"=="j" (GOTO _RunningAppsListMenu)
 if /i "%choice%"=="k" (GOTO _bugreportextr)
 if /i "%choice%"=="l" (GOTO _cpuload)
 if /i "%choice%"=="n" (GOTO _sizecheckmenu)
@@ -13976,6 +14332,142 @@ rem if /i "%choice%"=="q" (GOTO _UpdatesInfo)
 if /i "%choice%"=="r" (GOTO _AllSystemFiles)
 cls
 goto _syscommenu
+
+
+:_RunningAppsListMenu
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo         МЕНЮ ЗАПУЩЕННЫХ ПРИЛОЖЕНИЙ
+rem @echo         ==========================
+rem @echo.
+rem @echo    A.  Список пользовательских приложений
+rem @echo    B.  Список системных приложений
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo         RUNNING APPLICATIONS MENU
+@echo         ==========================
+@echo.
+@echo    A.  List of user applications
+@echo    B.  List of system applications
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+@echo.
+call :_MenuChoiceEnter
+@echo.
+if not defined choice goto _RunningAppsListMenu
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="a" (GOTO _RunningUserApps)
+if /i "%choice%"=="b" (GOTO _RunningSysApps)
+goto _RunningAppsListMenu
+
+:_RunningUserApps
+call :_Settime
+cls
+@echo.
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo   Информация о запущенных пользовательских приложениях
+rem @echo.
+rem @echo   Для перелистывания используйте клавиши Enter и Пробел.
+rem @echo        Чтобы продолжить, нажмите любую клавишу
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   Information about running user applications
+@echo.
+@echo   Use Enter and Space keys to scroll through.
+@echo        Press any key to continue
+rem EndEngTextBlock
+@echo  -------------------------------------------------------
+@pause >nul
+@echo.
+@%MYFILES%\adb shell ps -A | findstr u0_a | more
+@%MYFILES%\adb shell ps -A | findstr u0_a >RunningUserApps%dt%.txt
+@echo  -----------------------------------------------
+@echo.
+rem StartRusTextBlock
+rem @echo   Эта информация сохранена в текстовый файл RunningUserApps%dt%.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   This information has been saved to the text file RunningUserApps%dt%.txt
+rem EndEngTextBlock
+goto _returnmenu
+
+:_RunningSysApps
+call :_Settime
+cls
+@echo.
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo   Информация о запущенных систиемных приложениях
+rem @echo.
+rem @echo   Для перелистывания используйте клавиши Enter и Пробел.
+rem @echo        Чтобы продолжить, нажмите любую клавишу
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   Information about running system applications
+@echo.
+@echo   Use Enter and Space keys to scroll through.
+@echo        Press any key to continue
+rem EndEngTextBlock
+@echo  -------------------------------------------------------
+@pause >nul
+@echo.
+@%MYFILES%\adb shell ps -A | findstr system | more
+@%MYFILES%\adb shell ps -A | findstr system >RunningSysApps-%dt%.txt
+@echo  -----------------------------------------------
+@echo.
+rem StartRusTextBlock
+rem @echo   Эта информация сохранена в текстовый файл RunningSysApps-%dt%.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   This information has been saved to the text file RunningSysApps%dt%.txt
+rem EndEngTextBlock
+goto _returnmenu
+
+:_MemoryUsageInfo
+call :_Settime
+cls
+@echo.
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+rem @echo   Информация об использовании памяти
+rem @echo.
+rem @echo   Для перелистывания используйте клавиши Enter и Пробел.
+rem @echo        Чтобы продолжить, нажмите любую клавишу
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   Information about memory usage
+@echo.
+@echo   Use Enter and Space keys to scroll through.
+@echo        Press any key to continue
+rem EndEngTextBlock
+@echo  -------------------------------------------------------
+@pause >nul
+@echo.
+@%MYFILES%\adb shell dumpsys meminfo | more
+@%MYFILES%\adb shell dumpsys meminfo >MemInfo-%dt%.txt
+@echo  -----------------------------------------------
+@echo.
+rem StartRusTextBlock
+rem @echo   Эта информация сохранена в текстовый файл MemInfo-%dt%.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   This information has been saved to the text file MemInfo-%dt%.txt
+rem EndEngTextBlock
+goto _returnmenu
+
 
 :_UpdatesInfo
 call :_cdc
@@ -15111,6 +15603,25 @@ if not exist ipaddr.txt call :_CreateIPaddressTxt
 call :_ExtractIPaddress
 if [%ipaddrtxt%]==[] goto :_IPaddrEmpty
 
+for /f "tokens=1,2 delims=." %%a in ("%ipaddrtxt%") do set "ippcshort=%%a.%%b")
+for /f "tokens=1,2 delims=." %%a in ("%iphs%") do set "iphsshort=%%a.%%b"
+
+if "%ippcshort%"=="%iphsshort%" (
+rem @echo OK
+set ipc=%_fCyan%
+
+goto _iperftestmenu
+) else (
+rem StartRusTextBlock
+rem set "ipaddressmsg=IP адрес компьютера в другой подсети. Тест невозможен."
+rem EndRusTextBlock
+rem StartEngTextBlock
+set "ipaddressmsg=IP address is in a different subnet. Test impossible."
+rem EndEngTextBlock
+set ipc=%_fBRed%
+)
+
+
 :_iperftestmenu
 @echo off
 set iperfdir=
@@ -15148,21 +15659,20 @@ rem @echo    V.  Установить %SYSTEMDRIVE%\Temp каталогом за
 rem @echo.
 rem @echo.
 rem @echo.
-rem @echo  %_fBRed%ОБРАТИТЕ ВНИМАНИЕ%_fReset%:
 rem @echo.
-rem @echo    IP адрес компьютера:	[ %_fCyan%%ipaddrtxt%%_fReset% 	]
+rem @echo    IP адрес компьютера:	[ %ipc%%ipaddrtxt%%_fReset%	] %_bRed%%_fBWhite%%ipaddressmsg%%_fReset%
 rem @echo    IP адрес гарнитуры:	[ %_fCyan%%iphs%%_fReset% 	]
 rem @echo    Каталог iperf:	[ %_fCyan%%iperfdirview%%_fReset% 	]
 rem @echo.
 rem @echo    IP адрес компьютера определяется автоматически, проверьте его правильность. 
-rem @echo    Если IP адрес не соответствует вашей сетевой карте, выйдите из программы 
-rem @echo    и укажите его в файле %_fCyan%ipaddr.txt%_fReset%, только что созданном рядом с программой.
+rem @echo    Если IP адрес не соответствует вашей сетевой карте, или он в другой подсети,
+rem @echo    выйдите из программы и укажите его в файле %_fCyan%ipaddr.txt%_fReset%, только что созданном рядом с программой.
 rem @echo.
 rem @echo    %_fBYellow%Если вы поменяли роутер или IP на ПК, удалите этот файл, чтобы Quas определил новый IP адрес%_fReset%.
 rem @echo.
 rem @echo    Для теста требуется подключить кабель к ПК и шлему, а также включенный Режим разработчика.
 rem @echo    Тестирование производится по сетевому протоколу TCP, ПК -- роутер -- шлем, поэтому:
-rem @echo    %_fBRed%НЕ НУЖНО СПЕЦИАЛЬНО ПЕРЕКЛЮЧАТЬ ШЛЕМ НА БЕСПРОВОДНОЕ СОЕДИНЕНИЕ. ПОДКЛЮЧИТЕ ШЛЕМ К ПК КАБЕЛЕМ%_fReset%.
+rem @echo    %_fBYellow%НЕ НУЖНО СПЕЦИАЛЬНО ПЕРЕКЛЮЧАТЬ ШЛЕМ НА БЕСПРОВОДНОЕ СОЕДИНЕНИЕ. ПОДКЛЮЧИТЕ ШЛЕМ К ПК КАБЕЛЕМ%_fReset%.
 rem @echo.
 rem @echo    Для тестирования качества WiFi соединения между ПК и шлемом используйте пункты A или S.
 rem @echo.
@@ -17888,12 +18398,13 @@ call :_hat
 rem StartRusTextBlock
 rem @echo       ==============================================================
 rem @echo       ^|     %_fBlack%%_fBRed%           ++++ Шлем не обнаружен +++++           %_fReset%     ^|
+rem @echo       ^|   %_fBRed%Внимательно прочитайте все что написано желтым цветом  %_fReset%  ^|
 rem @echo       ==============================================================
 rem @echo.
 rem @echo       %_fBlack%%_fBBlue%Возможные решения:%_fBlack%
 rem @echo.
-rem @echo      %_fBlack%%_fBYellow% - проверьте работоспособность кабеля или поменяйте на другой.
-rem @echo       - подключите кабель от шлема к ПК в задний USB порт компьютера или поменяйте порт.
+rem @echo      %_fBlack%%_fBYellow% - проверьте работоспособность кабеля (например, смартфоном) или поменяйте на другой.
+rem @echo       - подключите кабель от шлема к ПК в задний USB порт ПК или смените порт.
 rem @echo       - переверните разъем Type-C кабеля на 180 градусов и подключите снова.
 rem @echo       - откройте Диспетчер устройств и посмотрите, есть ли там устройство XSRP или Quest.
 rem @echo         Диспетчер устройств можно открыть из меню чуть ниже, пункт D.%_fReset%
@@ -17969,7 +18480,7 @@ rem @echo.
 rem @echo.
 rem @echo.
 rem @echo      %_fBYellow%Проверьте, включен ли рычажок %_fBlack%%_fBBlue%Режим разработчика %_fBYellow%в мобильном приложении Meta Horizon.
-@echo      
+rem @echo.
 rem @echo      Если включен, попробуйте его выключить и включить, а также перезагрузить шлем.
 rem @echo      Можете также перезагрузить ПК, если это сообщение появилось после установки драйверов%_fReset%.
 rem EndRusTextBlock
@@ -18249,15 +18760,15 @@ rem @echo.
 @echo.
 rem StartRusTextBlock
 rem @echo       ==============================================================
-rem @echo       ^|     %_fBlack%%_fBRed%+++ Шлем подключен,но драйверы не установлены  +++%_fReset%     ^|
+rem @echo       ^|     %_fBRed%+++ Шлем подключен,но драйверы не установлены  +++%_fReset%     ^|
 rem @echo       ==============================================================
 rem @echo.
-rem @echo      %_fBlack%%_fBYellow%По этой же причине программа %_fBlack%%_fBBlue%qLoader%_fBlack%%_fBYellow% может не обнаруживать ваш шлем.%_fReset%
+rem @echo      %_fBYellow%По этой же причине программа %_fBBlue%qLoader%_fBYellow% может не обнаруживать ваш шлем.%_fReset%
 rem @echo.
-rem @echo      %_fBlack%%_fBYellow%Установите драйверы, воспользовавшись меню чуть ниже. Вам нужен пункт %_fBlack%%_fBGreen%I зеленого цвета%_fBlack%%_fBYellow%.
-rem @echo      Введите I и подтвердите клавишей Enter, после этого начнется установка драйверов.%_fReset%
+rem @echo      %_fBYellow%Установите драйверы, воспользовавшись меню чуть ниже. Вам нужен пункт %_fBGreen%I зеленого цвета.
+rem @echo      %_fBYellow%Введите I и подтвердите клавишей Enter, после этого начнется установка драйверов.%_fReset%
 rem @echo.
-rem @echo.     %_fBlack%%_fBRed%ДЛЯ УСТАНОВКИ ДРАЙВЕРОВ ТРЕБУЮТСЯ ПРАВА АДМИНИСТРАТОРА!%_fReset%
+rem @echo.     %_fBRed%ДЛЯ УСТАНОВКИ ДРАЙВЕРОВ ТРЕБУЮТСЯ ПРАВА АДМИНИСТРАТОРА!%_fReset%
 rem @echo.
 rem @echo        Вы можете запустить программу не устанавливая драйверы,
 rem @echo        но некоторые функции работать не будут.
@@ -18280,15 +18791,15 @@ rem @echo     %_fBlack%%_fBGreen%I.  Установить драйверы%_fRes
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo       ==============================================================
-@echo       ^|     %_fBlack%%_fBRed%+++ Headset connected, but drivers are not installed +++%_fReset%     ^|
+@echo       ^|     %_fBRed%+++ Headset connected, but drivers are not installed +++%_fReset%     ^|
 @echo       ==============================================================
 @echo.
-@echo      %_fBlack%%_fBYellow%For this reason, the %_fBlack%%_fBBlue%qLoader%_fBlack%%_fBYellow% program may not detect your headset.%_fReset%
+@echo      %_fBYellow%For this reason, the %_fBBlue%qLoader%_fBYellow% program may not detect your headset.%_fReset%
 @echo.
-@echo      %_fBlack%%_fBYellow%Install the drivers using the menu below. You need the %_fBlack%%_fBGreen%green I option%_fBlack%%_fBYellow%.%_fReset%
-@echo      Type I and press Enter to begin the driver installation.%_fReset%
+@echo      %_fBYellow%Install the drivers using the menu below. You need the %_fBGreen%green I option.
+@echo      %_fBYellow%Type I and press Enter to begin the driver installation.%_fReset%
 @echo.
-@echo.     %_fBlack%%_fBRed%ADMINISTRATOR RIGHTS ARE REQUIRED TO INSTALL DRIVERS!%_fReset%
+@echo.     %_fBRed%ADMINISTRATOR RIGHTS ARE REQUIRED TO INSTALL DRIVERS!%_fReset%
 @echo.
 @echo     +++++ However, you can run the program,
 @echo     but some features will not work.
@@ -18306,7 +18817,7 @@ rem StartEngTextBlock
 @echo     S.  Run without information table
 @echo     T.  Run with table
 @echo     D.  Open Device Manager
-@echo     I.  Go to driver installation menu
+@echo     %_fBGreen%I.  Install drivers%_fReset%
 rem EndEngTextBlock
 @echo.
 call :_MenuChoiceEnter
@@ -18595,6 +19106,7 @@ set "dc=%_fBGreen%%dd%%_fReset%"
 )
 )
 
+rem Таблица
 
 rem StartRusTextBlock
 rem @echo  %_fCyan%Дата в шлеме%_fReset%	: %qdt%	^| %_fCyan%Общий объем%_fReset% : %_fBCyan%!aa:~,-1!!sz!%_fReset%	^| %_fCyan%Емкость акк.%_fReset%	: %_fBCyan%%opcouprom% %mahh%%_fReset%
@@ -19030,7 +19542,7 @@ rem call :_cdcb
 @cls
 rem @echo ==================================================================================================
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     %_fBWhite%QUest ADB Scripts - created by Varset - v5.0.0%_fReset% - 21.06.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     %_fBWhite%QUest ADB Scripts - created by Varset - v5.1.0%_fReset% - 10.08.25        Web: %_fBBlue%%_bBlack%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 rem @echo ==================================================================================================

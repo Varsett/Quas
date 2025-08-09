@@ -37,6 +37,7 @@ rem EndEngTextBlock
 exit
 
 :_PackagesListApkNameParser
+@del /q /f NotCopiedAPK.txt 1>nul 2>nul
 cls
 @echo.
 @echo   ================================================================
@@ -50,6 +51,7 @@ rem @echo   Archive log %dt%: >>ArchiveLog-%dt%.txt
 rem EndEngTextBlock
 setlocal enableextensions enabledelayedexpansion
 for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+
 set applabel=%%a
 set pathname=%%b
 if not defined pathname set pathname=!applabel!
@@ -66,6 +68,7 @@ rem EndEngTextBlock
 for /f "tokens=*" %%a in ('%myfiles%\adb shell pm list packages -f !pathname!') do (
 set pkgname=%%a
 set pname=!pkgname:~8!
+
 @for /f "tokens=1,2,3,4,5,6 delims=/,=" %%a in ("!pname!") do (
 set pkgnamea=%%a
 set pkgnameb=%%b
@@ -73,18 +76,45 @@ set pkgnamec=%%c
 set pkgnamed=%%d
 set pkgnamee=%%e
 set pkgnamef=%%f
+
+if !pkgnamea! == data (
 set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!==/!pkgnamed!==/!pkgnamee! !pkgnamef!"
+) else (
+if !pkgnamea! == apex (
+set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!/!pkgnamed!/!pkgnamee! !pkgnamef!"
+) else (
+if !pkgnameb! == overlay (
+set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec! !pkgnamed!"
+set pkgnamef=!pkgnamed!
+) else (
+if !pkgnamea! == vendor (
+set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!/!pkgnamed! !pkgnamee!"
+set pkgnamef=!pkgnamee!
+) else (
+if !pkgnameb! == framework (
+set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec! !pkgnamed!"
+set pkgnamef=!pkgnamed!
+) else (
+set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!/!pkgnamed! !pkgnamee!"
+set pkgnamef=!pkgnamee!
+)
+)
+)
+)
+)
+)
+
+rem set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!==/!pkgnamed!==/!pkgnamee! !pkgnamef!"
 if [!pkgnamef!]==[] exit /b
 if [%apkbkpproc%]==[1] call :_ApkBackupProcedure
 if [%obbbkpproc%]==[1] call :_OBBBackupProcedure
 if [%datbkpproc%]==[1] call :_DataBackupProcedure
 rem StartRusTextBlock
-@echo   %_fBGreen%= Приложение скопировано%_fReset%
+@echo   %_fBGreen%= Обработка приложения завершена%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   = Application Copied	: !applabel!
+rem @echo   %_fBGreen%= Application processing completed%_fReset%
 rem EndEngTextBlock
-rem set applabel=
 )
 )
 )
@@ -93,18 +123,36 @@ exit /b
 
 
 :_ApkBackupProcedure
+if !pkgnamea! == android exit /b
 if [!pkgnamef!]==[] exit /b
 @echo   + Копирование APK...
 %myfiles%\adb pull -a !fullname!.apk  2>nul 1>nul
-
+if errorlevel 1 (
+rem StartRusTextBlock
+@echo   %_fBRed%- Не удалось скопировать файл APK%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%- Failed to copy APK file%_fReset%
+rem EndEngTextBlock
+@echo !fullname!.apk >> NotCopiedAPK.txt
+) else (
+rem StartRusTextBlock
+@echo   %_fBGreen%= Файл APK скопирован успешно%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%= APK file copied successfully%_fReset%
+rem EndEngTextBlock
+rem @echo !applabel! !pkgnamef!.apk >> CopiedAPK.txt
+)
 rem @FOR /F "tokens=2 delims='" %%g IN ('%myfiles%\aapt2 dump badging "!pkgnamef!.apk" 2^>nul ^| findstr /i /c:"application-label:"') DO set applabel=%%g
 if [!applabel!]==[] set applabel=!pkgnamef!
 if [!pkgnamef!]==[] exit /b
 call :_DeleteWrongSymbolsOk
-@ren %cd%\!pkgnamef!.apk "!applabel!.apk" 2>nul 1>nul
-
 @md "Backups\!applabel!" 2>nul 1>nul
-@move "!applabel!.apk" "Backups\!applabel!" 1>nul 2>nul
+rem @ren %cd%\!pkgnamef!.apk "!applabel!.apk" 2>nul 1>nul
+@move "!pkgnamef!.apk" "Backups\!applabel!" 1>nul 2>nul
+rem @move "!applabel!.apk" "Backups\!applabel!" 1>nul 2>nul
+rem @timeout 1 >nul
 exit /b
 
 :_OBBBackupProcedure
