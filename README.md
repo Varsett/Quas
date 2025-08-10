@@ -441,6 +441,8 @@ The "**Save List of Installed Applications to File**" option lets you accurately
     J > A > d = Enable installation with downgrade option  
     J > A > v = Enable installation details display  
     J > A > l = Enable installation log file recording  
+	J-E-dd  = Disable apps in the batch mode
+    J-E-gg  = Stop apps in the batch mode
     449 = headset partition table and their size in bytes and gigabytes  
     103 = headset partition table and their size in bytes and gigabytes  
     77 = Connect to the headset via a random port (similar to F-G-D options)  
