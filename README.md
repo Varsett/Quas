@@ -422,6 +422,14 @@ The "**Restore Application Data**" option restores data from previously created 
 
 The "**Save List of Installed Applications to File**" option lets you accurately determine which app corresponds to which package name. A list of third-party apps installed on the headset, along with their names and package names, will be displayed on the screen and saved to the file `AppsInstalled-third-party.txt`. This is useful when creating the `ListForBackups.txt file`.
 
+The “**Full backup of applications (APK+OBB+DATA)** ” option extracts **APK, OBB, and DATA** files from the headset and copies them to the PC. The data is copied directly from the **Android/data** directory. If it is not possible to copy them “as is,” the program uses an alternative method of extracting and copying the data.
+
+The “**Save APK**” option extracts only APK files to the PC.
+
+The “**Save APK+OBB**” option extracts and copies APK and OBB files to the PC.
+
+The “**Copy data**” option extracts game data in the same way as in the case of a Full backup.
+
 * **Streaming Video Transmission to PC:** Operates on the scrcpy program and includes five transmission modes from the headset to the PC - four pre-installed and one manual. The manual mode can be configured independently with seven parameters - Bitrate, FPS, recording to file, sound output, proximity sensor, and video codec. The subprogram can work with pre-installed profiles and includes six integrated profiles - minimum, light, balanced, demo, quality, maximum. Any of these profiles can be selected and immediately started with the transmission. There is also an option to create your own profiles - up to four. They are saved in a separate file and can be loaded as well as integrated ones. In manual mode, there is also an option to save the scrcpy launch string and edit it as needed. Built-in usage instructions.
 
 * **Advanced Commands and Parameters (Help):** Restart as user, restart as admin with UAC prompt, restart as admin without UAC prompt, accelerated Quas start - without table and checks, additional explanation about incremental firmware, enable downgrade installation, enable installation details display, enable installation log file recording, table of headset partitions and their sizes in bytes and gigabytes: Here are these Additional keys and commands:
