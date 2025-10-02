@@ -3,7 +3,7 @@
 #### Utility - a collection of the most commonly used commands and actions for the headset. It's like a "multitool" for beginners and beyond. No need to search for and learn adb commands, parameters, and so on.
 #### Just select the desired action from the list.
 
-![](https://github.com/Varsett/pictures/blob/2e928fb2c0b7b87aab704e8d8369639a825f52a8/q431e.jpg)
+![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/quas510me.jpg)
 
 ## **Description of Operation and Functional Capabilities of the Program**
 
@@ -16,13 +16,29 @@ The principle of working with the program is very simple: you choose a menu item
 
 The program does not need to be installed; you simply run the `quas.v.X.X.X.exe` file, wait a couple of seconds, and you're ready to use it. You can also use some launch keys (see built-in help, **section H**). Each time **Quas** is launched, it displays a table with the most important data on the Main screen. The list of additional commands and parameters is at the end of this instruction.
 
-The program features color (only for Win 10 and above) and letter markings indicating the mode or status of the headset. It is displayed in the upper left corner of the program, and it is convenient to use it with the **b** (**Bypass Info Table**) key when the information table is hidden to speed up the program launch.
-The program includes two additional keys:  
-- **Bypass Wireless Warning** – removes the warning window when connecting via a wireless connection.  
-- **Bypass Initial Status** – completely disables all initial checks, modes, and statuses when launching Quas. In this case, the information table is not displayed, and the top line shows the status **NO**.  
-All keys can be added to or removed from the registry as needed.  
+The information table, in addition to the main data, contains color coding for the most important parameters:
+* **Date in the headset:** The correct time will be highlighted in green, incorrect — in red.
+* **Fill level:** If the headset is filled 90% or more, the value will be red; 50% or more, yellow; below that — green.
+* **Connection:** By cable — green, by Wi-Fi — dark yellow, dual connection — red.
+* **TEMP variable:** Standard — green, non-standard — yellow.
+* **Battery charge level:** Below 15% — red, below 50% — yellow, anything above — green.
+* **Launch privileges:** As administrator — green, as user — yellow.
+* **Update status:** Enabled — green, disabled — yellow.
+* **Charging status:** Charging — dark green, Full — green, Discharging — dark yellow, no charging — red.
 
-List of markings and their meanings:
+All colors are chosen based on the following logic:
+* **Green**: normal and optimal status
+* **Dark yellow**: may require attention in certain cases
+* **Yellow**: something to pay attention to
+* **Red**: must pay attention
+
+The program has built-in color coding (only for Win 10 and above) and letter markings indicating the mode or status of the headset.
+It is displayed in the upper left corner of the program and is convenient to use with the parameter **b** (**Bypass Info Table key**) when the information table is hidden to speed up the program launch.
+
+The program also has three more registry keys, their description can be read below, in the section **Additional options** – **Managing registry keys for launching the application**.
+
+**List of markings and their meanings:**
+
   * **NA** - **Not Available** - Device not connected
   * **DR** - **No Driver**s - headset connected, but drivers not installed
   * **CB** - **Cable** - Device connected via cable
@@ -36,6 +52,9 @@ List of markings and their meanings:
   * **NO** - **No checks** – All initial checks are disabled.  
   * **EM**  - **EDL Mode** – The device is in Emergency Download Mode.  
   * **OF** - **Power Off** – The device is turned off.  
+
+***Selection of applications for backup, disabling, launching, etc. is carried out through the graphical interface:***
+![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5ch.jpg)
 
 ### **Functional Capabilities:**
 
@@ -53,6 +72,22 @@ List of markings and their meanings:
   * Reboot headset to Sideload mode (alternative variant)
   * Identify current headset mode
   * Power off the headset
+
+* Features in the mode **Bootloader**:
+  	- **Collection and display of information**, which includes:
+   		- Status and condition of loading slots
+   		- Headset revision number
+   		- Headset model
+   		- Current version of the headset firmware
+   		- Headset environment version
+   		- Battery charge level
+  	- **Control all headset sensors**:
+	   	- Disabling sensors
+    	- Enabling sensors
+      
+***Illustration collected information***
+![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5blen.jpg)
+
 
 * **Taking Headset Display Screenshots:** Creates headset screenshots in three different variations:
   * Single
@@ -135,6 +170,8 @@ A simplified **Auto Test** mode is also available, allowing the test to be perfo
 ***Histogram Illustration of Test Results***
 ![](https://github.com/Varsett/pictures/blob/2e928fb2c0b7b87aab704e8d8369639a825f52a8/histo.jpg)
 
+***Grafic Diagram Illustration of Test Results***
+![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5diag.jpg).
 
   * **Network Connection Statistics (netstat):** Displays comprehensive network connection statistics for the headset. This option helps determine whether the headset has access to Meta servers for firmware updates and App Library. (see Google - netstat)
   
@@ -197,11 +234,9 @@ These keys can be added to or removed from the registry at any time.
     * **Additional explanations about incremental firmware updates:**
 
   ***Analyzer result for full firmware file:***
-
 ![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/fafulleng.jpg)  
 
   ***Analyzer result for incremental firmware file:***
-
 ![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/fainceng.jpg)  
 
 * **Download/Update Progress, DNS Setup:**
@@ -226,18 +261,15 @@ These keys can be added to or removed from the registry at any time.
     * Enabled
     * Filtered by name or part of the application name.
   * **Manage Selected Applications:** Manage applications from the selected category. Displays a list of selected applications and allows the following actions:
-    * Application Backup:
-      * Full Backup
-      * Data-only Backup
-      * APK-only Backup
-      * APK and OBB Files Backup
-    * Application Data Restore (under development)
-    * Clear Application Data
-    * Uninstall Application from headset
-    * Launch Application on headset
-    * Stop Application
-    * Disable Application
-    * Enable Application
+	* Uninstall applications
+  	* Soft uninstall of applications (cache and data are not deleted)
+  	* Clear application cache and data
+  	* Disable applications
+  	* Enable applications
+  	* Start application
+  	* Stop application
+  	* Apps status view
+  	* View running apps
     * View Application Status:
       * Installed/Not Installed
       * Hidden/Visible
@@ -355,7 +387,14 @@ List of applications:
   - **Backup All Applications**
   - **Restore Application Data**
   - **Save List of Installed Applications to File**
-
+  - **Extract data from a backup file**
+  - **Full apps backup (APK+OBB+DATA)**
+  - **Save APK**
+  - **Save APK+OBB**
+  - **Data copying**
+  - **Help on Backup and Restore Functions**
+  - **Help on Transferring Saves**
+    
 This section is intended for backing up and restoring application data that includes game saves, settings, and other app-specific information. Here you can back up this data for each app and later restore it, for example, after resetting the headset to factory settings. This way, your saves and settings won't be lost. If the data files do not contain saves or are located elsewhere, the backup will not include them.
 
 The backup uses Android's built-in mechanism. Only data is archived — neither APK files nor OBB files are backed up. To back up APK and OBB files, use items **J-E-3**. If an app has no data, a backup will not be created. The list of such apps will be saved to a file called `ZeroSizeBackups.txt`.
@@ -383,6 +422,14 @@ The "**Restore Application Data**" option restores data from previously created 
 
 The "**Save List of Installed Applications to File**" option lets you accurately determine which app corresponds to which package name. A list of third-party apps installed on the headset, along with their names and package names, will be displayed on the screen and saved to the file `AppsInstalled-third-party.txt`. This is useful when creating the `ListForBackups.txt file`.
 
+The “**Full backup of applications (APK+OBB+DATA)** ” option extracts **APK, OBB, and DATA** files from the headset and copies them to the PC. The data is copied directly from the **Android/data** directory. If it is not possible to copy them “as is,” the program uses an alternative method of extracting and copying the data.
+
+The “**Save APK**” option extracts only APK files to the PC.
+
+The “**Save APK+OBB**” option extracts and copies APK and OBB files to the PC.
+
+The “**Copy data**” option extracts game data in the same way as in the case of a Full backup.
+
 * **Streaming Video Transmission to PC:** Operates on the scrcpy program and includes five transmission modes from the headset to the PC - four pre-installed and one manual. The manual mode can be configured independently with seven parameters - Bitrate, FPS, recording to file, sound output, proximity sensor, and video codec. The subprogram can work with pre-installed profiles and includes six integrated profiles - minimum, light, balanced, demo, quality, maximum. Any of these profiles can be selected and immediately started with the transmission. There is also an option to create your own profiles - up to four. They are saved in a separate file and can be loaded as well as integrated ones. In manual mode, there is also an option to save the scrcpy launch string and edit it as needed. Built-in usage instructions.
 
 * **Advanced Commands and Parameters (Help):** Restart as user, restart as admin with UAC prompt, restart as admin without UAC prompt, accelerated Quas start - without table and checks, additional explanation about incremental firmware, enable downgrade installation, enable installation details display, enable installation log file recording, table of headset partitions and their sizes in bytes and gigabytes: Here are these Additional keys and commands:
@@ -402,6 +449,8 @@ The "**Save List of Installed Applications to File**" option lets you accurately
     J > A > d = Enable installation with downgrade option  
     J > A > v = Enable installation details display  
     J > A > l = Enable installation log file recording  
+	J-E-dd  = Disable apps in the batch mode
+    J-E-gg  = Stop apps in the batch mode
     449 = headset partition table and their size in bytes and gigabytes  
     103 = headset partition table and their size in bytes and gigabytes  
     77 = Connect to the headset via a random port (similar to F-G-D options)  
@@ -412,7 +461,18 @@ The "**Save List of Installed Applications to File**" option lets you accurately
 
 * **Contact the Author:** Links to GitHub, VRcomm, program description link, and donate via browser or QR code.
 * **Open cmd console:** Opens the Windows command line console in a separate window.
-* **Open adb shell console:** Opens access console to the headset
+* **Open adb console:** Opens access console to the headset:
+   - Run any CLI commands from the GUI, for example **adb devices**
+   - Support for interactive commands (**cmd**, **powershell**, **fastboot**, **adb shell**, etc.) - they open in a separate window corresponding to their shell
+   - Support for batch execution (many commands at once)
+   - Context menu - copy, paste, select
+   - Launch for execution **interface button** or key **F5**
+   - Preservation **logos** results to file
+   - Coloring the results in the program window
+  
+  ***Illustration Command line GUI console:***
+  ![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5guishell.jpg)  
+  
 * **Help with problem solving:** Opens websites in the browser where you can get help or read instructions for solving various problems
 
 ----------------------
