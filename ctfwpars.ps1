@@ -1,38 +1,35 @@
-# This code was written by GPT Chat.
-
 param (
     [string]$InputFile,
     [string]$OutputFile
 )
 
-$htmlContent = Get-Content -Path $InputFile -Raw
-$rowMatches = [regex]::Matches($htmlContent, '<tr>(.*?)</tr>', 'IgnoreCase')
+if (-not (Test-Path $InputFile)) {
+    Write-Error "Input file not found: $InputFile"
+    exit 1
+}
+
+$html = Get-Content -Path $InputFile -Raw
 
 $result = @()
 
-foreach ($row in $rowMatches) {
-    $columnMatches = [regex]::Matches($row.Value, '<td.*?>(.*?)</td>', 'IgnoreCase')
+# Ищем пары: EnvironmentVersion (17 цифр) + FirmwareVersion
+$pattern = 'class=fw-link>(\d{17})</a><td>(\d+(?:\.\d+){3,})'
+$matches = [regex]::Matches($html, $pattern)
 
-    if ($columnMatches.Count -lt 2) {
-        continue
-    }
+foreach ($m in $matches) {
+    $envId = $m.Groups[1].Value
+    $firmFull = $m.Groups[2].Value
 
-    $EnvironmentVersion = $columnMatches[0].Groups[1].Value -replace '<[^>]*>', ''
-    $FirmwareVersionFull = $columnMatches[1].Groups[1].Value -replace '<[^>]*>', ''
-
-    # Обрезаем FirmwareVersion до первых четырёх чисел (например, 77.0.0.450)
-    if ($FirmwareVersionFull -match '^(\d+\.\d+\.\d+\.\d+)') {
-        $FirmwareVersion = $matches[1]
+    # Обрезаем FirmwareVersion до X.Y.Z.W
+    if ($firmFull -match '^(\d+\.\d+\.\d+\.\d+)') {
+        $firmShort = $matches[1]
     } else {
-        $FirmwareVersion = $FirmwareVersionFull
+        $firmShort = $firmFull
     }
 
-    $result += "$EnvironmentVersion $FirmwareVersion"
+    $result += "$envId $firmShort"
 }
 
-# Сохраняем в файл
-#Set-Content -Path $OutputFile -Value $result -utf8NoBOM
-#[System.IO.File]::WriteAllLines($OutputFile, $result, [System.Text.Encoding]::UTF8)
+# Сохраняем в UTF-8 без BOM
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllLines($OutputFile, $result, $utf8NoBom)
-

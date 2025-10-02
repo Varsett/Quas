@@ -1,0 +1,528 @@
+1.  Updates Management
+#C. Current update status
+#D. Disable headset firmware update service
+#E. Enable headset firmware update service
+#F. Block Oculus Home software updates on PC
+#G. Allow Oculus Home software updates on PC
+2.  Sending a text string to the headset
+4.  Reboot into different modes and current information
+#A.  Resuming booting from Bootloader mode
+#C.  Standard/Default Headset Reboot.
+#B.  Headset Reboot into Bootloader Mode
+##R. Reboot
+##F. Exit to Firmware Menu
+##K. Headset Firmware and Boot Slot Information
+##S. Disable headset sensors (Only Meta Quest 3)
+##Q. Enable headset sensors (Only Meta Quest 3)
+##Enter. Switch to button flashing mode
+#R.  Headset Reboot into Recovery Mode
+#F.  Headset Reboot into Fastboot Mode
+#S.  Headset Reboot into Sideload Mode (Regular Variant)
+#T.  Headset Reboot into Sideload Mode (Alternate Variant)
+#K.  Determine the Current Mode of the Headset        
+#P.  Power Off Headset
+5.  Making screenshots of the headset display
+#C.  Single screenshot of the headset
+#B.  Series of headset screenshots, one per key press    
+#S.  Series of automatic screenshots with a specified interval   
+6.  Copying screenshots and videoshots from the headset to the PC
+7.  Connecting the headset via "ADB over Wi-Fi"
+#A.  Connect via standard Wi-Fi
+#B.  Connect via Wi-Fi using a random port
+8.  Reconnecting the headset via "ADB over cable"
+9.  Connecting the headset as a removable disk
+C.  System information
+#A.  Work with dumpsys
+##A.  Save the full state list (dumpsys)
+##B.  Search and selection by a specific word
+##C.  Search and selection, EXCLUDING a specific word
+##D.  Name of all services (dumpsys -l)
+#B.  Memory analyzer
+##A.  Total memory load
+##B.  Memory usage by applications
+##C.  Real-time memory monitoring (with parameter input)
+##D.  Real-time memory monitoring (with auto parameters)
+#C.  Save to file all headset properties (getprop)
+#D.  Show headset IP address
+#E.  Save a list of installed packages (package names)
+#F.  Show headset serial number
+#G.  Save a list of system settings (system/global/security)
+#H.  Work with Logcat
+##A.  Logcat: last 5 thousand lines
+##B.  Logcat: last 10 thousand lines
+##C.  Logcat: number of lines manually
+##D.  Logcat: last 5 minutes
+##E.  Logcat: last 10 minutes
+##F.  Logcat: number of minutes manually
+##G.  Logcat: unlimited [ Will open in a separate window ]
+##H.  Clear Logcat
+##I.  Entire Log
+##J.  Search in logcat [ Will open in a separate window ]
+#I.  Battery information
+#J.  Running Apps List
+#K.  Bugreport extraction 
+#L.  View CPU-intensive applications 
+#N.  List of files/directories and their size 
+#O.  Show the amount of occupied space [EXP]
+#P.  USB device connection and disconnection log
+#R.  Save all system information in bulk into one archive
+D.  Diagnostic information
+#A.  Summary diagnostic information
+#B.  Information about all computer devices
+#C.  Information about uninstalled computer devices
+#D.  Information only about Quest headsets
+#K.  Collect and send comprehensive information
+#F.  Send any file for diagnostics
+E.  Testing, diagnostics, resolving various issues
+#A.  Restarting the headset shell and vr environment
+##A.  Restarting the headset shell
+##B.  Restarting the headset shell (second option)
+##C.  Force start of the bottom application bar
+##D.  Forcing the start of the headset's home environment
+#C.  Managing Wi-Fi on the headset
+##D.  Disable Wi-Fi on the headset
+##E.  Enable Wi-Fi on the headset
+##F.  Restart Wi-Fi on the headset
+##G.  Open Wi-Fi settings on the headset
+#D.  Interactive test of connecting the headset to the PC
+#E.  Managing the Guardian
+##D.  Suspend Guardian
+##E.  Resume Guardian
+#F.  Proximity sensor management
+##D.  Disable Proximity Sensor
+##E.  Enable Proximity Sensor
+#G.  Fix volume button reboot issue (remove KeyMapper)
+#H.  Restart ADB server on PC
+#J.  Starting Fastboot commands
+##A.  Fasboot devices                  : Check device availability
+##B.  Fastboot oem device-info         : Collect and save device OEM information
+##C.  Fastboot getvar all (bootloader) : Collect device information in bootloader mode
+##D.  Fastboot getvar all (gastboot)     : Collect device information in fastboot mode
+##E.  Fastboot continue                : Continue headset boot
+##F.  Fastboot reboot-fastboot         : Reboot headset into Fastboot mode
+##G.  Fastboot reboot-recovery         : Reboot headset into Recovery mode
+##H.  Fastboot reboot-bootloader       : Reboot headset into Bootloader mode
+##K. Headset Firmware and Boot Slot Information
+##S. Disable headset sensors (Only Meta Quest 3)
+##Q. Enable headset sensors (Only Meta Quest 3)
+#K.  Restore screen timeout settings
+#L.  Cancel headset authorization on this PC (remove ADB keys)
+#N.  Cable functionality check
+#O.  Camera functionality check (Quest 2 only)
+#P.  Measure Wi-Fi speed between the headset and PC
+##A.  Auto Wi-Fi speed test with default values 
+##S.  Run Wi-Fi speed test 
+##T.  Analyze test results  
+##G.  Build a histogram or calculate the trend based on test results  
+##H.  Additional explanations about tests, errors, logs, etc.
+##F.  Firewall handling for Bad file descriptor error
+###A.  Disable firewall
+###B.  Enable firewall
+###C.  Open port 5201 in the firewall (add rule)
+###D.  Close port 5201 in the firewall (remove rule)
+###E.  Check port 5201 (only Windows 10 and above)
+##C.  Service connection check
+##I.  Start the iperf server as a separate process
+##V.  Set C:\Temp as the iperf server launch directory
+#Q.  Network connection statistics (netstat)
+##A. Alll statistics
+##B. Connection with status ESTABLISHED only
+##C. Connection with status TIME_WAIT only
+#R.  Display diagnostics
+##1. Display test. 1 variant
+##2. Display test. 2 variant
+#S.  Management parameters Hardware Acceleration and Game Mode
+##A.  Show status
+##B.  Enable
+##C.  Disable
+##D.  Delete parameter from registry
+#T.  Check boot status
+#U.  Load monitoring and component diagnostics 
+#v.  Memory usage information
+#W.  Realtime CPU monitoring
+#X.  Open cmd console
+F.  Additional options
+#A.  Change global username
+##A.  Show current global username
+##B.  Change global username
+#B.  Show hidden settings
+#C.  Fixing the OpenSSL SHA Crash Bug
+#D.  Restarting the OVRservice service on PC
+#E.  Open VPN settings on the headset
+#F.  Set high priority for Oculus services (only Windows 10 and below)
+#G.  Oculus Wireless ADB complex     
+##A. Install Oculus Wireless ADB app
+##B. Install Bugjaeger ADB app
+##C. Connect to the headset via port 5555
+##D. Connect to the headset using a random port
+##E. Show all connections
+##F. Disconnect all wireless connections
+##G. Enter IP and connection port manually
+##H. Additional information
+#H.  Managing registry keys for application startup
+##A. Set the "Bypass Info Table" key in the registry
+##B. Set the "Bypass Wireless Warning" key in the registry
+##C. Set the "Bypass Initial Status" key in the registry
+##D. Set the "iPerf Temp Dir" key in the registry
+##G. Remove the "Bypass Info Table" key from the registry
+##H. Remove the "Bypass Wireless Warning" key from the registry
+##I. Remove the "Bypass Initial Status" key from the registry
+##J. Remove the "iPerf Temp Dir" key from the registry
+##T. Check for the presence of keys in the registry
+##X. Remove the Quas registry branch with all keys (old and new)
+#I.  Social Platform management
+##D.  Disable Social Platform
+##E.  Enable Social Platform
+#J.  Solution to the problem with fba files
+##F.  Stop fba file spam
+##S.  Search for fba files on the system disk
+##P.  Restrict access rights to the RemoteDesktopCompanion.exe file
+#K.  Turn on the screen and disable the proximity sensor
+#L.  Delete old Quas files and directories
+##A.  Clean up old Quas files and directories
+#N.  Open the hosts file in Notepad
+#O.  Get the pairing code for the mobile app
+#P.  Creating a shared resource on a PC
+G.  Headset firmware update and firmware information
+#A.  Fully automatic firmware flashing
+##F. Exit to Firmware Menu
+##T. Check update.zip file compatibility
+##Enter. Start device flashing
+#B.  Button-triggered automatic firmware flashing
+##F. Exit to Firmware Menu
+##T. Analyze firmware file
+##Enter. Start flashing
+#C.  Extract firmware links from headeset and download firmware files  
+#CC. Only extract firmware links from headset without downloading firmware files 
+#D.  Open the website with firmware versions
+#E.  Show the current firmware version of the headset and check for updates
+#F.  Firmware analyzer: check the update.zip file for correctness and compatibility
+#G.  Download compatibility tables for environment versions and headset firmware versions
+#I. [additional explanations about incremental firmware updates]
+I.  Download/update progress, DNS setup
+#A.  View download progress           
+#B.  Record DNS servers to headset
+#C.  Automatic selection of DNS for downloading updates   
+#D.  Reset headset DNS settings to default
+#E.  Set up DNS Internet blocking       
+#F.  Checking for updates availability on PC          
+#G.  Checking for updates availability on headset      
+#H.  Check the current DNS server
+J.  Application management
+#A.  Run Quest Install Director utility
+#B.  Run applications on the headset
+##B.  = LightningLauncher               
+##C.  = File Manager+                  
+##E.  = Ultrasurf                       
+##F.  = Winscribe                      
+##G.  = OpenVPN Connect              
+##H.  = OutlineVPN                     
+##I.  = AdGuard VPN                    
+##J.  = Shadowsocks                     
+##K.  = Psiphon VPN                      
+##L.  = Proton VPN                      
+##N.  = Free VPN Planet                 
+#C.  Get ADB command to launch an application on the headset
+#D.  Show list of installed applications
+##1. Save applications list
+##2. Save applications list with label application
+#E.  Managing applications      
+##A.  Uninstall applications
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##B.  Soft uninstall of applications (cache and data are not deleted)
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##C.  Clear application cache and data
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##D.  Disable applications
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##E.  Enable applications
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##F.  Start application
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##G.  Stop application
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##I.  Apps status view
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##J.  View running apps
+##K.  Save List of Installed Applications to File
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Applications with filtering (by application name)
+##H.  Help
+#V.  VPN clients and Oculus driver installation
+##A.  = Ultrasurf
+##B.  = Winscribe
+##C.  = OpenVPN Connect
+##D.  = OutlineVPN
+##E.  = AdGuard VPN
+##F.  = Shadowsocks
+##G.  = Psiphon VPN
+##H.  = Proton VPN
+##I.  = Free VPN Planet
+##J.  = ByeByeDPI
+##K.  = v2rayNG VPN
+##Q.  = Amnesia  [Android]
+##R.  = Amnesia  [PC]
+##P.  Install Meta drivers on PC
+##PP.  Install new Meta drivers on PC
+##PD.  Download new Meta drivers
+#S.  Media applications installation
+##A.  = Skybox VR Video Player
+##B.  = Moon VR Video Player
+##C.  = 4XVR Video Player
+##D.  = Pigasus VR Video Player
+##E.  = HereSphere VR Video Player
+##F.  = VLC Media Player
+##G.  = TorServe
+##H.  = Filmix UHD (Online Cinema)
+##I.  = Cinema HD  (Online Cinema)@echo.
+##J.  = Cast Receiver High (suitable for most devices)
+##K.  = Cast Receiver Low (for budget devices - DNS, Yandex, Smart TV)
+#P.  Utility applications installation
+##A.  = VRComm mobile client
+##B.  = LightningLauncher
+##C.  = File Manager+
+##D.  = XR File Manager  (with Data folder access)
+##H.  = RCX
+##I.  = TotalCommander
+##K.  = ADB GUI Tool
+##L.  = OVR Metrics Tool
+##N.  = Internet Speed Meter
+##P.  = Passthrough cam tool
+##Q.  = App Cloner
+##R.  = Apk Tool M
+##S.  = MPatcher
+##T.  = Private Quest (only for smartphones)
+##U.  = Steam Link
+##V.  = Auto Start Apps Manager
+##W.  = XR Native File Manager (with Data folder access)
+#R.  Gaming applications installation
+##A.  = qLoader
+##B.  = Rookie Sideloader
+##C.  = ARMGDDN Browser
+##E.  = VRP Essentials
+##I.  = ARMGDDN Autocracker
+##J.  = Steam Auto Crack
+##K.  = Steam Auto Crack GUI
+##L.  = Quest Patcher for Beat Saber
+##N.  = APPID
+#T.  ADB tools installation
+##A.  = Embed the ADB package into the system and also remove all this junk from it
+##B.  = Bugjaeger Premium
+##C.  = Termux
+##D.  = Oculus Wireless ADB
+##E.  = SH Script Runner
+##F.  = ADB GUI Tool
+##G.  = Script Manager
+##H.  = Meta Quest Developer Hub
+K.  Setting CPU/GPU levels
+#C. Set CPU level
+##C.  Check current level
+##M.  Return to menu
+##0.  Minimum
+##1.  Low
+##2.  Medium
+##3.  High
+##4.  Ultra
+##5.  Maximum
+##A.  Auto
+#G. Set GPU level
+##C.  Check current level
+##M.  Return to menu
+##0.  Minimum
+##1.  Low
+##2.  Medium
+##3.  High
+##4.  Ultra
+##5.  Maximum
+##A.  Auto
+#S. Show current levels
+L.  Setting native RefreshRate and display resolution
+#R.  Get current resolution
+#A. 845 x 768
+#B. 1127 x 1024
+#C. 1408 x 1280
+#D. 1584 x 1440 (Default for Meta Quest 2)
+#E. 1690 x 1536
+#F. 1760 x 1680 (Default for Meta Quest 3)
+#G. 1920 x 1800 (Default for Meta Quest Pro)
+#H. 1971 x 1792
+#I. 2253 x 2048
+#J. 2816 x 2560
+#K. 3097 x 2816
+#L. 3380 x 3072
+#N. 3661 x 3328   [EXP]  (Only for Meta Quest 3/Pro)
+#O. 3942 x 3584   [EXP]  (Only for Meta Quest 3/Pro)
+#P. 4224 x 3840   [EXP]  (Only for Meta Quest 3/Pro)
+#Q. 4506 x 4096   [EXP]  (Only for Meta Quest 3/Pro)
+#S. 120 Hz
+#T. 90 Hz
+#U. 80 Hz
+#V. 72 Hz
+#X. 60 Hz
+M.  Oculus Link/Airlink management
+#A.  Start Oculus Link
+#B.  Disconnect Oculus Link
+#C.  Enable AirLink
+#D.  Disable AirLink
+#E.  Fix AirLink connection issue
+#F.  Backup AirLink parameters
+#G.  Clean after remove Oculus Home Software
+#H.  Calculate dynmaic bitrate
+#I.  Reset Oculus Debug Tools to default
+#J.  Download and run Meta Quest Link Oculus software installer
+N.  Creating shortcuts for copying files and installing applications
+#A. Files to Quest in OBB
+#B. Files to Quest in Data
+#C. Files to Quest in Movies
+#D. Files to Quest in Download
+#E. Files to Quest in the root Sdcard
+#G. Install APK+OBB
+#I. Install via INSTALL.TXT
+#V. Install all shortcuts together
+#X. Remove installed shortcuts and files
+#Y. Remove installed shortcuts and files manually
+P.  Adjusting date, time, and timezone on the headset
+#C.  Correct date and time
+#T.  Correct timezone
+Q.  Backup and restore
+#A.  Selective Backup                     
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#B.  Backup from List                     
+#C.  Backup All Applications              
+#D.  Restore Application Data             
+#E.  Create applications list
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#F.  Extract data from a backup file
+#G.  Full apps backup (APK+OBB+DATA)
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#I.  Save APK
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#J.  Save APK+OBB
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#K.  Data copying
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#L.  Export the list of applications to a text file
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#N.  Remove the restriction on access to save files
+##1. All applications
+##2. System applications
+##3. Unofficial applications
+##4. Disabled applications
+##5. Enabled applications
+##6. Applications with filtering (by application name)
+#H. Help on Backup and Restore Functions
+#R. Help on Transferring Saves
+R.  Stream video casting to PC
+#A.  "Fast" streaming: format 16 x 9
+#B.  "Square" streaming: crop image from one eye without black corners
+#C.  "Rectangular" streaming: format 16 x 9
+#D.  "Stereo streaming": nothing is cropped, image from both eyes
+#E.  "Manual" streaming: selection and setting of streaming parameters manually.
+##C.  Cable transmission
+##R.  Repeat settings selection or load from profile file
+##S.  Save settings to profile file
+##W.  Save the scrcpy command line with selected parameters to a file
+##Enter.  Start transmission
+#L.  Load settings from profile file
+#I.  Load settings from integrated profiles
+##C.  Cable transmission
+##R.  Repeat settings selection or load from profile file
+##S.  Save settings to profile file
+##W.  Save the scrcpy command line with selected parameters to a file
+##Enter.  Start transmission
+S.  Search
+H.  List of advanced commands and parameters
+W.  Contact the author
+#A.  Program page on Github
+#B.  VRcomm community                 [RU]
+#C.  Program description
+#D.  Donate: By me the coffee         [QR code]
+#E.  Donate: By me the coffee         [Web browser]
+#F.  Leave feedback or send file
+X.  Open cmd console
+Y.  Open ADB console
+Z.  Help
+#I.  Website to check the availability of addresses (RU)
+#L.  Author's portal about VR: vr419.ru (RU)
+#N.  Download the latest version of Quas or leave a question/feedback/comment (RU)
+#O.  Download firmware for Quest 1/2/3/Pro
+#P.  WebADB: Headset management in the browser

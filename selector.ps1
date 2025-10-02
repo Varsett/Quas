@@ -1,4 +1,13 @@
-# This code was written by GPT Chat.
+# Script name: selector.ps1
+# Использование:
+# powershell script.ps1 input.txt output.txt -p    :: только пакеты в файл
+# powershell script.ps1 input.txt output.txt -a    :: имя + пакет (по умолчанию, через ;)
+# powershell script.ps1 input.txt output.txt -o    :: разрешает ставить только одну галку при выборе приложений
+# powershell script.ps1 input.txt output.txt -txt  :: имя приложения + фиксированная ширина + пакет
+# powershell script.ps1 input.txt output.csv -csv  :: сохранить в CSV: Name, Package
+# $fixedWidth = 30   # ширина имени (первой колонки или отступа для второй) для txt
+
+
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -23,7 +32,7 @@ $data = Get-Content $inputFile | Where-Object { $_.Trim() -ne "" } | ForEach-Obj
             }
         }
     }
-} | Where-Object { $_ -ne $null } | Sort-Object Name
+} | Where-Object { $_ -ne $null } | Sort-Object Name,Package -Unique
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "App Selection"
@@ -71,17 +80,19 @@ $checkCol.Width = 30
 $checkCol.ReadOnly = $false
 $grid.Columns.Add($checkCol) | Out-Null
 
-# Add Name and Package columns
+# Add Name and Package columns (read-only)
 $nameCol = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
 $nameCol.Name = "Name"
 $nameCol.HeaderText = "Name"
 $nameCol.AutoSizeMode = 'Fill'
+$nameCol.ReadOnly = $true
 $grid.Columns.Add($nameCol) | Out-Null
 
 $pkgCol = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
 $pkgCol.Name = "Package"
 $pkgCol.HeaderText = "Package"
 $pkgCol.AutoSizeMode = 'Fill'
+$pkgCol.ReadOnly = $true
 $grid.Columns.Add($pkgCol) | Out-Null
 
 # Add rows with bold font
@@ -132,6 +143,37 @@ $grid.add_CellValueChanged({
     }
 })
 
+# === Copy text by double click ===
+$grid.add_CellDoubleClick({
+    param($sender, $e)
+    if ($e.RowIndex -ge 0 -and $e.ColumnIndex -ge 0) {
+        $colName = $grid.Columns[$e.ColumnIndex].Name
+        if ($colName -eq "Name" -or $colName -eq "Package") {
+            $value = $grid.Rows[$e.RowIndex].Cells[$e.ColumnIndex].Value
+            if ($value) {
+                [System.Windows.Forms.Clipboard]::SetText($value.ToString())
+                [System.Windows.Forms.ToolTip]::new().Show(
+                    "Copied: $value", $form, $form.PointToClient([System.Windows.Forms.Cursor]::Position), 1500
+                )
+            }
+        }
+    }
+})
+
+# === Copy text by Ctrl+C ===
+$grid.add_KeyDown({
+    param($sender, $e)
+    if ($e.Control -and $e.KeyCode -eq [System.Windows.Forms.Keys]::C) {
+        if ($grid.CurrentCell -and $grid.CurrentCell.Value) {
+            $value = $grid.CurrentCell.Value.ToString()
+            [System.Windows.Forms.Clipboard]::SetText($value)
+            [System.Windows.Forms.ToolTip]::new().Show(
+                "Copied: $value", $form, $form.PointToClient([System.Windows.Forms.Cursor]::Position), 1500
+            )
+        }
+    }
+})
+
 $form.Add_Shown({
     $grid.ClearSelection()
     $form.Activate()
@@ -164,20 +206,31 @@ $okButton.Size = New-Object System.Drawing.Size(110, 40)
 $okButton.Anchor = 'Bottom, Left'
 $okButton.Add_Click({
     $selectedLines = @()
+    $csvObjects = @()
+    $fixedWidth = 30   # width for txt mode
     foreach ($row in $grid.Rows) {
         if ($row.Cells["Selected"].Value -eq $true) {
             $name = $row.Cells["Name"].Value
             $pkg = $row.Cells["Package"].Value
             if ($pkg -and $pkg.Trim() -ne "") {
-                if ($mode -eq "-p") {
-                    $selectedLines += "$pkg"
-                } else {
-                    $selectedLines += ("{0};{1}" -f $name, $pkg)
+                switch ($mode) {
+                    "-p"   { $selectedLines += "$pkg" }
+                    "-txt" { $selectedLines += ("{0,-$fixedWidth}{1}" -f $name, $pkg) }
+                    "-csv" { 
+                        $csvObjects += [PSCustomObject]@{
+                            Name    = $name
+                            Package = $pkg
+                        }
+                    }
+                    default { $selectedLines += ("{0};{1}" -f $name, $pkg) }
                 }
             }
         }
     }
-    if ($selectedLines.Count -gt 0) {
+    if ($mode -eq "-csv" -and $csvObjects.Count -gt 0) {
+        $csvObjects | Export-Csv -Path $outputFile -NoTypeInformation -Encoding UTF8
+    }
+    elseif ($selectedLines.Count -gt 0) {
         $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
         [System.IO.File]::WriteAllLines($outputFile, $selectedLines, $utf8NoBom)
     }

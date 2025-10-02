@@ -1,5 +1,6 @@
 param (
-    [string]$ToolPath = "."
+#    [string]$ToolPath = "."
+    [string]$ToolPath = "%myfiles%"
 )
 
 Add-Type -AssemblyName System.Windows.Forms

@@ -43,7 +43,7 @@ cls
 @echo   ================================================================
 rem StartRusTextBlock
 rem @echo      %_fBYellow%Старт архивации.  Не прерывайте этот процесс.%_fReset%
-@echo   Лог архивации %dt% >>ArchiveLog-%dt%.txt
+rem @echo   Лог архивации %dt% >>ArchiveLog-%dt%.txt
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo       Starting selected archive process. Do not interrupt this process.
@@ -125,7 +125,12 @@ exit /b
 :_ApkBackupProcedure
 if !pkgnamea! == android exit /b
 if [!pkgnamef!]==[] exit /b
-@echo   + Копирование APK...
+rem StartRusTextBlock
+rem @echo   + Копирование APK...
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   + APK file copying...
+rem EndEngTextBlock
 %myfiles%\adb pull -a !fullname!.apk  2>nul 1>nul
 if errorlevel 1 (
 rem StartRusTextBlock
@@ -171,7 +176,12 @@ rem     dir /b /a "%cd%\Backups\!applabel!\obb\!pkgnamef!\" | findstr . >nul && 
 rem ) else (
 rem     @echo %_fBYellow%- Папка OBB не найдена%_fReset%
 rem )
-dir /b /a "%cd%\Backups\!applabel!\obb\!pkgnamef!\" | findstr . >nul && ver >nul || @echo   %_fBYellow%- OBB отсутствует%_fReset%
+rem StartRusTextBlock
+rem dir /b /a "%cd%\Backups\!applabel!\obb\!pkgnamef!\" | findstr . >nul && ver >nul || @echo   %_fBYellow%- OBB отсутствует%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+dir /b /a "%cd%\Backups\!applabel!\obb\!pkgnamef!\" | findstr . >nul && ver >nul || @echo   %_fBYellow%- OBB is missing%_fReset%
+rem EndEngTextBlock
 @rd /q "%cd%\Backups\!applabel!\obb\!pkgnamef!" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!\obb" 1>nul 2>nul
 if "!pkgnamef!"=="com.beatgames.beatsaber" @%myfiles%\adb pull "/sdcard/ModData" "Backups\!applabel!\ModData" 1>nul 2>nul
@@ -193,7 +203,12 @@ if [!applabel!]==[] set applabel=!pkgnamef!
 @%myfiles%\adb pull "/sdcard/Android/data/!pkgnamef!" "%cd%\Backups\!applabel!\data" | findstr /i /c:"permission denied"  1>nul 2>nul
 
 if %errorlevel% == 0 (call :_BackupDataExtractData)
-dir /b /a "%cd%\Backups\!applabel!\data\" 2>nul | findstr . >nul && ver >nul || @echo   %_fBYellow%- Данные отсутствуют%_fReset%
+rem StartRusTextBlock
+rem dir /b /a "%cd%\Backups\!applabel!\data\" 2>nul | findstr . >nul && ver >nul || @echo   %_fBYellow%- Данные отсутствуют%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+dir /b /a "%cd%\Backups\!applabel!\data\" 2>nul | findstr . >nul && ver >nul || @echo   %_fBYellow%- Data is missing%_fReset%
+rem EndEngTextBlock
 @rd /q "%cd%\Backups\!applabel!\data\!pkgnamef!" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!\data" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!" 1>nul 2>nul
@@ -467,13 +482,13 @@ rem EndEngTextBlock
 rem @echo   Package Name	: !viewpn!
 @echo.
 @echo ----------------------------------------------------------
-if "%onlyview%" == "" call :_ExtractDataDromABFiles
+if "%onlyview%" == "" call :_ExtractDataFromABFiles
 )
 exit /b
 
 rem ===========================
 
-:_ExtractDataDromABFiles
+:_ExtractDataFromABFiles
 set shscriptname=dataextract.sh
 @echo Extracting data from backup file...
 @echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/%archivename%" ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
@@ -513,6 +528,7 @@ exit /b
 
 @for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
 set "archivename=%%~na"
+
 @echo -----------------------------------------------------------
 rem StartRusTextBlock
 rem @echo  = Восстанавливаем архив	: %_fBCyan%!archivename!%_fReset%
@@ -537,6 +553,80 @@ rem ) else (
 rem @echo.
 rem )
 rem )
+
+%myfiles%\adb shell input keyevent 61
+@timeout 1 1>nul
+%myfiles%\adb shell input keyevent 61
+@timeout 1 1>nul
+%myfiles%\adb shell input keyevent 61
+@timeout 1 1>nul
+%myfiles%\adb shell input keyevent 66
+
+call :_CheckBackupProcessRest
+rem @echo  = Успешно
+)
+timeout 1 1>nul
+@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+exit /b
+
+:_CheckBackupProcessRest
+@for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
+if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcessRest) else (exit /b)
+)
+
+
+
+:_BackupReadWrite
+cls
+rem @echo.
+@echo.
+%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
+call :_settime
+set nomode=no
+%myfiles%\adb shell input keyevent 224
+rem StartRusTextBlock
+rem @echo      %_fBYellow%Снимаем запрет доступа к файлам сохранений%_fReset%
+rem @echo   ================================================================
+rem @echo   %_fBYellow%= Сначала бэкапим...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo      %_fBYellow%Removing the restriction on access to save files%_fReset%
+@echo   ================================================================
+@echo   %_fBYellow%= Backing up first...%_fReset%
+rem EndEngTextBlock
+@timeout 4 1>nul
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+set applabelmark=1
+call :_BackupABProcessPS
+set applabel=!applabelsave!
+call :_CurrentFileSizeBigger
+rem call :_CurrentFileSize
+)
+if not exist !pathname!.ab set dataout=1&&exit /b
+call :_RestoreReadWrite
+
+
+rem @move "ArchiveLog-%dt%.txt" "%cd%\Backups\ArchiveLog-%dt%.txt" 1>nul 2>nul
+@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+exit /b
+
+:_RestoreReadWrite
+@echo   ----------------------------------------------------------------
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Затем восстанавливаем обратно...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%= Then restoring back...%_fReset%
+rem EndEngTextBlock
+
+%myfiles%\adb shell input keyevent 224
+
+start /min "" %myfiles%\adb restore "!pathname!.ab" 1>nul 2>nul
+@timeout 2 1>nul
 
 %myfiles%\adb shell input keyevent 61
 @timeout 1 1>nul
@@ -746,7 +836,7 @@ rem EndEngTextBlock
 
 :_CheckBackupProcessAfter
 @for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
-if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcessAfter) else (exit /b)
+if [%%c] == [com.android.backupconfirm] (timeout 1 1>nul && goto _CheckBackupProcessAfter) else (exit /b)
 )
 goto _CheckBackupProcessAfter
 
@@ -806,13 +896,15 @@ call :_DeleteWrongSymbolsOk
 exit /b
 
 :_CurrentFileSizeBigger
-timeout 3 >nul
-for /f "tokens=3" %%a in ('dir /-c "!pathname!.ab" ^| findstr /r /c:"[0-9][0-9]* !pathname!.ab$"') do (
-set filesize=%%a
+rem powershell -ExecutionPolicy Bypass -File %myfiles%\checkab.ps1 -FilePath "!pathname!.ab" -LogPath "backup_check.log"
+for /f %%S in ('powershell -ExecutionPolicy Bypass -File %myfiles%\checkab.ps1 -FilePath "!pathname!.ab"') do (
+    set filesize=%%S
+)
+
+rem for /f "tokens=3" %%a in ('dir /-c "!pathname!.ab" ^| findstr /r /c:"[0-9][0-9]* !pathname!.ab$"') do (
+rem set filesize=%%a
 if not defined filesize exit /b
-timeout 1 >nul
 if !filesize! GTR 48 (
-timeout 1 >nul
 rem StartRusTextBlock
 rem @echo   %_fBGreen%= Архив создан успешно%_fReset%
 rem @echo  Название архива	: !applabel!.ab>>ArchiveLog-%dt%.txt
@@ -852,7 +944,7 @@ rem EndEngTextBlock
 @echo !pathname!>>ZeroSizeBackups.txt
 del /q /f "!pathname!.ab"
 exit /b
-)
+rem )
 )
 )
 )
@@ -1076,18 +1168,18 @@ set applabel=%%a
 set pathname=%%b
 set applabelsave=!applabel!
 if [!pathname!]==[] set pathname=!applabel!
-rem StartRusTextBlock
-rem EndRusTextBlock
-rem StartEngTextBlock
-@echo   = Application Name   : %_fBCyan%!applabel!%_fReset%
-@echo   = Package Name       : %_fCyan%!pathname!%_fReset%
-rem EndEngTextBlock
 for /f "delims=" %%P in ('%myfiles%\adb shell pidof !pathname!') do (
 set "pid=%%P"
 if defined pid (
-@echo   ------------------------------------------------
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem StartRusTextBlock
+rem @echo   ------------------------------------------------
+rem @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Application name	: %_fBCyan%!applabel!%_fReset%
+@echo   = Package name		: %_fCyan%!pathname!%_fReset%
+rem EndEngTextBlock
 @echo   = PID			: %_fBBlue%!pid!%_fReset%
 @echo !pid! !applabel! !pathname!>>"RunningApps.txt"
 set "pid="
@@ -1095,534 +1187,544 @@ set "pid="
 )
 )
 @echo.
-@echo   ================================================
-@echo         %_fBGreen%Работа с приложениями завершена%_fReset%
-@echo     Список сохранен в файл %_fBYellow%RunningApps.txt%_fReset%
-@echo   ================================================
-@echo.
-@echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem )
-rem )
-rem @echo.
+rem StartRusTextBlock
 rem @echo   ================================================
-rem @echo         %_fBGreen%Work with applications completed%_fReset%
-rem @echo   The list saved to file %_fBYellow%RunningApps.txt%_fReset%
+rem @echo         %_fBGreen%Работа с приложениями завершена%_fReset%
+rem @echo     Список сохранен в файл %_fBYellow%RunningApps.txt%_fReset%
 rem @echo   ================================================
 rem @echo.
-rem @echo ^>^>^> Press anything to return to the previous menu ^<^<^<
-rem EndEngTextBlock
-rem pause >nul
-rem exit /b
-rem 
-rem 
-rem 
-rem :_UninstallApps
-rem set deletedisable=1
-rem @echo.
-rem StartRusTextBlock
-@echo   ================================================================
-@echo      %_fBRed%+++   ВЫБРАННЫЕ ПРИЛОЖЕНИЯ БУДУТ УДАЛЕНЫ^!   +++%_fReset%
-@echo.
-@echo   %_fBYellow%Следует иметь в виду, что не все приложения могут буть удалены,
-@echo   особенно если это системные приложения. %_fBRed%Используйте удаление
-@echo   очень осторожно иначе придется сбрасывать шлем до заводских настроек.%_fReset%
-@echo   ================================================================
-@echo.
-@echo.
-@Set /p deletedisable="Подтвердите удаление нажатием Enter или введите 0 и Enter для возврата в меню: "
+rem @echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   ================================================================
-rem @echo      %_fBRed%+++   SELECTED APPLICATIONS WILL BE UNINSTALLED^!   +++%_fReset%
-rem @echo.
-rem @echo   %_fBYellow%Keep in mind that not all applications can be deleted,
-rem @echo   especially system applications. %_fBRed%Use deletion
-rem @echo   very carefully, otherwise you may have to reset the headset to factory settings.%_fReset%
-rem @echo   ================================================================
-rem @echo.
-rem @echo.
-rem @Set /p deletedisable="Confirm by pressing Enter, or enter 0 and press Enter to return to the menu: "
-rem EndEngTextBlock
-rem if not defined deletedisable goto _UninstallApps
-rem if /i "%deletedisable%"=="0" (exit /b)
-rem if /i "%deletedisable%"=="1" (goto _UninstallAppsCont)
-rem goto _UninstallApps
-rem :_UninstallAppsCont
-rem cls
-rem @echo.
-rem @echo.
-rem @echo   ================================================
-rem StartRusTextBlock
-if defined cachekey set "keymsg=. Кэш и данные удалены не будут"
-@echo      %_fBYellow%Удаление приложений%keymsg%%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem if defined cachekey set "keymsg=. Cache and data will not be removed"
-rem @echo      %_fBYellow%Application removal%keymsg%%_fReset%
-rem EndEngTextBlock
-rem for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
-rem set applabel=%%a
-rem set pathname=%%b
-rem set applabelsave=!applabel!
-rem if [!pathname!]==[] set pathname=!applabel!
-rem @echo   ------------------------------------------------
-rem StartRusTextBlock
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
-@echo   %_fBYellow%- Удаление приложения..%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = Application Name   : %_fBCyan%!applabel!%_fReset%
-rem @echo   = Package Name       : %_fCyan%!pathname!%_fReset%
-rem @echo   %_fBYellow%- Removing application..%_fReset%
-rem EndEngTextBlock
-rem %MYFILES%\adb shell pm uninstall %cachekey% !pathname! 1>nul 2>nul
-rem if not errorlevel 1 (
-rem StartRusTextBlock
-@echo   %_fBGreen%= Удаление завершено успешно%_fReset%
-) else (
-@echo   %_fBRed%= Удаление не удалось%_fReset%
 )
 )
 @echo.
 @echo   ================================================
-@echo         %_fBGreen%Работа с приложениями завершена%_fReset%
+@echo         %_fBGreen%Work with applications completed%_fReset%
+@echo   The list saved to file %_fBYellow%RunningApps.txt%_fReset%
 @echo   ================================================
 @echo.
-@echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+@echo ^>^>^> Press anything to return to the previous menu ^<^<^<
+rem EndEngTextBlock
+pause >nul
+exit /b
+
+
+
+:_UninstallApps
+set deletedisable=1
+@echo.
+rem StartRusTextBlock
+rem @echo   ================================================================
+rem @echo      %_fBRed%+++   ВЫБРАННЫЕ ПРИЛОЖЕНИЯ БУДУТ УДАЛЕНЫ^!   +++%_fReset%
+rem @echo.
+rem @echo   %_fBYellow%Следует иметь в виду, что не все приложения могут буть удалены,
+rem @echo   особенно если это системные приложения. %_fBRed%Используйте удаление
+rem @echo   очень осторожно иначе придется сбрасывать шлем до заводских настроек.%_fReset%
+rem @echo   ================================================================
+rem @echo.
+rem @echo.
+rem @Set /p deletedisable="Подтвердите удаление нажатием Enter или введите 0 и Enter для возврата в меню: "
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBGreen%= Deletion completed successfully%_fReset%
-rem ) else (
-rem @echo   %_fBRed%= Deletion failed%_fReset%
-rem )
-rem )
-rem @echo.
-rem @echo   ================================================
-rem @echo         %_fBGreen%Work with applications completed%_fReset%
-rem @echo   ================================================
-rem @echo.
-rem @echo ^>^>^> Press anything to return to the previous menu ^<^<^<
-rem EndEngTextBlock
-rem pause >nul
-rem exit /b
-rem 
-rem :_ClearCacheDataApps
-rem set cleardisable=1
-rem @echo.
-rem StartRusTextBlock
 @echo   ================================================================
-@echo     %_fBRed%+++   КЭШ И ДАННЫЕ ВЫБРАННЫХ ПРИЛОЖЕНИЙ БУДУТ ОЧИЩЕНЫ^!   +++%_fReset%
+@echo      %_fBRed%+++   SELECTED APPLICATIONS WILL BE UNINSTALLED^!   +++%_fReset%
 @echo.
-@echo   %_fBYellow%Следует иметь в виду, что не все приложения могут буть очищены,
-@echo   особенно если это системные приложения. %_fBRed%Используйте очистку
-@echo   очень осторожно иначе придется сбрасывать шлем до заводских настроек.%_fReset%
+@echo   %_fBYellow%Keep in mind that not all applications can be deleted,
+@echo   especially system applications. %_fBRed%Use deletion
+@echo   very carefully, otherwise you may have to reset the headset to factory settings.%_fReset%
 @echo   ================================================================
 @echo.
 @echo.
-@Set /p cleardisable="Подтвердите очистку нажатием Enter или введите 0 и Enter для возврата в меню: "
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   ================================================================
-rem @echo     %_fBRed%+++   CACHE AND DATA OF SELECTED APPS WILL BE CLEARED^!   +++%_fReset%
-rem @echo.
-rem @echo   %_fBYellow%Keep in mind that not all applications can be cleared,
-rem @echo   especially system applications. %_fBRed%Use cleaning
-rem @echo   very carefully, otherwise you may have to reset the headset to factory settings.%_fReset%
-rem @echo   ================================================================
-rem @echo.
-rem @echo.
-rem @Set /p cleardisable="Confirm by pressing Enter, or enter 0 and press Enter to return to the menu: "
+@Set /p deletedisable="Confirm by pressing Enter, or enter 0 and press Enter to return to the menu: "
 rem EndEngTextBlock
-rem if not defined cleardisable goto _ClearCacheDataApps
-rem if /i "%cleardisable%"=="0" (exit /b)
-rem if /i "%cleardisable%"=="1" (goto _ClearCacheDataAppsCont)
-rem goto _ClearCacheDataApps
-rem :_ClearCacheDataAppsCont
-rem cls
-rem @echo.
-rem @echo.
-rem @echo   ================================================
-rem StartRusTextBlock
-@echo      %_fBYellow%Очистка кэша и данных приложений%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo      %_fBYellow%Clearing app cache and data%_fReset%
-rem EndEngTextBlock
-rem for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
-rem set applabel=%%a
-rem set pathname=%%b
-rem set applabelsave=!applabel!
-rem if [!pathname!]==[] set pathname=!applabel!
-rem @echo   ------------------------------------------------
-rem StartRusTextBlock
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
-@echo   %_fBYellow%- Очистка приложения..%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = App Name       : %_fBCyan%!applabel!%_fReset%
-rem @echo   = Package Name   : %_fCyan%!pathname!%_fReset%
-rem @echo   %_fBYellow%- Cleaning the app..%_fReset%
-rem EndEngTextBlock
-rem %MYFILES%\ADB shell pm clear !pathname! 1>nul 2>nul
-rem if not errorlevel 1 (
-rem StartRusTextBlock
-@echo   %_fBGreen%= Очистка завершена успешно%_fReset%
-) else (
-@echo   %_fBRed%= Очистка не удалась%_fReset%
-)
-)
+if not defined deletedisable goto _UninstallApps
+if /i "%deletedisable%"=="0" (exit /b)
+if /i "%deletedisable%"=="1" (goto _UninstallAppsCont)
+goto _UninstallApps
+:_UninstallAppsCont
+cls
+@echo.
 @echo.
 @echo   ================================================
-@echo         %_fBGreen%Работа с приложениями завершена%_fReset%
-@echo   ================================================
-@echo.
-@echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+rem StartRusTextBlock
+rem if defined cachekey set "keymsg=. Кэш и данные удалены не будут"
+rem @echo      %_fBYellow%Удаление приложений%keymsg%%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBGreen%= Cleaning completed successfully%_fReset%
+if defined cachekey set "keymsg=. Cache and data will not be removed"
+@echo      %_fBYellow%Application removal%keymsg%%_fReset%
+rem EndEngTextBlock
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+@echo   ------------------------------------------------
+rem StartRusTextBlock
+rem @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem @echo   %_fBYellow%- Удаление приложения..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Application Name   : %_fBCyan%!applabel!%_fReset%
+@echo   = Package Name       : %_fCyan%!pathname!%_fReset%
+@echo   %_fBYellow%- Removing application..%_fReset%
+rem EndEngTextBlock
+%MYFILES%\adb shell pm uninstall %cachekey% !pathname! 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Удаление завершено успешно%_fReset%
 rem ) else (
-rem @echo   %_fBRed%= Cleaning failed%_fReset%
+rem @echo   %_fBRed%= Удаление не удалось%_fReset%
 rem )
 rem )
 rem @echo.
 rem @echo   ================================================
-rem @echo         %_fBGreen%Work with applications completed%_fReset%
+rem @echo         %_fBGreen%Работа с приложениями завершена%_fReset%
 rem @echo   ================================================
 rem @echo.
-rem @echo ^>^>^> Press anything to return to the previous menu ^<^<^<
-rem EndEngTextBlock
-rem pause >nul
-rem exit /b
-rem 
-rem :_DisableApps
-rem set canceldisable=1
-rem @echo.
-rem @echo   ================================================================
-rem StartRusTextBlock
-@echo       %_fBRed%+++   ВЫБРАННЫЕ ПРИЛОЖЕНИЯ БУДУТ ОТКЛЮЧЕНЫ^!   +++%_fReset%
-@echo   %_fBYellow%Вы можете в любой момент узнать, какие приложения отключены, а также сохранить
-@echo   список отключенных приложений - в Главном меню выберите пункты J-D-2-4.
+rem @echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBGreen%= Deletion completed successfully%_fReset%
+) else (
+@echo   %_fBRed%= Deletion failed%_fReset%
+)
+)
 @echo.
-@echo   Следует иметь в виду, что не все приложения могут буть отключены,
-@echo   особенно если это системные приложения. %_fBRed%Используйте отключение
-@echo   очень осторожно иначе придется сбрасывать шлем до заводских настроек.%_fReset%
+@echo   ================================================
+@echo         %_fBGreen%Work with applications completed%_fReset%
+@echo   ================================================
+@echo.
+@echo ^>^>^> Press anything to return to the previous menu ^<^<^<
+rem EndEngTextBlock
+pause >nul
+exit /b
+
+:_ClearCacheDataApps
+set cleardisable=1
+@echo.
+rem StartRusTextBlock
+rem @echo   ================================================================
+rem @echo     %_fBRed%+++   КЭШ И ДАННЫЕ ВЫБРАННЫХ ПРИЛОЖЕНИЙ БУДУТ ОЧИЩЕНЫ^!   +++%_fReset%
+rem @echo.
+rem @echo   %_fBYellow%Следует иметь в виду, что не все приложения могут буть очищены,
+rem @echo   особенно если это системные приложения. %_fBRed%Используйте очистку
+rem @echo   очень осторожно иначе придется сбрасывать шлем до заводских настроек.%_fReset%
+rem @echo   ================================================================
+rem @echo.
+rem @echo.
+rem @Set /p cleardisable="Подтвердите очистку нажатием Enter или введите 0 и Enter для возврата в меню: "
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   ================================================================
+@echo     %_fBRed%+++   CACHE AND DATA OF SELECTED APPS WILL BE CLEARED^!   +++%_fReset%
+@echo.
+@echo   %_fBYellow%Keep in mind that not all applications can be cleared,
+@echo   especially system applications. %_fBRed%Use cleaning
+@echo   very carefully, otherwise you may have to reset the headset to factory settings.%_fReset%
 @echo   ================================================================
 @echo.
-@Set /p canceldisable="Подтвердите отключение нажатием Enter или введите 0 и Enter для возврата в меню: "
+@echo.
+@Set /p cleardisable="Confirm by pressing Enter, or enter 0 and press Enter to return to the menu: "
+rem EndEngTextBlock
+if not defined cleardisable goto _ClearCacheDataApps
+if /i "%cleardisable%"=="0" (exit /b)
+if /i "%cleardisable%"=="1" (goto _ClearCacheDataAppsCont)
+goto _ClearCacheDataApps
+:_ClearCacheDataAppsCont
+cls
+@echo.
+@echo.
+@echo   ================================================
+rem StartRusTextBlock
+rem @echo      %_fBYellow%Очистка кэша и данных приложений%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo       %_fBRed%+++   SELECTED APPS WILL BE DISABLED^!   +++%_fReset%
-rem @echo   %_fBYellow%You can view and save the list of disabled apps
-rem @echo   From the Main Menu, options J-D-2-4
+@echo      %_fBYellow%Clearing app cache and data%_fReset%
+rem EndEngTextBlock
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+@echo   ------------------------------------------------
+rem StartRusTextBlock
+rem @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem @echo   %_fBYellow%- Очистка приложения..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = App Name       : %_fBCyan%!applabel!%_fReset%
+@echo   = Package Name   : %_fCyan%!pathname!%_fReset%
+@echo   %_fBYellow%- Cleaning the app..%_fReset%
+rem EndEngTextBlock
+%MYFILES%\ADB shell pm clear !pathname! 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Очистка завершена успешно%_fReset%
+rem ) else (
+rem @echo   %_fBRed%= Очистка не удалась%_fReset%
+rem )
+rem )
 rem @echo.
-rem @echo   Keep in mind that not all applications can be disabled,
-rem @echo   especially system applications. %_fBRed%Use disabling
-rem @echo   very carefully, otherwise you may have to reset the headset to factory settings.%_fReset%
+rem @echo   ================================================
+rem @echo         %_fBGreen%Работа с приложениями завершена%_fReset%
+rem @echo   ================================================
+rem @echo.
+rem @echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBGreen%= Cleaning completed successfully%_fReset%
+) else (
+@echo   %_fBRed%= Cleaning failed%_fReset%
+)
+)
+@echo.
+@echo   ================================================
+@echo         %_fBGreen%Work with applications completed%_fReset%
+@echo   ================================================
+@echo.
+@echo ^>^>^> Press anything to return to the previous menu ^<^<^<
+rem EndEngTextBlock
+pause >nul
+exit /b
+
+:_DisableApps
+set canceldisable=1
+@echo.
+@echo   ================================================================
+rem StartRusTextBlock
+rem @echo       %_fBRed%+++   ВЫБРАННЫЕ ПРИЛОЖЕНИЯ БУДУТ ОТКЛЮЧЕНЫ^!   +++%_fReset%
+rem @echo   %_fBYellow%Вы можете в любой момент узнать, какие приложения отключены, а также сохранить
+rem @echo   список отключенных приложений - в Главном меню выберите пункты J-D-2-4.
+rem @echo.
+rem @echo   Следует иметь в виду, что не все приложения могут буть отключены,
+rem @echo   особенно если это системные приложения. %_fBRed%Используйте отключение
+rem @echo   очень осторожно иначе придется сбрасывать шлем до заводских настроек.%_fReset%
 rem @echo   ================================================================
 rem @echo.
-rem @echo.
-rem @Set /p canceldisable="Confirm by pressing Enter, or enter 0 and press Enter to return to the menu: "
-rem EndEngTextBlock
-rem if not defined canceldisable goto _DisableApps
-rem if /i "%canceldisable%"=="0" (exit /b)
-rem if /i "%canceldisable%"=="1" (goto _DisableAppsCont)
-rem goto _DisableApps
-rem :_DisableAppsCont
-rem cls
-rem @echo.
-rem @echo.
-rem @echo   ================================================
-rem StartRusTextBlock
-@echo      %_fBYellow%Отключение приложений%_fReset%
+rem @Set /p canceldisable="Подтвердите отключение нажатием Enter или введите 0 и Enter для возврата в меню: "
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo      %_fBYellow%Disabling applications%_fReset%
+@echo       %_fBRed%+++   SELECTED APPS WILL BE DISABLED^!   +++%_fReset%
+@echo   %_fBYellow%You can view and save the list of disabled apps
+@echo   From the Main Menu, options J-D-2-4
+@echo.
+@echo   Keep in mind that not all applications can be disabled,
+@echo   especially system applications. %_fBRed%Use disabling
+@echo   very carefully, otherwise you may have to reset the headset to factory settings.%_fReset%
+@echo   ================================================================
+@echo.
+@echo.
+@Set /p canceldisable="Confirm by pressing Enter, or enter 0 and press Enter to return to the menu: "
 rem EndEngTextBlock
-rem for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
-rem set applabel=%%a
-rem set pathname=%%b
-rem set applabelsave=!applabel!
-rem if [!pathname!]==[] set pathname=!applabel!
-rem @echo   ------------------------------------------------
-rem StartRusTextBlock
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
-@echo   %_fBYellow%- Отключение приложения..%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = Application name   : %_fBCyan%!applabel!%_fReset%
-rem @echo   = Package name       : %_fCyan%!pathname!%_fReset%
-rem @echo   %_fBYellow%- Disabling application..%_fReset%
-rem EndEngTextBlock
-rem %MYFILES%\adb shell pm disable-user --user 0 !pathname! 1>nul 2>nul
-rem if not errorlevel 1 (
-rem StartRusTextBlock
-@echo   %_fBGreen%= Отключение завершено успешно%_fReset%
-) else (
-@echo   %_fBRed%= Отключение не удалось%_fReset%
-)
-)
+if not defined canceldisable goto _DisableApps
+if /i "%canceldisable%"=="0" (exit /b)
+if /i "%canceldisable%"=="1" (goto _DisableAppsCont)
+goto _DisableApps
+:_DisableAppsCont
+cls
+@echo.
 @echo.
 @echo   ================================================
-@echo         %_fBGreen%Работа с приложениями завершена%_fReset%
-@echo   ================================================
-@echo.
-@echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+rem StartRusTextBlock
+rem @echo      %_fBYellow%Отключение приложений%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBGreen%= Disabling completed successfully%_fReset%
+@echo      %_fBYellow%Disabling applications%_fReset%
+rem EndEngTextBlock
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+@echo   ------------------------------------------------
+rem StartRusTextBlock
+rem @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem @echo   %_fBYellow%- Отключение приложения..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Application name   : %_fBCyan%!applabel!%_fReset%
+@echo   = Package name       : %_fCyan%!pathname!%_fReset%
+@echo   %_fBYellow%- Disabling application..%_fReset%
+rem EndEngTextBlock
+%MYFILES%\adb shell pm disable-user --user 0 !pathname! 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Отключение завершено успешно%_fReset%
 rem ) else (
-rem @echo   %_fBRed%= Disabling failed%_fReset%
+rem @echo   %_fBRed%= Отключение не удалось%_fReset%
 rem )
 rem )
 rem @echo.
 rem @echo   ================================================
-rem @echo         %_fBGreen%Work with applications completed%_fReset%
+rem @echo         %_fBGreen%Работа с приложениями завершена%_fReset%
 rem @echo   ================================================
 rem @echo.
-rem @echo ^>^>^> Press anything to return to the previous menu ^<^<^<
-rem EndEngTextBlock
-rem pause >nul
-rem exit /b
-rem 
-rem :_EnableApps
-rem cls
-rem @echo.
-rem @echo.
-rem @echo   ================================================
-rem StartRusTextBlock
-@echo      %_fBYellow%Включение приложений%_fReset%
+rem @echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo      %_fBYellow%Enabling application%_fReset%
-rem EndEngTextBlock
-rem for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
-rem set applabel=%%a
-rem set pathname=%%b
-rem set applabelsave=!applabel!
-rem if [!pathname!]==[] set pathname=!applabel!
-rem @echo   ------------------------------------------------
-rem StartRusTextBlock
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
-@echo   %_fBYellow%+ Включение приложения..%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = Application name   : %_fBCyan%!applabel!%_fReset%
-rem @echo   = Package name       : %_fCyan%!pathname!%_fReset%
-rem @echo   %_fBYellow%+ Enabling application..%_fReset%
-rem EndEngTextBlock
-rem %MYFILES%\adb shell pm disable-user --user 0 !pathname! 1>nul 2>nul
-rem if not errorlevel 1 (
-rem StartRusTextBlock
-@echo   %_fBGreen%= Включение завершено успешно%_fReset%
+@echo   %_fBGreen%= Disabling completed successfully%_fReset%
 ) else (
-@echo   %_fBRed%= Включение не удалось%_fReset%
+@echo   %_fBRed%= Disabling failed%_fReset%
 )
 )
 @echo.
 @echo   ================================================
-@echo         %_fBGreen%Работа с приложениями завершена%_fReset%
+@echo         %_fBGreen%Work with applications completed%_fReset%
 @echo   ================================================
 @echo.
-@echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+@echo ^>^>^> Press anything to return to the previous menu ^<^<^<
+rem EndEngTextBlock
+pause >nul
+exit /b
+
+:_EnableApps
+cls
+@echo.
+@echo.
+@echo   ================================================
+rem StartRusTextBlock
+rem @echo      %_fBYellow%Включение приложений%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBGreen%= Enabling completed successfully%_fReset%
+@echo      %_fBYellow%Enabling application%_fReset%
+rem EndEngTextBlock
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+@echo   ------------------------------------------------
+rem StartRusTextBlock
+rem @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem @echo   %_fBYellow%+ Включение приложения..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Application name   : %_fBCyan%!applabel!%_fReset%
+@echo   = Package name       : %_fCyan%!pathname!%_fReset%
+@echo   %_fBYellow%+ Enabling application..%_fReset%
+rem EndEngTextBlock
+%MYFILES%\adb shell pm disable-user --user 0 !pathname! 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Включение завершено успешно%_fReset%
 rem ) else (
-rem @echo   %_fBRed%= Enabling failed%_fReset%
+rem @echo   %_fBRed%= Включение не удалось%_fReset%
 rem )
 rem )
 rem @echo.
 rem @echo   ================================================
-rem @echo         %_fBGreen%Work with applications completed%_fReset%
+rem @echo         %_fBGreen%Работа с приложениями завершена%_fReset%
 rem @echo   ================================================
 rem @echo.
-rem @echo ^>^>^> Press anything to return to the previous menu ^<^<^<
-rem EndEngTextBlock
-rem pause >nul
-rem exit /b
-rem 
-rem :_StopApps
-rem cls
-rem @echo.
-rem @echo.
-rem @echo   ================================================
-rem StartRusTextBlock
-@echo      %_fBYellow%Остановка приложения%_fReset%
+rem @echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo      %_fBYellow%Start application%_fReset%
-rem EndEngTextBlock
-rem for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
-rem set applabel=%%a
-rem set pathname=%%b
-rem set applabelsave=!applabel!
-rem if [!pathname!]==[] set pathname=!applabel!
-rem @echo   ------------------------------------------------
-rem StartRusTextBlock
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
-@echo   %_fBYellow%+ Останавливаем приложение..%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = Application name   : %_fBCyan%!applabel!%_fReset%
-rem @echo   = Package name       : %_fCyan%!pathname!%_fReset%
-rem @echo   %_fBYellow%+ Stopping application..%_fReset%
-rem EndEngTextBlock
-rem 
-rem %myfiles%\adb shell am force-stop "!pathname!" 1>nul 2>nul
-rem if not errorlevel 1 (
-rem StartRusTextBlock
-@echo   %_fBGreen%= Приложение остановлено%_fReset%
+@echo   %_fBGreen%= Enabling completed successfully%_fReset%
 ) else (
-@echo   %_fBRed%= Остановка приложения не удалась%_fReset%
+@echo   %_fBRed%= Enabling failed%_fReset%
 )
 )
 @echo.
 @echo   ================================================
-@echo         %_fBGreen%Работа с приложением завершена%_fReset%
+@echo         %_fBGreen%Work with applications completed%_fReset%
 @echo   ================================================
 @echo.
-@echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+@echo ^>^>^> Press anything to return to the previous menu ^<^<^<
+rem EndEngTextBlock
+pause >nul
+exit /b
+
+:_StopApps
+cls
+@echo.
+@echo.
+@echo   ================================================
+rem StartRusTextBlock
+rem @echo      %_fBYellow%Остановка приложения%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBGreen%= Stop completed successfully%_fReset%
+@echo      %_fBYellow%Start application%_fReset%
+rem EndEngTextBlock
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+@echo   ------------------------------------------------
+rem StartRusTextBlock
+rem @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem @echo   %_fBYellow%+ Останавливаем приложение..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Application name   : %_fBCyan%!applabel!%_fReset%
+@echo   = Package name       : %_fCyan%!pathname!%_fReset%
+@echo   %_fBYellow%+ Stopping application..%_fReset%
+rem EndEngTextBlock
+
+%myfiles%\adb shell am force-stop "!pathname!" 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Приложение остановлено%_fReset%
 rem ) else (
-rem @echo   %_fBRed%= Stopping failed%_fReset%
+rem @echo   %_fBRed%= Остановка приложения не удалась%_fReset%
 rem )
 rem )
 rem @echo.
 rem @echo   ================================================
-rem @echo         %_fBGreen%Work with applications completed%_fReset%
+rem @echo         %_fBGreen%Работа с приложением завершена%_fReset%
 rem @echo   ================================================
 rem @echo.
-rem @echo ^>^>^> Press anything to return to the previous menu ^<^<^<
-rem EndEngTextBlock
-rem pause >nul
-rem exit /b
-rem 
-rem 
-rem :_StartApps
-rem cls
-rem @echo.
-rem @echo.
-rem @echo   ================================================
-rem StartRusTextBlock
-@echo      %_fBYellow%Запуск приложения%_fReset%
+rem @echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo      %_fBYellow%Start application%_fReset%
-rem EndEngTextBlock
-rem for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
-rem set applabel=%%a
-rem set pathname=%%b
-rem set applabelsave=!applabel!
-rem if [!pathname!]==[] set pathname=!applabel!
-rem @echo   ------------------------------------------------
-rem StartRusTextBlock
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
-@echo   %_fBYellow%+ Стартуем приложение..%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = Application name   : %_fBCyan%!applabel!%_fReset%
-rem @echo   = Package name       : %_fCyan%!pathname!%_fReset%
-rem @echo   %_fBYellow%+ Starting application..%_fReset%
-rem EndEngTextBlock
-rem %myfiles%\adb shell monkey -p "!pathname!"  -c android.intent.category.LAUNCHER 1 1>nul 2>nul
-rem if not errorlevel 1 (
-rem StartRusTextBlock
-@echo   %_fBGreen%= Приложение запущено. Можете надеть шлем%_fReset%
+@echo   %_fBGreen%= Stop completed successfully%_fReset%
 ) else (
-@echo   %_fBRed%= Запуск приложения не удался%_fReset%
+@echo   %_fBRed%= Stopping failed%_fReset%
 )
 )
 @echo.
 @echo   ================================================
-@echo         %_fBGreen%Работа с приложением завершена%_fReset%
+@echo         %_fBGreen%Work with applications completed%_fReset%
 @echo   ================================================
 @echo.
-@echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+@echo ^>^>^> Press anything to return to the previous menu ^<^<^<
+rem EndEngTextBlock
+pause >nul
+exit /b
+
+
+:_StartApps
+cls
+@echo.
+@echo.
+@echo   ================================================
+rem StartRusTextBlock
+rem @echo      %_fBYellow%Запуск приложения%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBGreen%= Start completed successfully%_fReset%
+@echo      %_fBYellow%Start application%_fReset%
+rem EndEngTextBlock
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+@echo   ------------------------------------------------
+rem StartRusTextBlock
+rem @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem @echo   %_fBYellow%+ Стартуем приложение..%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   = Application name   : %_fBCyan%!applabel!%_fReset%
+@echo   = Package name       : %_fCyan%!pathname!%_fReset%
+@echo   %_fBYellow%+ Starting application..%_fReset%
+rem EndEngTextBlock
+%myfiles%\adb shell monkey -p "!pathname!"  -c android.intent.category.LAUNCHER 1 1>nul 2>nul
+if not errorlevel 1 (
+rem StartRusTextBlock
+rem @echo   %_fBGreen%= Приложение запущено. Можете надеть шлем%_fReset%
 rem ) else (
-rem @echo   %_fBRed%= Starting failed%_fReset%
+rem @echo   %_fBRed%= Запуск приложения не удался%_fReset%
 rem )
 rem )
 rem @echo.
 rem @echo   ================================================
-rem @echo         %_fBGreen%Work with applications completed%_fReset%
+rem @echo         %_fBGreen%Работа с приложением завершена%_fReset%
 rem @echo   ================================================
 rem @echo.
-rem @echo ^>^>^> Press anything to return to the previous menu ^<^<^<
-rem EndEngTextBlock
-rem pause >nul
-rem exit /b
-rem 
-rem 
-rem :_NoFilesForExtract
-rem @echo   --------------------------
-rem StartRusTextBlock
-@echo   %_fBRed%Файлов не найдено%_fReset%
-@echo   %_fYellow%Положите архивы ab рядом с программой и повторите операцию%_fReset%
+rem @echo ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBRed%No files found%_fReset%
-rem @echo   %_fYellow%Place the .ab archives next to the program and repeat the operation%_fReset%
+@echo   %_fBGreen%= Start completed successfully%_fReset%
+) else (
+@echo   %_fBRed%= Starting failed%_fReset%
+)
+)
+@echo.
+@echo   ================================================
+@echo         %_fBGreen%Work with applications completed%_fReset%
+@echo   ================================================
+@echo.
+@echo ^>^>^> Press anything to return to the previous menu ^<^<^<
 rem EndEngTextBlock
-rem echo 1 >returnmark.txt
+pause >nul
+exit /b
+
+
+:_NoFilesForExtract
+@echo   --------------------------
+rem StartRusTextBlock
+rem @echo   %_fBRed%Файлов не найдено%_fReset%
+rem @echo   %_fYellow%Положите архивы ab рядом с программой и повторите операцию%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBRed%No files found%_fReset%
+@echo   %_fYellow%Place the .ab archives next to the program and repeat the operation%_fReset%
+rem EndEngTextBlock
+echo 1 >returnmark.txt
+exit /b
+
+:_settime
+set pscommand="Get-Date -Format 'yyyy.MM.dd-HH:mm:ss'"
+call :_ps1CommandRun pcdatetime
+set ti=%pcdatetime:~11,-6%-%pcdatetime:~14,-3%-%pcdatetime:~-2%
+set da=%pcdatetime:~0,4%-%pcdatetime:~5,2%-%pcdatetime:~8,2%
+set dt=%da%_%ti%
+set dap=%pcdatetime:~0,10%
+set tip=%pcdatetime:~-8%
+set dppt=%pcdatetime%
+set odt=%pcdatetime:~5,-12%-%pcdatetime:~8,-9%
+@exit /b
+
+:_ps1CommandRun
+@chcp 1251 >nul
+set "ps=" & for %%X in (powerShell.exe) do set "ps=%%~$PATH:X"
+if not defined ps set "ps=%systemRoot%\system32\windowsPowerShell\v1.0\powerShell.exe"
+
+For /F "UseBackQ delims=" %%a in (`"cmd /c "
+  "%ps%" -ExecutionPolicy ByPass -NoProfile -command "%pscommand%"
+""`) do (
+set "res=%%a"
+)
+set "%1=%res%"
+@chcp 65001 >nul
+exit /b
+
+
+:_CheckHeadsetConnect
+@%myfiles%\adb shell getprop ro.boot.serialno 1>NUL 2>&1
+rem @echo %errorlevel%
 rem exit /b
-rem 
-rem :_settime
-rem set pscommand="Get-Date -Format 'yyyy.MM.dd-HH:mm:ss'"
-rem call :_ps1CommandRun pcdatetime
-rem set ti=%pcdatetime:~11,-6%-%pcdatetime:~14,-3%-%pcdatetime:~-2%
-rem set da=%pcdatetime:~0,4%-%pcdatetime:~5,2%-%pcdatetime:~8,2%
-rem set dt=%da%_%ti%
-rem set dap=%pcdatetime:~0,10%
-rem set tip=%pcdatetime:~-8%
-rem set dppt=%pcdatetime%
-rem set odt=%pcdatetime:~5,-12%-%pcdatetime:~8,-9%
-rem @exit /b
-rem 
-rem :_ps1CommandRun
-rem @chcp 1251 >nul
-rem set "ps=" & for %%X in (powerShell.exe) do set "ps=%%~$PATH:X"
-rem if not defined ps set "ps=%systemRoot%\system32\windowsPowerShell\v1.0\powerShell.exe"
-rem 
-rem For /F "UseBackQ delims=" %%a in (`"cmd /c "
-rem   "%ps%" -ExecutionPolicy ByPass -NoProfile -command "%pscommand%"
-rem ""`) do (
-rem set "res=%%a"
+IF %errorlevel%==1 goto _NoHeadsetConnect
+exit /b
+
+rem ver 4.3.3
+
+:_BackupPrevMenu
+@echo   -------------------------------------------
+rem StartRusTextBlock
+rem @echo   ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   ^>^>^> Press any key for return previous menu ^<^<^<
+rem EndEngTextBlock
+@pause >nul
+exit /b
+
+:_ViewAppListReturn
+del /q /f AppsList-*.* 1>nul 2>nul 
+rem if SelectorParameters==-csv (
+rem ren packages-list.txt AppsList.csv
+rem ) else (
+rem ren packages-list.txt AppsList.txt
 rem )
-rem set "%1=%res%"
-rem @chcp 65001 >nul
-rem exit /b
-rem 
-rem 
-rem :_CheckHeadsetConnect
-rem @%myfiles%\adb shell getprop ro.boot.serialno 1>NUL 2>&1
-@echo %errorlevel%
-xit /b
-rem IF %errorlevel%==1 goto _NoHeadsetConnect
-rem exit /b
-rem 
-ver 4.3.3
-rem 
-rem :_BackupPrevMenu
-rem @echo   -------------------------------------------
-rem StartRusTextBlock
-@echo   ^>^>^> Нажмите что-нибудь для возврата в предыдущее меню ^<^<^<
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   ^>^>^> Press any key for return previous menu ^<^<^<
-rem EndEngTextBlock
-rem @pause >nul
-rem exit /b
+exit /b
 

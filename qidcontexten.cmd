@@ -103,7 +103,6 @@ goto :_exittimeout
 set hidefrstp=1^>NUL
 set hidescndp=2^>NUL
 if not defined applabel exit /b
-set /a MultiCounterOk=%MultiCounterOk%+1
 rem StartRusTextBlock
 rem @echo  %_fBYellow%%MultiCounterOk%%_fReset%. = Устанавливаем  "%_fBCyan%%applabel%%_fReset%"
 rem EndRusTextBlock
@@ -138,14 +137,14 @@ exit /b
 
 :_MultiInstallApkErr
 rem StartRusTextBlock
-rem @echo   %_fBRed%+++ Ошибка установки %_fBCyan%!apknamefile! +++%_fReset%
+rem @echo   %_fBRed%  - Ошибка установки %_fBCyan%!apknamefile! +++%_fReset%
 @echo.
-rem @echo   %_fBYellow%= Продолжаем установку%_fReset%
+rem @echo   %_fBYellow%  = Продолжаем установку%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-@echo  %_fBRed%+++ Installation error %_fBCyan%!apknamefile! +++%_fReset%
+@echo  %_fBRed%  - Installation error %_fBCyan%!apknamefile! +++%_fReset%
 @echo.
-@echo  %_fBYellow%= Continuing installation%_fReset%
+@echo  %_fBYellow%  = Continuing installation%_fReset%
 rem EndEngTextBlock
 set /a MultiCounterEr=%MultiCounterEr%+1
 @echo  !apkname! >>%sendtofoldercmdfolder%\notinstalled.txt
@@ -159,6 +158,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo     %_fBGreen%= Successfully installed%_fReset%
 rem EndEngTextBlock
+set /a MultiCounterOk=%MultiCounterOk%+1
 exit /b
 
 :_SingleApkInstall

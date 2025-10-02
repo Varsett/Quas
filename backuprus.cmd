@@ -43,7 +43,7 @@ cls
 @echo   ================================================================
 rem StartRusTextBlock
 @echo      %_fBYellow%Старт архивации.  Не прерывайте этот процесс.%_fReset%
-rem @echo   Лог архивации %dt% >>ArchiveLog-%dt%.txt
+@echo   Лог архивации %dt% >>ArchiveLog-%dt%.txt
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo       Starting selected archive process. Do not interrupt this process.
@@ -125,7 +125,12 @@ exit /b
 :_ApkBackupProcedure
 if !pkgnamea! == android exit /b
 if [!pkgnamef!]==[] exit /b
+rem StartRusTextBlock
 @echo   + Копирование APK...
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   + APK file copying...
+rem EndEngTextBlock
 %myfiles%\adb pull -a !fullname!.apk  2>nul 1>nul
 if errorlevel 1 (
 rem StartRusTextBlock
@@ -171,7 +176,12 @@ rem     dir /b /a "%cd%\Backups\!applabel!\obb\!pkgnamef!\" | findstr . >nul && 
 rem ) else (
 rem     @echo %_fBYellow%- Папка OBB не найдена%_fReset%
 rem )
+rem StartRusTextBlock
 dir /b /a "%cd%\Backups\!applabel!\obb\!pkgnamef!\" | findstr . >nul && ver >nul || @echo   %_fBYellow%- OBB отсутствует%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem dir /b /a "%cd%\Backups\!applabel!\obb\!pkgnamef!\" | findstr . >nul && ver >nul || @echo   %_fBYellow%- OBB is missing%_fReset%
+rem EndEngTextBlock
 @rd /q "%cd%\Backups\!applabel!\obb\!pkgnamef!" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!\obb" 1>nul 2>nul
 if "!pkgnamef!"=="com.beatgames.beatsaber" @%myfiles%\adb pull "/sdcard/ModData" "Backups\!applabel!\ModData" 1>nul 2>nul
@@ -193,7 +203,12 @@ if [!applabel!]==[] set applabel=!pkgnamef!
 @%myfiles%\adb pull "/sdcard/Android/data/!pkgnamef!" "%cd%\Backups\!applabel!\data" | findstr /i /c:"permission denied"  1>nul 2>nul
 
 if %errorlevel% == 0 (call :_BackupDataExtractData)
+rem StartRusTextBlock
 dir /b /a "%cd%\Backups\!applabel!\data\" 2>nul | findstr . >nul && ver >nul || @echo   %_fBYellow%- Данные отсутствуют%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem dir /b /a "%cd%\Backups\!applabel!\data\" 2>nul | findstr . >nul && ver >nul || @echo   %_fBYellow%- Data is missing%_fReset%
+rem EndEngTextBlock
 @rd /q "%cd%\Backups\!applabel!\data\!pkgnamef!" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!\data" 1>nul 2>nul
 @rd /q "%cd%\Backups\!applabel!" 1>nul 2>nul
@@ -467,13 +482,13 @@ rem EndEngTextBlock
 rem @echo   Package Name	: !viewpn!
 @echo.
 @echo ----------------------------------------------------------
-if "%onlyview%" == "" call :_ExtractDataDromABFiles
+if "%onlyview%" == "" call :_ExtractDataFromABFiles
 )
 exit /b
 
 rem ===========================
 
-:_ExtractDataDromABFiles
+:_ExtractDataFromABFiles
 set shscriptname=dataextract.sh
 @echo Extracting data from backup file...
 @echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/%archivename%" ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
@@ -513,6 +528,7 @@ exit /b
 
 @for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
 set "archivename=%%~na"
+
 @echo -----------------------------------------------------------
 rem StartRusTextBlock
 @echo  = Восстанавливаем архив	: %_fBCyan%!archivename!%_fReset%
@@ -537,6 +553,80 @@ rem ) else (
 rem @echo.
 rem )
 rem )
+
+%myfiles%\adb shell input keyevent 61
+@timeout 1 1>nul
+%myfiles%\adb shell input keyevent 61
+@timeout 1 1>nul
+%myfiles%\adb shell input keyevent 61
+@timeout 1 1>nul
+%myfiles%\adb shell input keyevent 66
+
+call :_CheckBackupProcessRest
+rem @echo  = Успешно
+)
+timeout 1 1>nul
+@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+exit /b
+
+:_CheckBackupProcessRest
+@for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
+if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcessRest) else (exit /b)
+)
+
+
+
+:_BackupReadWrite
+cls
+rem @echo.
+@echo.
+%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
+call :_settime
+set nomode=no
+%myfiles%\adb shell input keyevent 224
+rem StartRusTextBlock
+@echo      %_fBYellow%Снимаем запрет доступа к файлам сохранений%_fReset%
+@echo   ================================================================
+@echo   %_fBYellow%= Сначала бэкапим...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo      %_fBYellow%Removing the restriction on access to save files%_fReset%
+rem @echo   ================================================================
+rem @echo   %_fBYellow%= Backing up first...%_fReset%
+rem EndEngTextBlock
+@timeout 4 1>nul
+for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
+set applabel=%%a
+set pathname=%%b
+set applabelsave=!applabel!
+if [!pathname!]==[] set pathname=!applabel!
+set applabelmark=1
+call :_BackupABProcessPS
+set applabel=!applabelsave!
+call :_CurrentFileSizeBigger
+rem call :_CurrentFileSize
+)
+if not exist !pathname!.ab set dataout=1&&exit /b
+call :_RestoreReadWrite
+
+
+rem @move "ArchiveLog-%dt%.txt" "%cd%\Backups\ArchiveLog-%dt%.txt" 1>nul 2>nul
+@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+exit /b
+
+:_RestoreReadWrite
+@echo   ----------------------------------------------------------------
+rem StartRusTextBlock
+@echo   %_fBYellow%= Затем восстанавливаем обратно...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%= Then restoring back...%_fReset%
+rem EndEngTextBlock
+
+%myfiles%\adb shell input keyevent 224
+
+start /min "" %myfiles%\adb restore "!pathname!.ab" 1>nul 2>nul
+@timeout 2 1>nul
 
 %myfiles%\adb shell input keyevent 61
 @timeout 1 1>nul
@@ -746,7 +836,7 @@ rem EndEngTextBlock
 
 :_CheckBackupProcessAfter
 @for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
-if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcessAfter) else (exit /b)
+if [%%c] == [com.android.backupconfirm] (timeout 1 1>nul && goto _CheckBackupProcessAfter) else (exit /b)
 )
 goto _CheckBackupProcessAfter
 
@@ -806,13 +896,15 @@ call :_DeleteWrongSymbolsOk
 exit /b
 
 :_CurrentFileSizeBigger
-timeout 3 >nul
-for /f "tokens=3" %%a in ('dir /-c "!pathname!.ab" ^| findstr /r /c:"[0-9][0-9]* !pathname!.ab$"') do (
-set filesize=%%a
+rem powershell -ExecutionPolicy Bypass -File %myfiles%\checkab.ps1 -FilePath "!pathname!.ab" -LogPath "backup_check.log"
+for /f %%S in ('powershell -ExecutionPolicy Bypass -File %myfiles%\checkab.ps1 -FilePath "!pathname!.ab"') do (
+    set filesize=%%S
+)
+
+rem for /f "tokens=3" %%a in ('dir /-c "!pathname!.ab" ^| findstr /r /c:"[0-9][0-9]* !pathname!.ab$"') do (
+rem set filesize=%%a
 if not defined filesize exit /b
-timeout 1 >nul
 if !filesize! GTR 48 (
-timeout 1 >nul
 rem StartRusTextBlock
 @echo   %_fBGreen%= Архив создан успешно%_fReset%
 @echo  Название архива	: !applabel!.ab>>ArchiveLog-%dt%.txt
@@ -852,7 +944,7 @@ rem EndEngTextBlock
 @echo !pathname!>>ZeroSizeBackups.txt
 del /q /f "!pathname!.ab"
 exit /b
-)
+rem )
 )
 )
 )
@@ -1076,18 +1168,18 @@ set applabel=%%a
 set pathname=%%b
 set applabelsave=!applabel!
 if [!pathname!]==[] set pathname=!applabel!
-rem StartRusTextBlock
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = Application Name   : %_fBCyan%!applabel!%_fReset%
-rem @echo   = Package Name       : %_fCyan%!pathname!%_fReset%
-rem EndEngTextBlock
 for /f "delims=" %%P in ('%myfiles%\adb shell pidof !pathname!') do (
 set "pid=%%P"
 if defined pid (
+rem StartRusTextBlock
 @echo   ------------------------------------------------
 @echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
 @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   = Application name	: %_fBCyan%!applabel!%_fReset%
+rem @echo   = Package name		: %_fCyan%!pathname!%_fReset%
+rem EndEngTextBlock
 @echo   = PID			: %_fBBlue%!pid!%_fReset%
 @echo !pid! !applabel! !pathname!>>"RunningApps.txt"
 set "pid="
@@ -1095,6 +1187,7 @@ set "pid="
 )
 )
 @echo.
+rem StartRusTextBlock
 @echo   ================================================
 @echo         %_fBGreen%Работа с приложениями завершена%_fReset%
 @echo     Список сохранен в файл %_fBYellow%RunningApps.txt%_fReset%
@@ -1624,4 +1717,13 @@ rem StartEngTextBlock
 rem @echo   ^>^>^> Press any key for return previous menu ^<^<^<
 rem EndEngTextBlock
 @pause >nul
+exit /b
+
+:_ViewAppListReturn
+del /q /f AppsList-*.* 1>nul 2>nul 
+rem if SelectorParameters==-csv (
+rem ren packages-list.txt AppsList.csv
+rem ) else (
+rem ren packages-list.txt AppsList.txt
+rem )
 exit /b
