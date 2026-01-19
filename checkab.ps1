@@ -1,7 +1,7 @@
 param(
     [string]$FilePath,
     [int]$CheckInterval = 200,   # проверка каждые 200 ms
-    [int]$StableCount = 3        # сколько раз подряд размер не должен изменяться
+    [int]$StableCount = 10        # сколько раз подряд размер не должен изменяться
 )
 
 if (-not (Test-Path $FilePath)) {

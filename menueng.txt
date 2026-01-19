@@ -5,6 +5,13 @@
 #F. Block Oculus Home software updates on PC
 #G. Allow Oculus Home software updates on PC
 2.  Sending a text string to the headset
+3.  Install Meta Quest drivers
+#A.  Install version 1.71  (Old Oculus drivers)
+#B.  Install version 1.72  (New Reality Labs drivers)
+#C.  Install version 1.77  (Reworked Reality Labs drivers)
+#F.  Download version 1.71
+#G.  Download version 1.72
+#I.  Download version 1.77
 4.  Reboot into different modes and current information
 #A.  Resuming booting from Bootloader mode
 #C.  Standard/Default Headset Reboot.
@@ -65,6 +72,7 @@ C.  System information
 #N.  List of files/directories and their size 
 #O.  Show the amount of occupied space [EXP]
 #P.  USB device connection and disconnection log
+#Q.  Controllers information
 #R.  Save all system information in bulk into one archive
 D.  Diagnostic information
 #A.  Summary diagnostic information
@@ -164,10 +172,12 @@ F.  Additional options
 ##B. Set the "Bypass Wireless Warning" key in the registry
 ##C. Set the "Bypass Initial Status" key in the registry
 ##D. Set the "iPerf Temp Dir" key in the registry
+##E. Set the "Backups Dir" key in the registry
 ##G. Remove the "Bypass Info Table" key from the registry
 ##H. Remove the "Bypass Wireless Warning" key from the registry
 ##I. Remove the "Bypass Initial Status" key from the registry
 ##J. Remove the "iPerf Temp Dir" key from the registry
+##K. Remove the "Backups Dir" key from the registry
 ##T. Check for the presence of keys in the registry
 ##X. Remove the Quas registry branch with all keys (old and new)
 #I.  Social Platform management
@@ -183,10 +193,15 @@ F.  Additional options
 #N.  Open the hosts file in Notepad
 #O.  Get the pairing code for the mobile app
 #P.  Creating a shared resource on a PC
+#Q.  Disable and enable driver signature enforcement
+##A.  Disable driver signature enforcement
+##B.  Enable driver signature enforcement
+##C.  Reboot the PC into recovery mode
 G.  Headset firmware update and firmware information
 #A.  Fully automatic firmware flashing
+##A. Check the headset firmware for updates
 ##F. Exit to Firmware Menu
-##T. Check update.zip file compatibility
+##T. Analyze the firmware file
 ##Enter. Start device flashing
 #B.  Button-triggered automatic firmware flashing
 ##F. Exit to Firmware Menu
@@ -200,14 +215,15 @@ G.  Headset firmware update and firmware information
 #G.  Download compatibility tables for environment versions and headset firmware versions
 #I. [additional explanations about incremental firmware updates]
 I.  Download/update progress, DNS setup
-#A.  View download progress           
+#A.  View download progress             
 #B.  Record DNS servers to headset
-#C.  Automatic selection of DNS for downloading updates   
+#C.  Automatic selection of DNS for downloading updates    
 #D.  Reset headset DNS settings to default
-#E.  Set up DNS Internet blocking       
-#F.  Checking for updates availability on PC          
-#G.  Checking for updates availability on headset      
-#H.  Check the current DNS server
+#E.  Disable Private DNS
+#F.  Set up DNS Internet blocking        
+#G.  Checking for updates availability on PC           
+#I.  Checking for updates availability on headset       
+#J.  Get the status of the current DNS server and its address
 J.  Application management
 #A.  Run Quest Install Director utility
 #B.  Run applications on the headset
@@ -240,75 +256,124 @@ J.  Application management
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
+###6. Running applications
+###7. Applications with filtering (by application name)
 ##C.  Clear application cache and data
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
+###6. Running applications
+###7. Applications with filtering (by application name)
 ##D.  Disable applications
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
+###6. Running applications
+###7. Applications with filtering (by application name)
 ##E.  Enable applications
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
+###6. Running applications
+###7. Applications with filtering (by application name)
 ##F.  Start application
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
+###6. Running applications
+###7. Applications with filtering (by application name)
 ##G.  Stop application
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
-##I.  Apps status view
+###6. Running applications
+###7. Applications with filtering (by application name)
+##I.  Restart app
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
-##J.  View running apps
-##K.  Save List of Installed Applications to File
+###6. Running applications
+###7. Applications with filtering (by application name)
+##J.  Apps status view
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
 ###4. Disabled applications
 ###5. Enabled applications
-###6. Applications with filtering (by application name)
+###6. Running applications
+###7. Applications with filtering (by application name)
+##K.  View running apps
+##L.  Save List of Installed Applications to File
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Running applications
+###7. Applications with filtering (by application name)
 ##H.  Help
-#V.  VPN clients and Oculus driver installation
+#V.  VPN clients for Android
 ##A.  = Ultrasurf
-##B.  = Winscribe
+##B.  = Windscribe
 ##C.  = OpenVPN Connect
-##D.  = OutlineVPN
-##E.  = AdGuard VPN
-##F.  = Shadowsocks
-##G.  = Psiphon VPN
-##H.  = Proton VPN
-##I.  = Free VPN Planet
-##J.  = ByeByeDPI
-##K.  = v2rayNG VPN
-##Q.  = Amnesia  [Android]
-##R.  = Amnesia  [PC]
-##P.  Install Meta drivers on PC
-##PP.  Install new Meta drivers on PC
-##PD.  Download new Meta drivers
+##D.  = OutlineVPN                     
+##E.  = AdGuard VPN                    
+##F.  = Shadowsocks                    
+##G.  = Psiphon VPN                    
+##H.  = Proton VPN                     
+##I.  = Free VPN Planet                
+##J.  = ByeByeDPI                      
+##K.  = v2rayNG VPN                    
+##L.  = v2rayTun VPN                   
+##N.  = Wireguard                      
+##O.  = Kakadu VPN
+##P.  = Happ Proxy                     
+##Q.  = Samsung MAX
+##R.  = Amnesia                        
+##S.  = X-vpn                          
+##T.  = Mullvad VPN
+##U.  = Hidemyname VPN
+##V.  = VPNLY
+##W.  = SurfShark
+##Y.  = Additional materials
+###B.   VPN Gate
+###C.   Download VPN Gate Client   [ 200 public VPN servers ]
+###D.   190 VPN services
+###F.   Free key for VPN servers Outline, Vless, Trojan
+#W.  VPN clients for PC
+##A.  = Windscribe                             
+##B.  = OutlineVPN                             
+##C.  = AdGuard VPN                            
+##D.  = Shadowsocks                            
+##E.  = Psiphon VPN                            
+##F.  = Free VPN Planet                        
+##G.  = v2rayTun VPN                           
+##I.  = Wireguard                              
+##J.  = Kakadu VPN
+##K.  = Happ Proxy                             
+##L.  = Amnesia                                
+##O.  = X-vpn                                  
+##P.  = Mullvad VPN
+##Q.  = IVPN
+##R.  = Hidemyname VPN
+##S.  = VPNLY                                  
+##T.  = ClearVPN                               
+##U.  = SurfShark
+##Y.  = Additional materials
+###B.   VPN Gate
+###D.   190 VPN services
 #S.  Media applications installation
 ##A.  = Skybox VR Video Player
 ##B.  = Moon VR Video Player
@@ -351,6 +416,9 @@ J.  Application management
 ##N.  = APPID
 #T.  ADB tools installation
 ##A.  = Embed the ADB package into the system and also remove all this junk from it
+###A.  Embed ADB and utility package into the system
+###B.  Embed only ADB into the system
+###C.  Remove ADB and utility package from the system
 ##B.  = Bugjaeger Premium
 ##C.  = Termux
 ##D.  = Oculus Wireless ADB
@@ -358,6 +426,25 @@ J.  Application management
 ##F.  = ADB GUI Tool
 ##G.  = Script Manager
 ##H.  = Meta Quest Developer Hub
+#O.  Cleanup of unnecessary applications
+##A.  Disable unnecessary applications
+##B.  Uninstall unnecessary applications
+##E.  Export app lists to files from the registry
+##I.  Import app lists from files into the registry (adding entries to the registry)
+##J.  Import app lists from files into the registry (clearing registry entries)
+##G.  Delete lists from the registry
+##K.  Open registry branch HKCU\SOFTWARE\Quas\
+##T.  Create text files with application lists
+##PU.  Select and add applications to the uninstall list
+##PD.  Select and add applications to the disable list
+##H.  Help and addition information
+#X.  Install Meta Quest drivers
+##A.  Install version 1.71  (Old Oculus drivers)
+##B.  Install version 1.72  (New Reality Labs drivers)
+##C.  Install version 1.77  (Reworked Reality Labs drivers)
+##F.  Download version 1.71
+##G.  Download version 1.72
+##I.  Download version 1.77
 K.  Setting CPU/GPU levels
 #C. Set CPU level
 ##C.  Check current level
@@ -414,6 +501,8 @@ M.  Oculus Link/Airlink management
 #H.  Calculate dynmaic bitrate
 #I.  Reset Oculus Debug Tools to default
 #J.  Download and run Meta Quest Link Oculus software installer
+#K.  Fix error Meta Link connection
+#L.  Find and display errors in Meta Link installation logs
 N.  Creating shortcuts for copying files and installing applications
 #A. Files to Quest in OBB
 #B. Files to Quest in Data
@@ -422,73 +511,80 @@ N.  Creating shortcuts for copying files and installing applications
 #E. Files to Quest in the root Sdcard
 #G. Install APK+OBB
 #I. Install via INSTALL.TXT
+#J. Restore .ab archive
 #V. Install all shortcuts together
 #X. Remove installed shortcuts and files
 #Y. Remove installed shortcuts and files manually
 P.  Adjusting date, time, and timezone on the headset
 #C.  Correct date and time
 #T.  Correct timezone
-Q.  Backup and restore
-#A.  Selective Backup                     
+Q.  Backup and restoring menu 
+#A.  Backup Application Menu
+##A.  Selective Backup                     
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Running applications
+###7. Applications with filtering (by application name)
+##B.  Backup from List
+##C.  Backup All Applications
+##D.  Backup only Applications with data
+##H. Description of the functions of this menu
+#B.  Restore Applications Data Menu
+##A.  Standard recovery (thorough backup scan)
+##B.  Standard recovery (instant backup scan)
+##C.  Restore with manual backup directory selection
+##D.  Restore with manual backup file selection
+##E.  Restore application data (old algorithm)
+##H.  Description of the functions of this menu
+#C.  Applications File Save Menu  
+##A.  Full apps backup (APK+OBB+DATA)
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Running applications
+###7. Applications with filtering (by application name)
+##B.  Save APK
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Running applications
+###7. Applications with filtering (by application name)
+##C.  Save APK+OBB
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Running applications
+###7. Applications with filtering (by application name)
+##D.  Data copying
+###1. All applications
+###2. System applications
+###3. Unofficial applications
+###4. Disabled applications
+###5. Enabled applications
+###6. Running applications
+###7. Applications with filtering (by application name)
+#F.  Create applications list
 ##1. All applications
 ##2. System applications
 ##3. Unofficial applications
 ##4. Disabled applications
 ##5. Enabled applications
-##6. Applications with filtering (by application name)
-#B.  Backup from List                     
-#C.  Backup All Applications              
-#D.  Restore Application Data             
-#E.  Create applications list
-##1. All applications
-##2. System applications
-##3. Unofficial applications
-##4. Disabled applications
-##5. Enabled applications
-##6. Applications with filtering (by application name)
-#F.  Extract data from a backup file
-#G.  Full apps backup (APK+OBB+DATA)
-##1. All applications
-##2. System applications
-##3. Unofficial applications
-##4. Disabled applications
-##5. Enabled applications
-##6. Applications with filtering (by application name)
-#I.  Save APK
-##1. All applications
-##2. System applications
-##3. Unofficial applications
-##4. Disabled applications
-##5. Enabled applications
-##6. Applications with filtering (by application name)
-#J.  Save APK+OBB
-##1. All applications
-##2. System applications
-##3. Unofficial applications
-##4. Disabled applications
-##5. Enabled applications
-##6. Applications with filtering (by application name)
-#K.  Data copying
-##1. All applications
-##2. System applications
-##3. Unofficial applications
-##4. Disabled applications
-##5. Enabled applications
-##6. Applications with filtering (by application name)
-#L.  Export the list of applications to a text file
-##1. All applications
-##2. System applications
-##3. Unofficial applications
-##4. Disabled applications
-##5. Enabled applications
-##6. Applications with filtering (by application name)
-#N.  Remove the restriction on access to save files
-##1. All applications
-##2. System applications
-##3. Unofficial applications
-##4. Disabled applications
-##5. Enabled applications
-##6. Applications with filtering (by application name)
+##6. Running applications
+##7. Applications with filtering (by application name)
+#G.  Extract data from a backup file
+#I.  Remove the restriction on access to save files
+#J.  Set a permanent backup directory
+#K.  Enable the proximity sensor
+#l.  Copying or moving the selected archives into a separate subfolder
 #H. Help on Backup and Restore Functions
 #R. Help on Transferring Saves
 R.  Stream video casting to PC
@@ -502,13 +598,17 @@ R.  Stream video casting to PC
 ##S.  Save settings to profile file
 ##W.  Save the scrcpy command line with selected parameters to a file
 ##Enter.  Start transmission
-#L.  Load settings from profile file
-#I.  Load settings from integrated profiles
+##L.  Load settings from profile file
+##I.  Load settings from integrated profiles
 ##C.  Cable transmission
 ##R.  Repeat settings selection or load from profile file
 ##S.  Save settings to profile file
 ##W.  Save the scrcpy command line with selected parameters to a file
 ##Enter.  Start transmission
+#F.  Install the casting application
+##A.  Install the Casting streaming application
+##B.  Uninstall the Casting streaming application
+##C.  Copy screenshots and video shots from the headset to the PC
 S.  Search
 H.  List of advanced commands and parameters
 W.  Contact the author

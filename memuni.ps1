@@ -1,14 +1,31 @@
 <#
-
 .SYNOPSIS
     Universal memory utility for Android via adb.
 Created by Varset&ChatGPT
 
-.DESCRIPTION
+
     Supports three modes:
       -MemMon    : Continuous memory monitoring with CSV output and optional console display.
       -MemInfo   : Top-N memory-consuming processes.
       -MemUsage  : Quick summary of Total, Free, and Used RAM.
+
+
+.PARAMETER MemUsage
+    Показывает текущее использование памяти (Total, Free, Used).
+
+.PARAMETER MemInfo
+    Отображает список приложений и занимаемую ими память.
+    Поддерживает параметры -Top, -Sys, -Usr.
+
+.PARAMETER MemMon
+    Запускает мониторинг памяти с интервалом.
+    Параметры: -CsvFile, -Interval, -Count, -Console, -Top.
+
+.NOTES
+    adb берётся из переменной окружения %myfiles%.
+    В BAT файле это должно выглядеть так:
+        set myfiles=D:\Quest\_Cmd
+        powershell -ExecutionPolicy Bypass -File memuni.ps1 -MemInfo
 
 .PARAMETER MemMon
     Switch to run live memory monitoring mode.
@@ -39,6 +56,7 @@ Created by Varset&ChatGPT
 
 .PARAMETER Usr
     Show only user apps (MemInfo only).
+
 #>
 
 param(
@@ -58,6 +76,13 @@ param(
 if ($Sys -and $Usr) { Write-Error "Cannot use -Sys and -Usr together"; exit 1 }
 if ($Interval -lt 1 -or $Interval -gt 1800) { Write-Error "Interval must be 1-1800 seconds"; exit 1 }
 
+# --- adb path ---
+if (-not $env:myfiles) {
+    Write-Error "Environment variable 'myfiles' is not set."
+    exit 1
+}
+$adb = Join-Path $env:myfiles "adb.exe"
+
 # --- Helper function for ESC break ---
 function Wait-WithEsc($seconds) {
     $end = (Get-Date).AddSeconds($seconds)
@@ -76,7 +101,7 @@ function Wait-WithEsc($seconds) {
 
 # --- Load package paths cache ---
 $pkgPaths = @{}
-$allPackages = adb shell pm list packages -f | ForEach-Object { ($_ -replace 'package:', '').Trim() }
+$allPackages = & $adb shell pm list packages -f | ForEach-Object { ($_ -replace 'package:', '').Trim() }
 foreach ($line in $allPackages) {
     if ($line -match '^(.*)=([^\s]+)$') {
         $path = $matches[1]; $pkg = $matches[2]
@@ -90,13 +115,13 @@ foreach ($line in $allPackages) {
 # --- MemUsage Mode -------------
 # ------------------------------
 if ($MemUsage) {
-    $meminfoLines = adb shell dumpsys meminfo
+    $meminfoLines = & $adb shell dumpsys meminfo
 
     function Parse-Ram($pattern) {
         $line = $meminfoLines | Select-String $pattern | Select-Object -First 1
         if ($line -match '([\d,]+)\s*[Kk]\b') {
             $kb = ($matches[1] -replace ',', '') -as [double]
-            return [math]::Round($kb / 1048576.0, 3).ToString([System.Globalization.CultureInfo]::InvariantCulture)
+            return [math]::Round($kb / 1000000.0, 3).ToString([System.Globalization.CultureInfo]::InvariantCulture)
         }
         return 0
     }
@@ -112,7 +137,7 @@ if ($MemUsage) {
 # --- MemInfo Mode --------------
 # ------------------------------
 if ($MemInfo) {
-    $lines = adb shell dumpsys meminfo
+    $lines = & $adb shell dumpsys meminfo
     $start = $false
     $results = @()
 
@@ -122,7 +147,7 @@ if ($MemInfo) {
             if ($line -match '^\s*([\d,]+)K:\s+([^\s]+)') {
                 $memKB = ($matches[1] -replace ',', '') -as [double]
                 $pkg   = $matches[2]
-                $memMB = [math]::Round($memKB / 1024, 2)
+                $memMB = [math]::Round($memKB / 1000, 2)
                 $tagValue = if ($pkgPaths.ContainsKey($pkg)) { $pkgPaths[$pkg] } else { "[SYS]" }
 
                 $results += [PSCustomObject]@{
@@ -134,20 +159,13 @@ if ($MemInfo) {
         }
     }
 
-#    $results = $results | Sort-Object MemMB -Descending
-#    if ($Top -gt 0) { $results = $results | Select-Object -First $Top }
+    # Фильтр сначала
+    if ($Sys) { $results = $results | Where-Object { $_.Tag -eq "[SYS]" } }
+    elseif ($Usr) { $results = $results | Where-Object { $_.Tag -eq "[USR]" } }
 
-#    if ($Sys) { $results = $results | Where-Object { $_.Tag -eq "[SYS]" } }
-#    elseif ($Usr) { $results = $results | Where-Object { $_.Tag -eq "[USR]" } }
-
-# Фильтр сначала
-if ($Sys) { $results = $results | Where-Object { $_.Tag -eq "[SYS]" } }
-elseif ($Usr) { $results = $results | Where-Object { $_.Tag -eq "[USR]" } }
-
-# Сортировка и топ-N после фильтра
-$results = $results | Sort-Object MemMB -Descending
-if ($Top -gt 0) { $results = $results | Select-Object -First $Top }
-
+    # Сортировка и топ-N после фильтра
+    $results = $results | Sort-Object MemMB -Descending
+    if ($Top -gt 0) { $results = $results | Select-Object -First $Top }
 
     foreach ($r in $results) {
         $pkgPadded = $r.Package.PadRight(50)
@@ -184,7 +202,7 @@ if ($MemMon) {
     while ($Count -eq 0 -or $counted -lt $Count) {
         $snapTime = Get-Date -Format "HH:mm:ss"
 
-        $lines = adb shell dumpsys meminfo
+        $lines = & $adb shell dumpsys meminfo
         $start = $false
         $results = @{}
 
@@ -194,7 +212,7 @@ if ($MemMon) {
                 if ($line -match '^\s*([\d,]+)K:\s+([^\s]+)') {
                     $memKB = ($matches[1] -replace ',', '') -as [double]
                     $pkg   = $matches[2]
-                    $memMB = [math]::Round($memKB / 1024, 2)
+                    $memMB = [math]::Round($memKB / 1000, 2)
                     $tagValue = if ($pkgPaths.ContainsKey($pkg)) { $pkgPaths[$pkg] } else { "[SYS]" }
                     $results[$pkg] = @{ Mem = $memMB; Tag = $tagValue }
                 } elseif ($line -eq '') { break }

@@ -44,7 +44,13 @@ function Send-FileToKoofr([string]$filePath, [string]$remoteName = $null, [switc
             $remoteName = "$name`_$stamp$ext"
         }
 
-        $url = 'https://app.koofr.net/content/receivers/621866d7-2b0a-4b5f-98c0-f1cdc87e8434/files/put'
+#$url = 'https://app.koofr.net/content/receivers/621866d7-2b0a-4b5f-98c0-f1cdc87e8434/files/put'
+
+#QuasUpload
+#$url = 'https://app.koofr.net/content/receivers/1574cf54-aaeb-403f-8bcf-a1a9498e5e62/files/put'
+
+#QuasUpload\Feedbacks
+$url = 'https://app.koofr.net/content/receivers/dc753b2c-2e85-4847-ab5e-fa3953b2037e/files/put'
         $client  = New-Object System.Net.Http.HttpClient
         $content = New-Object System.Net.Http.MultipartFormDataContent
 
