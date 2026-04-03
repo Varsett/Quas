@@ -1,479 +1,623 @@
+## **Quas - QUest ADB Scripts**
 
-## Quas - QUest ADB Scripts
-#### Utility - a collection of the most commonly used commands and actions for the headset. It's like a "multitool" for beginners and beyond. No need to search for and learn adb commands, parameters, and so on.
-#### Just select the desired action from the list.
+#### **Utility - a collection of the most commonly used commands and actions for the headset. It's like a "multitool" for beginners and      beyond. No need to search for and learn adb commands, parameters, and so on.**
+#### **Just select the desired action from the list.**
 
-![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/quas510me.jpg)
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q610maineng.jpg)
 
 ## **Description of Operation and Functional Capabilities of the Program**
 
 ### **Description of Operation:**
-The **Quas** program is designed, in particular, to assist in solving issues with Meta Quest headsets, as well as to simplify the use of many standard commands and actions, both documented and undocumented. Essentially, it is a multi-tool, a Swiss army knife for enthusiasts and owners of Quest headsets.
 
-The program is written in cmd with some script insertions from other languages: JS, VSH, VBS, etc. It is packaged into an exe file using Quick Batch File Compiler. It includes additional tools: devcon, 7z, adb, aapt, etc.
+**The Quas** program is designed to help solve problems with Meta Quest headsets, as well as to simplify the use of many standard commands and actions, both documented and not so much. In fact, it is a multitool, a Swiss army knife for enthusiasts and owners of Quest headsets.
 
-The principle of working with the program is very simple: you choose a menu item and then follow either the prompts or the next item. Many options include detailed instructions and explanations.
+The program is written in cmd with some inserts of scripts from other languages: JS, VSH, VBS, PS, as well as with many separate PowerShell scripts, in particular for displaying graphical windows.  
+Packed in an exe file using Quick Batch File Compiler. It contains additional tools: fastboot, scrcpy, devcon, 7z, adb, aapt, etc. A full list of content can be found on [Github](https://github.com/Varsett/Quas).
 
-The program does not need to be installed; you simply run the `quas.v.X.X.X.exe` file, wait a couple of seconds, and you're ready to use it. You can also use some launch keys (see built-in help, **section H**). Each time **Quas** is launched, it displays a table with the most important data on the Main screen. The list of additional commands and parameters is at the end of this instruction.
+The program does not need to be installed, just unpack the downloaded archive with applications for working with **WinRAR, 7z** or other archives, run `quas.v.X.X.X.exe` for the selected language, wait a few seconds and you can use it. You can also use some startup keys and parameters (see the built-in help, **point H**, or the list of additional commands at the end of this description). At each launch**, Quas** displays a table with the most important data on the Main Screen. 
 
-The information table, in addition to the main data, contains color coding for the most important parameters:
-* **Date in the headset:** The correct time will be highlighted in green, incorrect — in red.
-* **Fill level:** If the headset is filled 90% or more, the value will be red; 50% or more, yellow; below that — green.
-* **Connection:** By cable — green, by Wi-Fi — dark yellow, dual connection — red.
-* **TEMP variable:** Standard — green, non-standard — yellow.
-* **Battery charge level:** Below 15% — red, below 50% — yellow, anything above — green.
-* **Launch privileges:** As administrator — green, as user — yellow.
-* **Update status:** Enabled — green, disabled — yellow.
-* **Charging status:** Charging — dark green, Full — green, Discharging — dark yellow, no charging — red.
+The principle of working with the program is very simple: select a menu item and then follow either the prompts or select the next item. Many options contain detailed instructions and explanations.
 
-All colors are chosen based on the following logic:
-* **Green**: normal and optimal status
-* **Dark yellow**: may require attention in certain cases
-* **Yellow**: something to pay attention to
-* **Red**: must pay attention
+In addition to the main data, the information table contains color markings for the most important parameters:
 
-The program has built-in color coding (only for Win 10 and above) and letter markings indicating the mode or status of the headset.
-It is displayed in the upper left corner of the program and is convenient to use with the parameter **b** (**Bypass Info Table key**) when the information table is hidden to speed up the program launch.
+- **Date in the headset**: The correct time will be highlighted **in green**, and the wrong **time will be highlighted in red**.
+- **Filling**: If the headset **is 90**% or higher full, the value will be **red**,**50**% or higher **yellow**. Below that, it's **green**.
+- **Connection**: Cable -**green**, Wi-Fi- **dark yellow**, dual connection- **red**.
+- **TEMP variable**: Standard - **green**, non - standard - **yellow**.
+- **Battery level**: Below **15**% - **red**, below **50**% - **yellow**, all that is higher - **green**.
+- **Launch with permissions**: On behalf of the admin - **green**, on behalf of the user - **yellow**.
+- **Update status**: Enabled - **green**, disabled - **yellow**.
+- **Headset charge status**: Charging - **dark green**, Full - **green**, Discharge - **Dark yellow**, No charge - **Red**.
+- **Controller charge**:Below **15**% - **red**, below **50**% - **yellow**, all that is higher - **green**.
+- **Drivers**: Current – **green**, Outdated – **yellow**.
+- **Bluetooth**: On – **Green**, Off - **Yellow**.
 
-The program also has three more registry keys, their description can be read below, in the section **Additional options** – **Managing registry keys for launching the application**.
+All colors are selected according to the following logic:
 
-**List of markings and their meanings:**
+**Green**: regular and optimal status
+**Dark yellow**: you may need to pay attention in one case or another
+**Yellow**: something to look out for
+**Red**: be sure to pay attention
 
-  * **NA** - **Not Available** - Device not connected
-  * **DR** - **No Driver**s - headset connected, but drivers not installed
-  * **CB** - **Cable** - Device connected via cable
-  * **DB** - **Doublc connection** - Double connection, via cable and Wi-Fi
-  * **WL** - **Wireless connection** - connected via Wi-Fi
-  * **DV** - **No Developer** - Developer mode not enabled
-  * **AU** - **No Authentication** - headset not authenticated
-  * **SL** - **Sideload mode** - headset in Sideloader mode
-  * **BL** - **Bootloader mode** - headset in Bootloader mode
-  * **NS** - **Not Support** - Connected device is not a headset.
-  * **NO** - **No checks** – All initial checks are disabled.  
-  * **EM**  - **EDL Mode** – The device is in Emergency Download Mode.  
-  * **OF** - **Power Off** – The device is turned off.  
+The program has built-in color (only for Win 10 and higher) and letter markings indicating the mode or status of the headset.  
+It is displayed in the upper-left corner of the program and it is convenient to use it with parameter **b** (**Bypass Info Table key**) when the information table is hidden to speed up the program launch.
 
-***Selection of applications for backup, disabling, launching, etc. is carried out through the graphical interface:***
-![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5ch.jpg)
-
-### **Functional Capabilities:**
-
-* **Update Management:** Allows turning updates on and off on the headset itself or Meta Quest Link programs.
-
-* **Sending Text String to the Headset:** Sends any text from the PC to the input field on the headset, such as a browser address, VPN client key, or login/password into their respective fields.
-
-* **Reboot into Various Modes and Current Mode Information:** Reboot modes include:
-  * Resuming headset boot from Bootloader mode
-  * Standard/reboot from the headset
-  * Reboot headset to Bootloader mode
-  * Reboot headset to Recovery mode
-  * Reboot headset to Fastboot mode
-  * Reboot headset to Sideload mode (regular variant)
-  * Reboot headset to Sideload mode (alternative variant)
-  * Identify current headset mode
-  * Power off the headset
-
-* Features in the mode **Bootloader**:
-  	- **Collection and display of information**, which includes:
-   		- Status and condition of loading slots
-   		- Headset revision number
-   		- Headset model
-   		- Current version of the headset firmware
-   		- Headset environment version
-   		- Battery charge level
-  	- **Control all headset sensors**:
-	   	- Disabling sensors
-    	- Enabling sensors
-      
-***Illustration collected information***
-![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5blen.jpg)
-
-
-* **Taking Headset Display Screenshots:** Creates headset screenshots in three different variations:
-  * Single
-  * Series (one screenshot per key press)
-  * Automatic, at specified intervals. Interval between screenshots can be set manually.
-
-  Screenshots are copied to the Desktop in the Screenshots directory.
-
-* **Copying Headset Screenshots to PC:** Copies all existing headset screenshots and videoshots to the Quest Media folder on the Desktop. If this folder doesn't exist, it will be created, with subdirectories for Screenshots and Videoshots.
-
-* **Connecting the Headset via "ADB over Wi-Fi":** In this mode, ADB commands or the same Quas functions can be used without using a USB cable. This option works until reboot or as long as the `adb.exe` process is running on the PC.
-
-* **Reconnecting the Headset via "ADB over Cable":** Switches to using ADB over a cable, for example, for copying large files.
-
-* **Connecting the Headset as a Removable Disk:** In some cases, the PC does not connect the headset as a removable disk. This option allows you to forcibly resolve this issue.
-
-* **System Information:**
-  * **Working with dumpsys:** Saving a full dump or list of services, searching through the dump.
-  * **Retrieve all headset properties (getprop)**
-  * **Show the headset's IP address:** Displays the current IP address of the headset.
-  * **Save a list of installed packages (package names):** Saved in both short and full formats to text files.
-  * **Show the headset's serial number:** Displays the headset's serial number.
-  * **Headset system settings (setting list system/global/security):** Saves to file.
-  * **Working with Logcat:** Saving Logcat for a selected time or size range, manually adjustable. Logcat search.
-  * **Battery information:** Displays remaining, lost, studied, and standard capacity. Shows battery degradation percentage, status, and health. Additional data saved to file.
-  * **Extracting a bug report:** Extracts a bug report.
-  * **View CPU-intensive applications:** Lists the most resource-intensive applications.
-  * **List of files/directories and their sizes:** Lists available files and directories with their sizes.
-  * **Show used storage space:** Displays total memory capacity, used, free, and percentage filled.
-  * **USB device connection and disconnection log:** Saves Windows events for USB cable connection and disconnection with event date and time. Convenient for diagnosing headset disconnection issues from the PC.
-  * **Save all system information in bulk to a single archive:** Saves complete headset information - system, global, security, bugreport, dumpsys, etc.
-
-* **Testing, Diagnostics, and Troubleshooting Various Issues:**
-  * **Restarting the headset shell:** Helps resolve a dark screen issue.
-  * **Restarting the headset shell (alternate option):** Alternative option to the previous point.
-  * **Wi-Fi management on the headset:** Enables and disables Wi-Fi on the headset.
-  * **Forcing start of the headset's home environment:** Allows exiting to the Home (Virtual) environment in case of a dark screen. Equivalent to the Home button on Android devices.
-  * **Security system management:** Temporarily disables and enables the security system.
-  * **Proximity sensor management:** Disables and enables the proximity sensor.
-  * **Fix volume button reboot issue (remove KeyMapper):** Removes the `KeyMapper` program, which cannot be removed conventionally.
-  * **Restarting ADB server on PC:** Restarts the ADB server on the PC.
-  * **Embedding ADB and utility package into the system, and removing all this junk from it:** Copies several files into the system directory for ADB operation without specifying the current directory.
-  * **Executing Fastboot commands:** Includes commands such as:
-    * **Fastboot devices:** Check device availability
-    * **Fastboot oem device-info:** Collect and save device OEM information
-    * **Fastboot getvar all:** Collect and save all possible device information
-    * **Fastboot continue:** Continue headset boot
-    * **Fastboot reboot-fastboot:** Reboot headset into Fastboot mode
-    * **Fastboot reboot-recovery:** Reboot headset into Recovery mode
-    * **Fastboot reboot-bootloader:** Reboot headset into Bootloader mode
-  * **Restore screen timeout settings:** Restores default settings.
-  * **Creating a shared resource on PC:** Automates the process of creating a shared directory on the computer for access from the headset to this network resource. Connection to this resource is made like a regular network disk (see Google).
-  * **Checking USB cable functionality:** USB cable test from PC to headset with test results output for each pass and data transfer speed.
-  * **Camera functionality check (Quest 2 only):** Displays temperature of four external headset cameras. Any malfunction can be identified by temperature difference.
-  * **Wi-Fi Speed Measurement Between Headset and PC:**
-The built-in **Wireless Connect Tester** utility is launched to test Wi-Fi speed. It displays the IP addresses of the headset and PC, allowing users to manually specify the PC's IP address if detected incorrectly. Users can set the interval between checks (in milliseconds) and the test duration (in seconds). 
-Two tests are conducted: **direct** and **reverse**. The results are saved in text and CSV files, which can be used to create charts in Excel for result visualization. After the tests are completed, a **preliminary simplified analysis** is performed. This analysis can be run at any time if CSV files are available via a separate option in the test menu.  
-A simplified **Auto Test** mode is also available, allowing the test to be performed with preset values at the click of a button.  Available Options:
-	* **Wi-Fi Auto Test with Default Values** – Quick test with pre-configured parameters:  
-			* Interval between checks: **100 ms**  
-			* Test duration for both tests:  **180 seconds**  
-			* Number of threads: **1**  
-	* **Standard Wi-Fi Speed Test with Custom Values** – Users can manually set the test duration, interval, and number of threads.  
-	* **Analyze Test Results** – Detects **speed drops** based on CSV files.  
-	* **Build a Histogram or Calculate a Trend Based on Test Results** – Generates a visual **chart** based on test data.
-	* **Additional Explanations on Tests, Errors, Logs, etc:** Help on test options and parameters
-	* **Firewall Handling for "Bad file descriptor" Error:**
-			* Disable the firewall  
-			* Enable the firewall
-			* Open port 5201 in the firewall (add rule)  
-			* Close port 5201 in the firewall (remove rule)  
-			* Check if port 5201 is open or closed (Windows 10 and later only)  
-	* **Connection Service Check:** Quick connectivity check, test duration: **5 seconds**. For connection verification only! **NOT for performance testing!**  
-	* **Start Iperf Server as a Separate Process:** Launches the Iperf server and waits for a client connection.
-	* **Set C:\Temp as the Iperf Server Launch Directory:** This option is for cases where the **Iperf server starts but fails to establish a connection due to insufficient access rights.**  Setting **C:\Temp as the launch directory** may resolve the issue.  After enabling this option, the server will no longer start from the **user’s temporary directory** but from **C:\Temp** instead. The **current launch directory** will be displayed on the testing page.  
-
-***Test Results Illustration***
-![](https://github.com/Varsett/pictures/blob/2e928fb2c0b7b87aab704e8d8369639a825f52a8/wftenglittle.jpg)
-
-***Histogram Illustration of Test Results***
-![](https://github.com/Varsett/pictures/blob/2e928fb2c0b7b87aab704e8d8369639a825f52a8/histo.jpg)
-
-***Grafic Diagram Illustration of Test Results***
-![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5diag.jpg).
-
-  * **Network Connection Statistics (netstat):** Displays comprehensive network connection statistics for the headset. This option helps determine whether the headset has access to Meta servers for firmware updates and App Library. (see Google - netstat)
+There are three more registry keys in the program. You can read their description below in the section **Additional options**\-**Manage registry keys for launching the app.** 
   
-  * **Display Diagnostics:** Testing displays, two variants.
-  
-  * **Computer Parameter Management: GPU Scheduling, Hardware Acceleration, and Game Mode Management.** Four options are available for each parameter:
-    * Show status
-    * Enable
-    * Disable
-    * Delete parameter from registry
-  
-  * **Checking Headset Boot Status:** Determines which stage of boot the headset is in or stuck on.
-  
-  * **Load Monitoring and Component Diagnostics:** Monitors the status and temperature of headset components:
-     * Fan status
-     * Fan speed
-     * Fan warnings
-     * CPU temperature
-     * GPU temperature
-     * Battery temperature
-     * Case temperature
-     * USB Cached temperature
-     * USB Cached conn temperature
-     * USB HAL temperature
-     * USB HAL conn temperature
-     * CPU workload level
-     * GPU workload level
-     * CPU load
-  
-  Monitoring interval can be set manually. Monitoring results can also be saved to a CSV file.
+List of indicators and what they mean:
 
-* **Additional Options:**
-    * **Change Username:** Changes the global username in native headset games.
-    * **Show Hidden Settings:** Displays hidden advanced settings on the headset.
-    * **Fix OpenSSL SHA Crash Bug:** On Intel processors starting from the 10th generation, there's a bug causing many games on certain Unreal Engine versions to crash or not start. This option fixes the bug.
-    * **Restart Oculus Service on PC:** Sometimes it's necessary to restart all services, and to avoid navigating through Windows settings, you can use this option.
-    * **Open VPN Settings on the headset:** Opens VPN settings on the headset for easier access.
-    * **Set High Priority to Oculus Services:** Sets high priority to Oculus services.
-    * **Comprehensive Installation of Oculus Wireless ADB Application:** Manages the headset via ADB directly within the headset, without using a computer.
-    * **Registry Key Management for Application Launch:** Saving application startup keys to the registry. Three keys are available for use:  
-		* **Bypass Info Table** – Skips the initial check and hides the information table at startup. This significantly reduces the program launch time by approximately **1.5 seconds**.  
-		* **Bypass Wireless Warning** – Suppresses the warning message that appears when the headset is connected via **Wi-Fi**.  
-		* **Bypass Initial Status** – Disables all initial checks.  
-These keys can be added to or removed from the registry at any time.  
-    * **Managing Social Platform Applications:**  Enables or disables social platform applications such as **People, Horizon Worlds**, etc.  
-    * **Resolving Issues with FBA Files:**  Automatically removes **FBA files** from the root of the system disk, from the Temp directory in the user profile, and from \Windows\System32. You can also restrict access to the **RemoteDesktopCompanion.exe** file for the Meta Link program or set a zero-size stub for this file.  
-    * **Screen Control & Proximity Sensor Management:**  Turn on the screen and **disable the proximity sensor**  
-    * **Deleting Old Quas Files and Folders:**  Removes outdated **Quas-related files and directories** 
-    * **Open the hosts file in Notepad:** opens the hosts file in Notepad. **Administrator rights are required to save changes**.
+  * NA - **Not Available** - Device not connected
+  * DR - **No Driver**s - headset connected, but drivers not installed
+  * CB - **Cable** - Device connected via cable
+  * DB - **Doublc connection** - Double connection, via cable and Wi-Fi
+  * WL - **Wireless connection** - connected via Wi-Fi
+  * DV - **No Developer** - Developer mode not enabled
+  * AU - **No Authentication** - headset not authenticated
+  * SL - **Sideload mode** - headset in Sideloader mode
+  * BL - **Bootloader mode** - headset in Bootloader mode
+  * NS - **Not Support** - Connected device is not a headset.
+  * NO - **No checks** – All initial checks are disabled.  
+  * EM  - **EDL Mode** – The device is in Emergency Download Mode.  
+  * OF - **Power Off** – The device is turned off.  
+  * DG - **Diag mode** - The headset in Diagnostic mode
+  * MT - **MTP mode** - The headset is in MTP mode and may not be available via ADB
 
-* **Headset Firmware and Firmware Information:**
-    * **Fully Automatic Firmware Update:** Headset firmware update is fully automated; just place the firmware file next to the program with any name. Developer mode required.
-    * **Button-Based Automatic Firmware Update:** Semi-automatic firmware update option. Same as the previous item, but before updating, boot the headset into Bootloader mode. Developer mode not required.
-    * **Extract Firmware Download Link and Download Firmware Files:** Extracts links (if multiple) to firmware from the headset, saves them to a text file, and downloads the firmware files.
-    * **Extract Firmware Download Link Only:** Extracts links (if multiple) to firmware from the headset and saves them to a text file.
-    * **Download Different Firmware Versions:** Opens a browser with the website address where you can get the latest firmware versions.
-    * **Show Current Headset Firmware Version and Check for Updates:** Displays the current headset firmware version and if this version is not up-to-date, a message will be displayed.
-    * **Firmware Analyzer:** Checks the firmware file for correctness and compatibility. Provides all information about the firmware file: full or incremental, in the latter case, it will report the firmware version for which the increment is intended. Shows environment version, firmware version, headset model, checks file integrity, and compatibility with the current headset firmware version. As a result, it provides a summary whether this file will be flashed. For a complete analysis, the computer must have internet access. Otherwise, information will be limited to the firmware environment version.
-    * **Download Compatibility Tables for Environment and Firmware Versions:**  Downloads a table for the selected **headset model**, displaying the **environment version number** and the corresponding **firmware version number**.  
-    * **Additional explanations about incremental firmware updates:**
+***_Selection of applications for backup, disabling, launching, etc. is carried out through the graphical interface_***
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q5ch.jpg)
 
-  ***Analyzer result for full firmware file:***
-![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/fafulleng.jpg)  
+**Functionality and list of options:**
 
-  ***Analyzer result for incremental firmware file:***
-![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/fainceng.jpg)  
+- **Direct access to Android settings:** Allows you to directly access hidden Android settings:
+    - General Settings
+    - System
+    - For developers
+    - VPN Settings
+    - Adding a Wi-Fi network
+    - Date and time
+    - Memory usage by apps
+    - Bluetooth
+    - Data saving mode
+    - Save battery power
+    - Location
+    - All apps 1
+    - All apps 2
+    - Notifications
+    - Confidentiality
+    - Protection and privacy
+    - Storage
+- **Sending a line of text to the headset:** Sending any text from the PC to the input field on the headset, such as the address in the browser, the key to the NVR client or login / password in the appropriate fields.
+- **Installing Meta Quest drivers:** Automatically install and download drivers of various versions.
+- **Reloading to different modes and information about the current one:** Reboot modes:
+    - Resuming headset loading from Bootloader mode
+    - Standard / standard headset reset.
+    - Reloading the headset to Bootloader mode
+        - In Bootloader mode, the following functions are available:
+            - **Collecting and displaying information** that includes:
+                - Status and status of loading slots
+                - Headset revision number
+                - Headset Model
+                - Current headset firmware version
+                - Version of the headset environment
+                - Battery level
+            - **Control of all headset sensors:**
+                - Disabling sensors
+                - Enabling sensors
+    - Reloading the headset to Recovery mode
+    - Reloading the headset to Fastboot mode
+    - Reloading the headset to Sideload mode (normal option)
+    - Reloading the headset to Sideload mode (alternative option)
+    - Determine the current headset mode
+    - Turn off your headset
 
-* **Download/Update Progress, DNS Setup:**
-  * **View Download Progress:** Displays download progress status in percentage. Progress can be updated manually or automatically with a set interval.
-  * **Write DNS Servers to headset:** Sequentially sets DNS servers from a list of 80 DNS servers into the headset. Each subsequent server is set after pressing a button.
-  * **Automatic DNS Selection for Update Downloads:** Automatically cycles through DNS servers. The headset automatically sets DNS servers from the list and checks the availability of update addresses after each server.
-  * **Reset headset DNS Settings to Default:** Resets settings to default.
-  * **Set DNS Internet Placeholder:** Sets DNS server address to 127.0.0.1.
-  * **Check Update Availability on PC:** Automatically checks the Meta update server address on the PC and displays a message indicating availability.
-  * **Check Update Availability on headset:** Automatically checks the Meta update server address on the headset and displays a message indicating availability.
-  * **Get Current DNS Server:**  Displays the address of the DNS server currently set on the headset.
+**_Illustration of displaying information about the headset in Bootloader mode_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q5blen.jpg)
 
-* **App Operations:**
-  * **Launch Quest Install Director Utility:** Comprehensive utility for installing applications individually or in batches - by files and directories.
-  * **Run Applications on headset:** Launch certain applications like VPN clients, etc.
-  * **Find Command to Launch Application on headset:** Provides application name, package name, and command to launch the application from PC to headset via ADB.
-  * **Display and Save List of Installed Applications:** Displays a list of installed applications with names or only with package names. Application list categories include:
-    * All
-    * System
-    * Third-party
-    * Disabled
-    * Enabled
-    * Filtered by name or part of the application name.
-  * **Manage Selected Applications:** Manage applications from the selected category. Displays a list of selected applications and allows the following actions:
-	* Uninstall applications
-  	* Soft uninstall of applications (cache and data are not deleted)
-  	* Clear application cache and data
-  	* Disable applications
-  	* Enable applications
-  	* Start application
-  	* Stop application
-  	* Apps status view
-  	* View running apps
-    * View Application Status:
-      * Installed/Not Installed
-      * Hidden/Visible
-      * Paused/Running
-      * Launchable/Not Launchable
-      * Enabled/Disabled
-      * Instant/Non-instant
-      * Virtual/Physical
-  * **Install VPN Clients and Oculus Drivers:** Installs VPN clients and Oculus drivers on PC for Win7 and Win10. Driver version selection is automatic depending on the operating system. VPN clients available for installation include:
-    * Ultrasurf
-    * Winscribe
-    * OpenVPN Connect
-    * OutlineVPN
-    * AdGuard VPN
-    * Shadowsocks
-    * Psiphon VPN
-    * Proton VPN
-    * Free VPN Planet
-    * ByeDPI
-    * v2rayNG VPN
-  * **Install Media Applications:** Installs media players, online cinemas, and torrent clients for online viewing. Installed applications include:
-    * Skybox VR Video Player
-    * Moon VR Video Player
-    * 4XVR Video Player
-    * Pigasus VR Video Player
-    * HereSphere VR Video Player
-    * VLC Media Player
-    * TorServe
-    * Filmix UHD (Online Cinema)
-    * Cinema HD (Online Cinema)
-  * **Install Utility Applications:** Installs utility applications such as file managers, browsers, launchers, etc. Installed applications in this category include:
-    * VRComm mobile client: Mobile client for access to vrcpmm.ru website
-    * LightningLauncher: Launcher with wide capabilities for the headset
-    * File Manager+: Convenient file manager for the headset
-    * XR File Manager: headset file manager, replaces built-in Files with ability to write to Android/data directory
-    * Bugjaeger Premium: Service program for managing headset via ADB from within the headset
-    * Termux: Service program for Linux console commands
-    * Oculus Wireless ADB: Program for accessing headset via wireless ADB
-    * RCX: Program for downloading unofficial content directly on the headset
-    * TotalCommander: Dual-panel file manager for the headset
-    * SH Script Runner: Creating and running scripts on the headset
-    * ADB GUI Tool: ADB work on the headset
-    * OVR Metrics Tool: Diagnostic program for headset from Meta
-    * Internet Speed Meter: Internet speed testing on the headset
-    * Script Manager: Creating and running scripts on the headset
-    * Passthrough cam tool: Enabling camera pass-through mode even when Guardian is disabled
-    * App Cloner: Application cloning program
-    * Apk Tool M: Application cloning program
-    * MPatcher: Application cloning program
-    * Private Quest (only for smartphones): Service program for headset access and enabling Developer Mode
-    * Steam Link: Steam client for wireless headset connection to PC
-    * Auto Start Apps Manager: Managing application auto-start
-  * **Installing Game Applications**: A category of tools for downloading games or apps, or for installing unofficial games and applications.  
-List of applications:
-    * qLoader
-    * Rookie Sideloader  
-    * ARMGDDN Browser  
-    * VRP Essentials  
-    * Steam Auto Crack  
-    * Steam Auto Crack GUI  
-    * Quest Patcher for Beat Saber  
-    * APPID  
-* **CPU/GPU Level Installation:** Install seven CPU/GPU performance levels and display current levels.
-* **Setting Native Refresh Rate and Display Resolution:** Allows setting increased display resolutions compared to default to enhance image clarity. It also allows changing the refresh rate. List of installed resolutions:
-  * 845 x 768
-  * 1127 x 1024
-  * 1408 x 1280
-  * 1584 x 1440 (Default for Meta Quest 2)
-  * 1690 x 1536
-  * 1760 x 1680 (Default for Meta Quest 3)
-  * 1920 x 1800 (Default for Meta Quest Pro)
-  * 1971 x 1792
-  * 2253 x 2048
-  * 2816 x 2560
-  * 3097 x 2816
-  * 3380 x 3072
-  * 3661 x 3328 [EXP] (Only for Meta Quest 3/Pro)
-  * 3942 x 3584 [EXP] (Only for Meta Quest 3/Pro)
-  * 4224 x 3840 [EXP] (Only for Meta Quest 3/Pro)
-  * 4506 x 4096 [EXP] (Only for Meta Quest 3/Pro)
+Information about the firmware, etc., will allow you to find out the current status of the headset. Disabling sensors can help you load into the environment if the headset doesn't load because the sensors or their services fail. If disconnection fails, a message about this will be displayed.
 
-* **Managing Oculus Link/Airlink:** Options in this category include:
-  * Start Oculus Link
-  * Disconnect Oculus Link
-  * Enable AirLink
-  * Disable AirLink
-  * Fix Airlink Connection Issue: Deletes Airlink pairing parameters on PC
-  * Backup Airlink Connection Parameters: Archives registry parameters and Airlink pairing files on PC
-  * Clean up leftovers from computer after removing Oculus software: Deletes all debris left on PC after removing Meta Quest Link
-  * Calculate Dynamic Bitrate Values for Oculus Debug Tool: Computes Dynamic Offset and Dynamic Max values for desired maximum and minimum dynamic bitrates
-  * Reset Oculus Debug Tools settings to default
-  * Download and Run Meta Quest Link Oculus Software Installer: Downloads OculusSetup.exe and runs it.
+- **Creating screenshots of the headset display**: Create screenshots of your headset in three different ways:
+    - Single
+    - A series of screenshots (each screenshot at the touch of a key)
+    - Automatic, with a certain interval. You can set the interval between screenshots manually.
 
-* **Creating Shortcuts for File Copying and Application Installation:** Launches the Quest Context Tool program, which allows you to set "Send" shortcuts in the context menu for copying and installing applications. After that, simply right-click on a file, and install it on the headset or copy it to any of the headset directories - Movies, Download, OBB, or root. It can install applications using the install.txt script, which is usually located in the game directory, and standard installation - apk and obb. Batch installation is also available - if you right-click on a directory with games, all of them will be installed sequentially. During installation or copying, a detailed and understandable installation or copying log is displayed. After installation, it displays a list of installed and not installed applications. Names of the not installed will be saved to file. Built-in usage guide. Options in this menu:
-  * **Files on Quest in OBB:** copies files and directories to Android/obb
-  * **Files on Quest in Data:** copies files and directories to Android/data
-  * **Files on Quest in Movies:** copies files and directories to Sdcard/Movies
-  * **Files on Quest in Download:** copies files and directories to Sdcard/Download
-  * **Files on Quest in Sdcard root:** copies files and directories to Sdcard
-  * **Install APK+OBB:** Installs applications. Batch installation is supported, multiple applications can be selected.
-  * **Installation via INSTALL.TXT:** Installation according to the install.txt script in the application directory
-  * **Install all shortcuts at once:** Installs all shortcuts at once
-  * **Program description (help)**
-  * **Delete installed shortcuts and files:** Deletes all installed shortcuts
-  * **Manually delete installed shortcuts and files:** If the shortcuts for some reason were not deleted, you can do it manually
+Screenshots are copied to the Desktop of the PC in the Screenshots directory
 
-***Illustration of working with contextual shortcuts***
-![](https://github.com/Varsett/pictures/blob/e22c5754679914db131a1e47b4996df3827b580e/sendtoeng.jpg)  
+- **Copying screenshots from your headset to your PC:** Copy all available screenshots and video shots on your PC to the Quest Media folder on your Desktop. If there is no such folder, it will be created. Two directories will also be created inside it: Screenshots and Videoshots.
+- **Connecting the "ADB headset via Wi-Fi":** In this mode, you can use ADB commands or the same Quas without using a USB cable. This option only works until a reboot or while the process is running on the PC**adb.exe**. It contains two types of connection: via the standard port 5555 and via the TLS encryption protocol.
+- **Reconnecting the "ADB via cable" headset:** Switch to using ADB via cable, for example, for copying large files.
+- **Connecting your headset as a removable disk:** In some cases, the PC does not connect the headset as a removable disk. This option allows you to force this issue to be resolved.
+- **Manage headset and PC services:** Enable and disable various services, as well as view their status. List of managed services in this menu:
+    - Managing updates
+    - Wi-Fi control on the headset
+    - Managing the Security system
+    - Proximity sensor control
+    - Bluetooth control on the headset
+    - Headset-mounted Flight Mode control
+    - Managing ADB Wi-Fi over TLS (Debugging over Wi-Fi)
+    - Managing Device Storage Monitor
+    - Parameter Management GPU Scheduling, Hardware Acceleration, and Game Mode
+    - Restarting the ADB server on the PC
+- **System Information:**
+    - **Working with dumpsys:** saving a full dump or a list of services, searching through the dump.
+    - **Memory analyzer.** Options for checking and diagnosing the memory used by applications. Contains the following items:
+        - **Total memory usage.** Shows summary data about the state of the device's RAM: the total amount of RAM, how much is used, and how much is free. **This option is useful for quick assessment of system load.**
+        - **Memory usage by application.** Displays a list of processes and applications with the amount of memory they use. It is possible to display only system processes or only user processes, and display a list of the most "heavy" applications. **It is used to search for "voracious" processes and analyze who exactly loads the device.**
+***_Memory Info Illustration Collection_***
+![](https://raw.githubusercontent.com/Varsett/pictures/main/memanalizeng.jpg)
+        - **Real-time memory monitoring (with parameter requests)**
+        - **Real-time memory monitoring (with auto parameters).** Options monitor memory usage by applications. At the same time, they write data to a CSV file for further analysis, display memory dynamics in the console, and allow you to set the update interval and the number of snapshots. They are used to track memory changes and search for leaks.
+    - **Save all headset properties to a file (getprop)**
+    - **Show the headset's IP address:** Display the current IP address of the headset
+    - **Save a list of installed packages (packages names):** It is saved in short and full format to text files.
+    - **Show the headset's serial number:** Shows the headset's serial number
+    - **Headset system settings (setting list system/global/security):** Saves each section to a text file
+    - **Working with Logcat:** Logcat saving for the selected time or volume can be set manually. There is a built-in Logcat search during log collection.
+    - **Battery Information:** Displays the remaining, lost, studied, estimated and regular capacity. Shows the battery degradation rate, status, and health. Saves additional data to a file.
+    - **List of running Apps:** Displays and saves lists of running user or system apps
+    - **Extracting a bugreport:** Retrieves a bug report
+    - **Viewing CPU-intensive applications:** Displays a list of the most resource-intensive applications
+    - **List of files/directories and their volume:** Displays a list of available files and directories with their size.
+    - **Show the amount of space used:** Shows the total amount of memory, as well as how much is occupied, free, and the percentage of full volume.
+    - **Log of USB device connections and disconnections:** Saves Windows events for disconnecting and connecting the USB cable to a file with the date and time of events. Used to diagnose the problem of disconnecting the headset from the PC.
+    - **Controller Information:** Displays information about each controller: Firmware version, Battery Level, General Status, Position Tracking, IR Diode level.
+    - **Save all system information in bulk to a single archive:** Save complete information about the headset - system, global, security, bugreport, dumpsys, etc.
+- **Diagnostic information**. It is designed to collect and send information about the headset and PC to help you analyze problems. Includes the following items:
+    - **Summary of diagnostic information.** Brief but most important information.
+    - **Information about all your computer's devices.** All information about the hardware that is displayed in the Device Manager. The following data is collected:
+        - Name of the device,
+        - Hidden or not,
+        - Drivers installed or not,
+        - VID, PID, 
+        - Manufacturer,
+        - Hardware IDs
+    - **Information about non-installed computer devices.** Information only about devices that don't have drivers installed
+    - **Information only about Quest headsets.**
+    - **Collect and send comprehensive information.** Collects and sends summary information about the headset as well.
+    - **Send any file for diagnostics.** Easy and convenient sending of any file for analysis.
+- **Testing, diagnostics, and solving various problems:**
+    - **Restarts the headset shell and virtual environment.** Contains the following items:
+        - **Restarting the headset shell:** Allows you to solve the problem of a dark screen
+        - **Restart the headset shell (second option):** Alternative version of the previous paragraph
+        - **Force start of the headset's home environment:** Allows you to enter your Home (Virtual) environment in case of a dark screen. Analogous to the Home button on Android devices
+    - **Interactive test of connecting a headset to a PC:** Allows you to track in real time when connecting and disconnecting the cable from the PC to the headset.
+    - **Fix the reboot issue using the volume buttons (remove KeyMapper):** Deletes the KeyMapper program KeyMapper, which is not normally deleted.
+    - **Embed ADB and the utility package in the system, and remove all this junk from it:** Copies multiple files to the system directory for working with adb without having to specify the path to the adb, fastboot, etc. files.
+    - **Executing Fastboot commands.** It includes the following commands:
+        - **Fastboot devices**: Checking device availability
+        - **Fastboot oem device-info**: Collect and save OEM device information
+        - **Fastboot getvar all (bootloader)**: Collect and save all possible device information in **Bootloader mode**
+        - **Fastboot getvar all (fastboot)**: Collect and save all possible device information in **Fastboot mode**
+        - **Fastboot continue**: Continue loading the headset
+        - **Fastboot reboot-fastboot**: Reset the headset to Fastboot mode
+        - **Fastboot reboot-recovery**: Reload the headset in mode Recovery
+        - **Fastboot reboot-bootloader**: Restart your headset in режимBootloader mode
+    - **Restore the screen timeout settings screen timeout):** Restores the default settings
+    - **Revoke headset authorization on the current PC (delete ADB keys)**
+    - **Cable health check:** Test of checking the USB cable from PC to headset with the output of test results for each pass and the data transfer rate on this cable. The number of passes can be set manually.
+    - **Checking whether the cameras are working properly:** Searches the headset logs for errors in accessing cameras and outputs the numbers of such cameras.
+    - **Measuring Wi-Fi speed between your headset and PC:** ЗапускаетсяThe built-in utility starts **Wireless Connect Tester**\-testing the speed of Wi-Fi. Displays the IP addresses of the headset and PC, and allows you to specify your own IP address for the PC if it is incorrect. You can specify the interval between checks (in milliseconds) and the duration of the check (in seconds). There are two tests - direct and reverse. The results are saved to a text and csvfile, which you can use to build a chart in Excel to visualize the results.  After completing the tests, a preliminary simplified analysis of the results is performed. You can perform the analysis at any time if you have csv files.A separate option in the testing menu is responsible for this. There is also a simplified version of testing - Autotest, in which the values are set by default and the test is performed, in fact, with one button. 
+    - Contains the following options:
+        - **Wi-Fi speed auto-test with default values:**  quick start of testing with predefined parameters: the interval between tests is 100 ms, the duration of each of both tests is 180 seconds, and 1 thread. A more detailed description and instructions for all items in this menu can be found in the program.
+        - **Wi-Fi speed multitest with values from the file.** Allows you to run multiple tests in a row with different interval, stream, duration, and bitrate values for each test.
+        - **Standard Wi-Fi speed test with a choice of values:** you can set the duration, interval, and number of streams manually.
+        - **Analyze the test results:** analysis of drawdowns based on csv files.
+        - **Build a histogram or calculate a trend based on test results:** Creating a chart.
+            - Histogram of reverse validation results (console)
+            - Histogram of direct verification results (console)
+***_Histogram Illustration of Test Results_***
+![](https://raw.githubusercontent.com/Varsett/pictures/main/histo.jpg)
+        - Graphical diagram of the results of a direct reverse check with a "comb". A chart with a bitrate percentage graph on top of the main bitrate chart. Allows you to visualize drawdown levels more clearly.
+        - Graphical diagram of the results of a direct reverse check without a "comb"
+***_Grafic Diagram Illustration of Test Results_***
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q5diag.jpg)
+        - Calculating the trend based on the results of reverse verification. All test results are analyzed and a tendency to increase or decrease the bitrate during the test is determined.   This is probably complete nonsense, but this way there is a chance to determine a decrease in the router's bandwidth, for example, if it overheats.
+        - Calculation of the trend based on the results of direct verification. Same thing, only for direct verification.
+            - How to build a chart in Google Spreadsheets (instructions). Instructions on how to quickly and easily build a chart in Google Spreadsheets based on test results.
+        - **Additional explanations about tests, errors, logs, etc.:** help with testing options and parameters
+        - **Working with the firewall with the Bad file descriptor error:**
+            - Disable the firewall
+            - Enable Firewall
+            - Open port 5201 in the firewall (add a rule)
+            - Close port 5201 in the firewall (delete the rule)
+            - Check if port 5201 is closed or open (Windows 10 and higher only)
+        - **Service connection verification:** quick connection check, test duration 5 seconds. **Only for checking the connection! NOT FOR TESTING!**
+        - **Start the iperf server as a separate process:** the iperf server starts and waits for the client to connect
+        - **Temporarily install C:\Temp iperf server startup directory iperf:** This option is used when the iperf server starts, but the connection is not established due to the lack of necessary access rights.   In this case, you can try installing C:\Temp the iperf server startup directory iperf.   After that, the server will start not from the user's temporary directory, as usual, but from C:\Temp. The current startup directory will be displayed on the testing page.
+        - **Write a folder C:\Temp go to the registry and make it permanent** the same as in the previous paragraph, only the iperf startup directory is not reset after exiting the program.
+        - **Assign a tag (prefix) to the archive name for test results** allows you to assign an identifier that will be written to the name of the test archive and saved in the screenshot with the tests.
 
-* **Adjusting headset Date, Time, and Timezone:** Checks the correctness of the set time, date, and timezone, and if necessary, sets the correct values.
+***_Test Results Illustration_***
+![](https://raw.githubusercontent.com/Varsett/pictures/main/WiFiTestEng.jpg)
+    - **Network Connection statistics (netstat):** Displays full statistics of your headset's network connections. This option lets you know if the headset has access to the Meta servers for firmware updates and the App Library. (see Google-netstat)
+    - **Display Diagnostics:** Testing displays, two options.
+    - **Checking the headset loading status:** Determines which stage of loading the headset is located or is stuck.
+    - **Load monitoring and component diagnostics:** Monitoring the condition and temperature of headset components:
+        - Fan Status
+        - PWM fan status
+        - Fan speed
+        - Fan Warnings
+        - CPU Temperature
+        - GPU Temperature
+        - Battery temperature
+        - Case temperature
+        - USB Cached Temperature
+        - USB Cached conn temperature
+        - USB HAL Temperature
+        - USB temperature HAL conn
+        - CPU level
+        - GPU performance level
+        - CPU Usage
 
-* **App Data Backup and Restor:** Saves and restore application data. Includes the following options:
-  - **Selective Backup**
-  - **Backup from List**
-  - **Backup All Applications**
-  - **Restore Application Data**
-  - **Save List of Installed Applications to File**
-  - **Extract data from a backup file**
-  - **Full apps backup (APK+OBB+DATA)**
-  - **Save APK**
-  - **Save APK+OBB**
-  - **Data copying**
-  - **Help on Backup and Restore Functions**
-  - **Help on Transferring Saves**
-    
-This section is intended for backing up and restoring application data that includes game saves, settings, and other app-specific information. Here you can back up this data for each app and later restore it, for example, after resetting the headset to factory settings. This way, your saves and settings won't be lost. If the data files do not contain saves or are located elsewhere, the backup will not include them.
+The monitoring interval can be set manually. You can also save the monitoring results to a csv file
 
-The backup uses Android's built-in mechanism. Only data is archived — neither APK files nor OBB files are backed up. To back up APK and OBB files, use items **J-E-3**. If an app has no data, a backup will not be created. The list of such apps will be saved to a file called `ZeroSizeBackups.txt`.
+- - **Information about memory usage**
+    - **Real-time CPU monitoring.**
+- **Additional options:**
+    - **Changing the user name:** changes the global user name in native headset games
+    - **Show hidden settings:** Display hidden advanced settings in the headset.
+    - **Fixing the OpenSSL SHA Crash Bug:** On Intel processors, starting from the 10th generation, there is a bug that causes many games on some versions Unreal of the Unreal Engine to crash or not start. This option fixes the bug.
+    - **Restarting the Oculus service on PC:** Sometimes you need to restart all services, and in order not to run through the wilds of Windows settings, you can use this option.
+    - **Open the VPN settings in your headset VPN:** For more convenient access to the NVG setup
+    - **Set high priority for Oculus services:** Setting an increased priority for Oculus services.
+    - **Comprehensive installation of the Oculus Wireless ADB app:** Manage your headset via ADB directly inside the headset itself, without using a PC.
+    - **Managing registry keys for running the app:** Saving program launch keys to the registry. There are five keys available for use:
+        - **Bypass Info Table**. It allows you to skip the initial check when starting the program and also not display the information table, which will save a significant amount of time for starting the program - about a second and a half.
+        - **Bypass Wireless Warning.** Removes the warning window that the headset is connected via Wi-Fi.
+        - **Bypass Initial Status.** Disables all initial checks.
+        - **iPerf Temp Dir**. Sets**the C folder:\\Temp** directory for running **iPerf**on a permanent basis. After that**, the iPerf server**will start only from this directory.
+        - **Backups Dir.** Sets the folder for backups.
 
-The "**Selective Backup**" option opens a list of installed unofficial applications. Choose an app, and its backup will begin. Afterward, you can select the next one, and so on. You can make the selection using the cursor or mouse. All backups are stored in the "**Backups**" folder with a subfolder for the current date and time. Archive names match the names of the apps.
+Keys can be deleted from the registry or re-registered at any time.
 
-The "**Backup from List**" option allows selective backup of specific applications. To do this, create a text file named `ListForBackups.txt` and write the package names of the apps into it, one per line, for example:  
+- - **Manage Social Platform apps.** Disable and enable social platform apps (People, Horizon World, etc.)
+    - **Solving the problem with fba files:** fba files are deleted from the root of the system disk, from the Temp directory in the user profile, and from \\Windows\\System32. You can also restrict access to the file **RemoteDesktopCompanion.exe** for **the Meta Link program**, or set a zero-size stub for this file.
+    - **Enable the screen and disable the proximity sensor**
+    - **Deleting old Quas files and Directories Quas:** clears all temporary directories and Quas files
+    - **Open the hosts file in Notepad editor:** opens **the hosts file** in **Notepad. You need administrator rights to save your changes**.
+    - **Find out the pairing code for the mobile app.** Allows you (when the headset is connected) to automatically prompt a five-digit code for pairing the headset with the Meta Horizon mobile app
+    - **Creating a shared resource on a PC:** Allows you to automate the process of creating a shared directory on a PC, for access from the headset to this network resource. The connection to this resource is made as to a regular network drive (see Google)
+    - **Disabling and enabling driver signature verification** allows you to install the driver without a digital signature.
+    - **Deleting a graphic key** will help you clear the graphic key on your headset if it is forgotten or doesn't fit.
+- **Headset firmware and firmware information:**
+    - **Fully automatic firmware:** The headset firmware is fully automated, just put a firmware file with any name next to the program, select this mode and confirm the start of the firmware. Then the whole process will proceed automatically and will be accompanied by explanations for each operation. This option requires Developer Mode to work.
+    - **Push-button automatic firmware:** A semi-automatic version of the firmware. Everything is the same as in the previous paragraph, but before flashing, you should load the headset in Bootloader mode. Developer mode is not required.
+    - **Extract firmware link and download firmware files:** Extracts links (if there are several of them) to firmware from the headset, saves them to a text file, and downloads the firmware itself.
+    - **Only extract a link to the firmware from the headset:** Extracts links (if there are several of them) to the firmware from the headset and saves them to a text file.
+    - **Download different firmware versions:** A browser opens with the site address where you can get the latest firmware versions
+    - **Show the current headset firmware version and check if it's up to date:** Displays the current firmware version of the headset and displays a message if this version is not up-to-date.
+    - **Firmware Analyzer:** checking the firmware file for correctness and compatibility. Allows you to find out all the information about the firmware file: full or incremental. In the latter case, it will tell you the firmware version that the increment is intended for. Displays the environment version, firmware, and headset model, and checks the file for integrity and compatibility with the current headset firmware version. As a result, it gives a summary of whether this file will be flashed. Your computer must have internet access to complete the analysis. Otherwise, the information will be limited to the firmware version only.
+    - **Download tables of how environment versions correspond to headset firmware versions:** a table is downloaded for the selected headset model with the environment version number and the corresponding headset firmware version number.
+    - **Additional explanations about incremental firmware updates**
 
-    com.Armature.VR4
-    com.BlueBrainGames.TheHouseofDaVinciVR
-    com.fallen.manorquest
+**_Result of the Firmware Analyzer:_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q610anazieeng.jpg)
 
-Backups will be created only for the apps listed in `ListForBackups.txt`. You can create multiple lists (**there is no limit on the number of lists**) for different sets of apps or backup conditions. To distinguish between them, add a number at the beginning of the filename, for example: `34ListForBackups.txt`. After selecting the "**Backup from List**" option, the program will ask you to enter the list number. Enter the number from the beginning of the filename — in this case, **34** — and only the apps in that list will be backed up. Or just press **Enter** to use the default file: `ListForBackups.txt`.
-To speed up the backup process, you can use the **qq** command from the main menu, where `X` is the list number. In this case, the command would be **qq34**, and the backup process will start immediately.
-You can also use the **qq34** command as a parameter when launching **Quas** from the command line, for example: 
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q610analizeokeng.jpg)
 
-`quas_v4.3.1.exe qq34`
-    
-This is useful for automatic archiving on a regular basis. Allows you to create a task for periodic archiving of headset application data.
-**Again, note that this is just an example — the digits after qq can be anything**.
+**_Firmware update check result:_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q610newfweng.jpg)
 
-The "**Backup All Applications**" option is for quickly creating backups of all unofficial applications. After selecting and confirming this option, the program will start backing up the data of all apps installed on the headset. This is useful when migrating from one headset to another.
+**_Automatic Firmware Menu:_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q610fweng.jpg)
 
-The "**Restore Application Data**" option restores data from previously created backups. Place the backup archives you want to restore into the **Quas** program folder and select the "**Restore Application Data**" option. After selection, the program will display a list of found backups. It will also save a list of the apps to be restored in a text file called `ArchivesList.txt`. You can review this file to confirm what will be restored.
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q610fwmenuokeng.jpg)
 
-The "**Save List of Installed Applications to File**" option lets you accurately determine which app corresponds to which package name. A list of third-party apps installed on the headset, along with their names and package names, will be displayed on the screen and saved to the file `AppsInstalled-third-party.txt`. This is useful when creating the `ListForBackups.txt file`.
+- **Download/update progress, DNS installation:** Includes the following options:
+    - **View the download progress:** Displays the progress status as a percentage. The status can be updated either manually or automatically, with a specified check interval.
+    - **Recording DNS servers in the headset:** Alternately registers DNS servers from the list in the headset. **There are 97**DNS servers in the list, and each new one is registered after clicking the button.
+    - **Automatic DNS selection for downloading updates:** Automatic search of DNS servers. The program registers DNS servers from the list in the headset, checking the availability of update addresses after each server, and if the update address is unavailable, automatically registers the next DNS server from the list and so on until the address becomes available or the list ends.
+    - **Resetting the headset's DNS settings to default:** Sets the default DNS server settings.
+    - **Completely disable the frequent DNS server**
+    - **Install a DNS Internet stub:** Sets the DNS server address to 127.0.0.1
+    - **Checking the availability of updates on your PC:** Automatic checks the address of Meta server updates on the PC and displays a message about the result, whether it is available or not.
+    - **Checking the availability of updates on your headset:** Automatic checks the address of Meta server updates on the headset and displays a message about the result, whether it is available or not.
+    - **Find out the status of the current DNS server and its address:** displays the address of the DNS server currently registered on the headset.
+- **Working with apps:**
+    - **Launch the Quest Install Director app installation utility Director:** comprehensive utility for installing applications both singly and in batches-files and directories
+    - **Launch apps on your headset:** launching some apps: Customers ' NVR, etc.
+    - **Learn the command to launch the app on your headset:** allows you to find out the name of the application, the name of its package, and the command to run these applications from the PC on the headset via adb.
+    - **Display and save the list of installed apps:** displays a list of installed applications, with names or only with package names. App List Categories:
+        - All
+        - System requirements
+        - Unofficial ones
+        - Disabled users
+        - Enabled ones
+        - Filtered by app name or part of the app name
+    - **Manage selected apps:** Manage apps from the selected category. Displays a list of selected apps and allows you to do the following:
+        - **Deleting an app from your headset**
+        - **Soft delete**(without clearing data or cache)
+        - **Clearing data and Cache**
+        - **Disabling it**
+        - **Enabling it**
+        - **Launch**
+        - **Stop**
+        - **Restart**
+        - **View the app status:**
+            - Installed/Not installed
+            - Hidden content/Visible content
+            - Suspended/Working condition
+            - What is being launched/Not triggered
+            - Enabled/Disabled
+            - Instant message/Not instantaneous
+            - Virtual/Physical Location
+        - **View applications running on your headset**. To view applications that are currently running, select this option, and in the next menu, select option**1.**Then, in the list of apps, click **Select All** and **Confirm**. After that, a list of running applications will be generated and displayed on the screen (as well as in a file).
+        - **Save a list of selected apps to a file**
+    - **Installing VPN clients for Android:** installs Oculus clients andPC driversfor Win7 and Win10 on the NVR headset. The driver version is selected automatically, depending on the operating system. List of NVG clients to install:
+        - Ultrasurf
+        - Windscribe
+        - OpenVPN Connect
+        - OutlineVPN
+        - AdGuard VPN
+        - Shadowsocks
+        - Psiphon VPN
+        - Proton VPN
+        - Free VPN Planet
+        - ByeByeDPI
+        - v2rayNG VPN
+        - v2rayTun VPN
+        - Wireguard
+        - Kakadu VPN
+        - Happ Proxy
+        - Samsung MAX
+        - Amnesia
+        - X-vpn
+        - Mullvad VPN
+        - Hidemyname VPN
+        - VPNLY
+        - SurfShark
+    - **Installing VPN clients for PC**
+        - Windscribe
+        - OutlineVPN
+        - AdGuard VPN
+        - Shadowsocks
+        - Psiphon VPN
+        - Free VPN Planet
+        - v2rayTun VPN
+        - Wireguard
+        - Kakadu VPN
+        - Happ Proxy
+        - Amnesia
+        - X-vpn
+        - Mullvad VPN
+        - IVPN
+        - Hidemyname VPN
+        - VPNLY
+        - ClearVPN
+        - SurfSharl
+    - **Installing media apps:** Install mediaplayers, online movie theaters, and a torrent client for online viewing. List of installed apps:
+        - Skybox VR Video Player
+        - Moon VR Video Player
+        - 4XVR Video Player
+        - Pigasus VR Video Player
+        - HereSphere VR Video Player
+        - VLC Media Player
+        - TorServe
+        - Filmix UHD (Online Cinema)
+        - Cinema HD (Online Cinema)
+        - Cast Reciever
+    - **Installing application applications:** installs several application programs: file managers, browser, launchers, etc. List of installed apps in this category:
+        - VRComm mobile client: A mobile client for accessing the site [vrcomm.ru](http://vrcpmm.ru/)
+        - LightningLauncher: An app launcher with extensive features for the headset
+        - File Manager+: A convenient file manager for your headset
+        - XR File Manager: The headset's file manager, a replacement for the built-in Files, but with the ability to write to the Android/data directory
+        - Bugjaeger Premium: A service program for managing the headset via ADB from inside the headset.
+        - Termux: A service program for Linux console commands
+        - Oculus Wireless ADB: A program for accessing the headset via wireless ADB
+        - RCX: A program for downloading unofficial content directly on your headset.
+        - TotalCommander: A two-panel file manager for the headset
+        - SH Script Runner: Creating and running scripts on the headset
+        - ADB GUI Tool: Working with ADB on the headset
+        - OVR Metrics Tool: A headset diagnostic program from Meta
+        - Internet Speed Meter: Testing your headset's internet speed
+        - Script Manager: Creating and running scripts on the headset
+        - Passthrough cam tool: Program for enabling end-to-end camera mode even when the Security zone is disabled.
+        - App Cloner: A program for cloning applications
+        - Apk Tool M: A multifunctional program for working with applications: translating, recompiling, editing the name and title of the application, etc.
+        - MPatcher: A program for cloning applications
+        - Private Quest (only for smartphones): Service program for accessing the headset and enabling Developer Mode.
+        - Steam Link: A Steam client for connecting your headset wirelessly to your PC
+        - Auto Start Apps Manager: Manage application autostart
+        - XR Native File Manager: allows you to access the Android/data and Android/obb directories from the headset obb
+    - **Installing game apps:** A category of programs for downloading games or apps, or for setting unofficial status for games and apps. List of applications:
+        - qLoader
+        - Rookie Sideloader
+        - ARMGDDN Browser
+        - VRP Essentials
+        - YAAS
+        - Steam Auto Crack
+        - Steam Auto Crack GUI
+        - Quest Patcher for Beat Saber
+        - APPID
 
-The “**Full backup of applications (APK+OBB+DATA)** ” option extracts **APK, OBB, and DATA** files from the headset and copies them to the PC. The data is copied directly from the **Android/data** directory. If it is not possible to copy them “as is,” the program uses an alternative method of extracting and copying the data.
+Quick instructions on how to use each app are also available.
 
-The “**Save APK**” option extracts only APK files to the PC.
+- **Installing ADB Utilities** contains a list of utilities for working with ADB. Here is a list of them:
+    - Embed the ADB package in the system and also remove all this junk from it
+    - Bugjaeger Premium
+    - Termux
+    - Oculus Wireless ADB
+    - SH Script Runner
+    - ADB GUI Tool
+    - Script Manager
+    - Meta Quest Developer Hub
+- **Cleaning up unnecessary apps** makes it possible to clean the headset a little from various junk. Options in this menu:
+    - Disablingе unnecessary apps
+    - Removing unnecessary apps
+    - Export application lists to files from the registry
+    - Import application lists from files to the registry (with adding entries to the registry)
+    - Import application lists from files to the registry (with clearing registry entries)
+    - Deleting lists from the registry
+    - Open the HKCU\\SOFTWARE\\Quas\\registry branch
+    - Create text files with app lists
+    - Select and add to the list of apps to delete
+    - Select and add to the list of apps to disable
+- **Setting CPU/GPU/Refresh Rate/Resolution/frameSync**
+- **Oculus Link/Airlink Management:** List of options in this category:
+    - Launch Oculus Link
+    - Disable Oculus Link
+    - Enable AirLink
+    - Disable AirLink
+    - Fix the Airlink connection issue: Deletes the Airlink pairing settings on the PC
+    - Make a backup of Airlink connection parameters: An archive of registry settings and Airlink pairing files is created on the PC
+    - Clear leftovers from your PC after removing Oculus Software: Removes all trash left on your PC after removing Meta Quest Link
+    - Calculate Dynamic Bitrate values for Oculus Debug Tool: Calculates Dynamic Offset Dynamic Max values for the desired maximum and minimum dynamic bitrate
+    - Reset Oculus Debug Tools to default settings
+    - Download and run the Oculus Installer VIA Meta Quest Link: Downloadable OculusSetup.exe and it starts.
+    - Fix the Meta Link connection error
+    - Find and show errors in Meta Link installation logs
+- **Create shortcuts for copying files and installing apps:** Launches **the Quest Context Tool subroutine**, which allows you to set shortcuts for copying and installing applications in the Send context menu. After that, just right - click on the file and install it on the headset, or copy it to any of the headset's directories-Movies, Download, OBB, or root:
 
-The “**Save APK+OBB**” option extracts and copies APK and OBB files to the PC.
+***_Illustration of working with contextual shortcuts_***
+![](https://github.com/Varsett/pictures/blob/b72b3bde6b4e8ee01c735ad5339df3d88056475d/sendtoeng.jpg)
 
-The “**Copy data**” option extracts game data in the same way as in the case of a Full backup.
+**Quest Context Tool** can install applications using the script **install.txt**, which is usually located in the game directory, and the standard installation isapk and obb. Batch installation is also available . If you click on the games folder with the PCM, all of them will be installed in turn. When installing or copying,you will see a detailed and clear installation or copy log. When the installation is complete, it displays a list of installed and uninstalled applications. Saves the names of unknown files to a file. It contains a built-in user guide. Options in this menu:
 
-* **Streaming Video Transmission to PC:** Operates on the scrcpy program and includes five transmission modes from the headset to the PC - four pre-installed and one manual. The manual mode can be configured independently with seven parameters - Bitrate, FPS, recording to file, sound output, proximity sensor, and video codec. The subprogram can work with pre-installed profiles and includes six integrated profiles - minimum, light, balanced, demo, quality, maximum. Any of these profiles can be selected and immediately started with the transmission. There is also an option to create your own profiles - up to four. They are saved in a separate file and can be loaded as well as integrated ones. In manual mode, there is also an option to save the scrcpy launch string and edit it as needed. Built-in usage instructions.
+- - **Files on Quest in OBB:** copies files and directories to Android/obb
+    - **Files on Quest in Data:** copies files and directories to Android/data
+    - **Files on Quest in Movies:** copies files and directories to Sdcard/Movies
+    - **Files on Quest in Download:** copies files and directories to Sdcard/Download
+    - **Files on Quest in the Sdcard root:** copies files and directories to the Sdcard
+    - **Installing the APK+OBB:** Installs apps. Batch installation is supported, and you can select a folder with several applications that will be installed in turn.
+    - **Restore the archive .ab:** Restore files from a backup to your headset
+    - **Installing via INSTALL.TXT:** Installation according to the script install.txt in the folder with the app
+    - **Set all shortcuts at once:** Sets all shortcuts at once
+    - **Program Description (help)**
+    - **Delete installed shortcuts and Files:** Delete all installed shortcuts
+    - **Manually delete installed shortcuts and files:** If the shortcuts are not removed for some reason, you can do it manually
+- **Adjusting the date, time, and timezone in your headset:** the function checks whether the set time, date, and timezone are correct and sets the correct values if necessary.
+- **Backup and restore:** creates and restores app data, and saves apk and obb files. Contains sub-items:
+- **Application Archiving menu:**
+    - Data archiving by choice
+    - Archiving data by list
+    - Archiving data for all applications
+    - Archiving only apps with data
+    - Description of the functions of this menu
+- **Application Data Recovery Menu**
+    - Standard recovery (thorough scanning of backups)
+    - Standard recovery (instant scan of backups)
+    - Restore with manual backup directory selection
+    - Recovery with manual backup file selection
+    - Application data recovery (old algorithm)
+    - Description of the functions of this menu
+- **Save app Files menu**
+    - Save all app files (APK+OBB+DATA)
+    - Saving an APK
+    - Saving APK+OBB
+    - Saving data
+    - Description of the functions of this menu
+- **Show and create a list of apps**
+- **Extracting data from a backup file**
+- **Remove the ban on access to save files**
+- **Set a permanent folder for backups**
+- **Enable proximity sensor**
+- **Copy or move selected archives to a separate subdirectory**
 
-* **Advanced Commands and Parameters (Help):** Restart as user, restart as admin with UAC prompt, restart as admin without UAC prompt, accelerated Quas start - without table and checks, additional explanation about incremental firmware, enable downgrade installation, enable installation details display, enable installation log file recording, table of headset partitions and their sizes in bytes and gigabytes: Here are these Additional keys and commands:
+This section is used for archiving and restoring app data that stores game saves, settings, and other information about the app. Here you can back up this data for each app and then restore it, for example, after resetting your headset to factory settings. This way, your saves and settings won't get lost.   If the data files do not contain saves or they are located in a different location, the backup will not save them.
 
-**Command line parameters:**  
+- **Stream a video broadcast on your PC:** It runs on the scrcpy program scrcpy and contains five broadcast modes from the headset to the PC - four preset and one manual. Manual mode can be configured independently by seven parameters: Bitrate, FPS, file recording, audio output, proximity sensor, and video codec. The subroutine can work with preset profiles and contains six integrated profiles: minimal, light, balanced, demo, high - quality, and maximum. You can select any of these profiles and immediately start broadcasting with them. You can also set up your own profiles - up to four of them. They will be written to a separate file and can be loaded in the same way as integrated files. In addition, in manual mode, you can save the scrcpy startup string and edit it as you see fit. It contains built-in instructions for use.
 
-    h = This is a window (can be typed in the Main menu)  
-    u = Restart as a user  
-    c = Restart as an admin with UAC prompt  
-    a = Restart as admin without UAC prompt  
-    b = Quick start Quas: without table and checks  
-    v = Verbose: display full information about the script's operation  
-    qqX = Automatic application data backup using the list with number "X"  
+This also includes another program for broadcasting – **Casting**, which is a separate independent translation module extracted from the Meta Quest Developer Hub program. It broadcasts the image in full-format mode and has many settings – bitrate, resolution, etc. Includes the ability to record videos and create screenshots (images).
 
-**Hidden menu commands:**
-    
-    J > A > d = Enable installation with downgrade option  
-    J > A > v = Enable installation details display  
-    J > A > l = Enable installation log file recording  
-	J-E-dd  = Disable apps in the batch mode
-    J-E-gg  = Stop apps in the batch mode
-    449 = headset partition table and their size in bytes and gigabytes  
-    103 = headset partition table and their size in bytes and gigabytes  
-    77 = Connect to the headset via a random port (similar to F-G-D options)  
-     pt = Display Wi-Fi test results from the Diagnostics menu or Main menu  
-    qqX  = Quick backup by the list with number X  
-    s = Debug information  
-    st = Quas console
+- **List of advanced commands and parameters(Help):** Restart on behalf of the user, restart from the admin with a UAC request, restart from the admin without a UAC request, accelerated start of Quas- without a table and checks, additional explanation about incremental firmware, enable installation with the ability to downgrade, enable display of installation details, enable recording in the installation log file, headset partition table and their size in bytes and gigabytes: These Additional Keys and Commands are:
 
-* **Contact the Author:** Links to GitHub, VRcomm, program description link, and donate via browser or QR code.
-* **Open cmd console:** Opens the Windows command line console in a separate window.
-* **Open adb console:** Opens access console to the headset:
-   - Run any CLI commands from the GUI, for example **adb devices**
-   - Support for interactive commands (**cmd**, **powershell**, **fastboot**, **adb shell**, etc.) - they open in a separate window corresponding to their shell
-   - Support for batch execution (many commands at once)
-   - Context menu - copy, paste, select
-   - Launch for execution **interface button** or key **F5**
-   - Preservation **logos** results to file
-   - Coloring the results in the program window
-  
-  ***Illustration Command line GUI console:***
-  ![](https://github.com/Varsett/pictures/blob/1dea00d795ac6ce32a498573b43697cb6cb0abb6/q5guishell.jpg)  
-  
-* **Help with problem solving:** Opens websites in the browser where you can get help or read instructions for solving various problems
+**Command line Options:**  
+**h** = This window (can be typed in the Main Menu)  
+**u** = Restart as a user  
+**c** = Restart from admin with UAC request  
+**a** = Restart from admin without UAC request  
+**b** = Quick start of Quas: without tables and checks  
+**v** = Verbose: displays complete information about the script operation  
+**f** = Quas start with pre-closing of processes adb.exe  
+**qqX** = Automatic archiving of application data by the list with the number "X"  
+**d** = Collecting and sending diagnostic informatioт  
+
+**Hidden commands in the Main Menu:**  
+  **00** = Restart Quas (works in any menu)  
+  **G-FF** = Additional explanation about incremental firmware updates  
+  **J-A-d** = Enable installation with downgrade option  
+  **J-A-v** = Enable display of installation details  
+  **J-A-l** = Enable writing to the installation log file  
+  **J-E-dd** = Disabling apps in batch mode  
+**J-E-gg** = Stopping applications in batch mode  
+**449** = Headset partition table and its size in bytes and gigabytes  
+**103** = Headset partition table and its size in bytes and gigabytes  
+**77** = Connecting the headset via ADB-TLS (similar to points F-G-D)  
+**pt** = Display Wi-Fi test results from the Diagnostics menu or from the Main menu  
+**qqXX** = Quick backup from the list with the number XX  
+**s** = Debugging information  
+**st** = Quas Console Window  
+**adbe** = Quickly embed the ADB utility in your system  
+**adbd** = Quickly remove the ADB package from the system  
+**adbi** = Quickly embed a package of utilities and ADB in your system  
+
+- **Search by menu options.** You can search by the names of all options and menus in the Quas program. The program can search by part of a word, the search is case-insensitive. To save the full list of all options in a tree view to a file, simply press Enter in the input line.
+
+**_Illustration of search results_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/searchadbeng.jpg)
+
+- **Contact with the author:** links to Github, Viarcomm, link to the program description and donat via browser or QR code.
+- **Open ADB File Manager:** opens the File Manager to copy files from the headset to the PC and vice versa.
+
+**_ADB File Manager_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/Adbfm.jpg)
+
+- **Open the graphical console:** opens a command console window. Console illustration and features:
+
+**_Quas GUI Shell_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/QuasGuiShell.jpg)
+
+- - Run any CLI commands from the GUI, such as adb devices
+    - Support for interactive commands (cmd, powershell, fastboot, adb shell, etc.) - they open in a separate window corresponding to their shell
+    - Batch execution support (many commands at once)
+    - Context Menu-copy, paste, select
+    - Run for execution with the interface button or F5 key
+    - Saving the results log to a file
+    - Coloring results in the program window
+
+- Help with problem solving: opens sites in the browser where you can get help or read instructions on how to solve certain problems
+- The program has a **Diagnostic Mode**. Log in to it after renaming **quas..** in **dquas...**, that is, to have the letter d at the beginning of the file name**d**. List of options in this mode:
+    - Restart to normal mode
+    - Restart with removal of processes adb.exe
+    - Running with checks disabled and without ADB
+    - Embed ADB in the system
+    - Install Meta Drivers
+    - Collect and send diagnostic information
+    - Automatically free up space on your headset
+    - Running Quas in Debug mode
+
+**_Headset not found Illustration_**
+![](https://raw.githubusercontent.com/Varsett/pictures/main/q610notfoundeng.jpg)
+
+
+**FAQ for the Quas app:**
+
+**Q: My antivirus software claims that there is a Trojan or virus in the program. Why?**
+**A:** The program and additional utilities are packaged in a single package using **the Quick Batch File Compiler application**, which, unfortunately, is often used for packaging malicious applications. As a result, anti-virus programs that detect a familiar packer signature do not bother checking the contents and immediately mark the package as malicious. You can unpack the package **Quas** the usual**7zip archiver** and study its contents, or you can go to [**GitHub**](https://github.com/Varsett/Quas) and see the package composition and source code. Also, starting with**v3. 1. 0**, the package includes **Quas** included app **AndroidMdnsDiscover.exe** designed for detecting the headset over **the mDNS protocol** and displaying the headset's IP address and port. The same functionality is provided by the Python script, which you can view and download here: https://github.com/thedroidgeek/oculus-wireless-adb/tree/main/script. The packer of this program is also not liked by antivirus programs.
+
+**Q: What is the difference between connecting a headset via Wi-Fi from the main menu (item 7) and connecting a headset via port 5555, items F-G-C?**
+**A:** If we are talking about connecting to a PC, then there is no difference in this case. However, the second option can also be used to connect directly to the headset from the headset itself, using the same port 5555. You can control the headset via **ADB** from the inside using apps like **Termux** or **Bugjaeger**. For example, you can change the resolution, refresh rate, or CPU/GPU level in this way. Similarly, you can easily connect the headset to a PC wirelessly on the so-called random port, if the Quest Games Optimizer program is running and running on the headset **Quest Games Optimizer**.
+
+**Q: Why is the program written in cmd?**
+**A:** Because I do not know other languages, and I just needed a utility with a small set of ADB functions, so that I did not have to enter commands manually every time. I wrote it and decided to share it. But over time, the program has grown a little..
+
+**Q: I found an error, what should I do?**
+**A:** Write about it right here on the forum in the topic [Discussion of the Quas app](https://vrcomm.ru/topic/101-quest-adb-scripts-quas/) or directly from the program, **points W-F**\-**Leave a review or send a file**. I'll try to fix it for the next release.
+
+**B: Headset in Bootloader mode. I connect it with a cable to the PC, run Quas and it writes that the headset is not detected. The drivers are installed.**
+**A:** Install more recent versions of drivers, while the best ones are**1.72**. [You can download them in the Downloads section](https://vrcomm.ru/files/file/5-%D0%B4%D1%80%D0%B0%D0%B9%D0%B2%D0%B5%D1%80%D1%8B-%D0%B4%D0%BB%D1%8F-oculus-quest/) of this forum.
+
+**B: At startup, the following messages appear: _"mode"is not an internal or external command, executable program, or batch file, and"chcp" is not an internal or external command, executable program, or batch file._**
+**A:** Most likely, you are missing some mandatory elements of the system **PATH variable**, namely: **C:\\Windows, C:\\Windows\\System32**.
+To fix this error, add these missing parameters to the **PATH variable**.
+Open **the cmd console** with administrator rights and run this command there:
+`setx PATH "%PATH%;%SystemRoot%;%SystemRoot%\System32"`
+Then restart your computer and check again.
+
+**B: I flashed the headset with your program and now it won't load. Is it because of the manual firmware or is the program to blame?**
+**A:** Neither. Unfortunately, this happens, and it doesn't matter how to flash it - officially over the air or manually. In fact, the program does not flash, it only loads the firmware file into the headset using the standard Android mechanism.: **adb sideload update.zip**. But after тогоthe firmware file is sent to the device, the headset itself is directly involved in installing the firmware, before double-checking the file for certificates and correct checksums. This is also the reason why it is impossible to flash a modified or inappropriate firmware file - the headset simply won't "approve" it and won't sew it.  It also checks whether the file version matches the headset version.
+You can also read this article: [What is the difference between over-the-air (OTA) headset firmware, manually, and via the Meta website?](https://vrcomm.ru/forums/topic/1115-%D0%B2-%D1%87%D0%B5%D0%BC-%D1%80%D0%B0%D0%B7%D0%BD%D0%B8%D1%86%D0%B0-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BF%D1%80%D0%BE%D1%88%D0%B8%D0%B2%D0%BA%D0%BE%D0%B9-%D1%88%D0%BB%D0%B5%D0%BC%D0%B0-%D0%BF%D0%BE-%D0%B2%D0%BE%D0%B7%D0%B4%D1%83%D1%85%D1%83-ota-%D0%B2%D1%80%D1%83%D1%87%D0%BD%D1%83%D1%8E-%D0%B8-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D0%B2%D0%B5%D0%B1-%D1%81%D0%B0%D0%B9%D1%82-meta)
+
+**B: I start the program and get a lot of messages" The system cannot write to the specified device".**
+**A:** This is due to console Cyrillic fonts, not all of them support Cyrillic characters in UTF-8. Open **the cmd console** and click **RMB**on the console window icon in the upper-left corner. Select "**Default**" and on **the Fonts tab**, set **the Lucida Console** or **Consolas** font. Or use the English version of Quas, there is no such problem.
 
 ----------------------
 #### Contact me:
