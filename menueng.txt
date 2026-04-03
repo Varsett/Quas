@@ -1,9 +1,21 @@
-1.  Updates Management
-#C. Current update status
-#D. Disable headset firmware update service
-#E. Enable headset firmware update service
-#F. Block Oculus Home software updates on PC
-#G. Allow Oculus Home software updates on PC
+1.  Direct access to hidden settings
+#1. General Settings
+#2. System
+#3. Developer Options (must be enable in General settings)
+#4. VPN Settings
+#5. Add Wi-Fi Network
+#6. Date and Time
+#A. App Memory Usage
+#B. Bluetooth
+#C. Data Saver Mode
+#D. Battery Saver
+#E. Location
+#F. All Apps 1
+#G. All Apps 2
+#I. Notifications
+#J. Privacy
+#K. Security and Privacy
+#L. Storage
 2.  Sending a text string to the headset
 3.  Install Meta Quest drivers
 #A.  Install version 1.71  (Old Oculus drivers)
@@ -38,6 +50,61 @@
 #B.  Connect via Wi-Fi using a random port
 8.  Reconnecting the headset via "ADB over cable"
 9.  Connecting the headset as a removable disk
+A.  Manage headset and PC services
+#1.  Updates Management
+##A.  Check update services status
+##B.  Disable update service  (only on firmware versions below v81)
+##C.  Enable update service  (only on firmware versions below v81)
+##K.  Block Meta Home software updates on PC
+##L.  Allow Meta Home software updates on PC
+#B.  Managing Wi-Fi on the headset
+##D.  Disable Wi-Fi on the headset
+##E.  Enable Wi-Fi on the headset
+##F.  Restart Wi-Fi on the headset
+##G.  Open Wi-Fi settings on the headset
+#C.  Managing the Guardian
+##D.  Suspend Guardian
+##E.  Resume Guardian
+#D.  Proximity sensor management
+##D.  Disable Proximity Sensor
+##E.  Enable Proximity Sensor
+#E.  Managing Bluetooth on the headset
+##D.  Disable Bluetooth
+##E.  Enable Bluetooth
+##F.  Bluetooth check status
+#F.  Managing AirPlane Mode on the headset
+##D.  Disable AirPlane Mode
+##E.  Enable AirPlane Mode
+##F.  AirPlane Mode check status
+#G.  Managing ADB Wi-Fi over TLS (Wi-Fi Debug Mode)
+##E.  Enable Wi-Fi Debug Mode
+##D.  Disable Wi-Fi Debug Mode
+##F.  Mode check status
+#K.  Device Storage Monitor   [EXPERIMENTAL]
+##1. force-not-low -f   (immediately set to NORMAL)
+##2. force-not-low      (set to NORMAL)
+##3. force-low          (set to LOW)
+##4. force-low -f       (immediately set to LOW)
+##5. reset              (reset forced mode)
+##6. Analyze current state
+##0. Exit
+#P.  Management parameters Hardware Acceleration and Game Mode
+##. Hardware Accelerated parameter management
+##A.  Show status
+##B.  Enable
+##C.  Disable
+##D.  Delete parameter from registry
+##. Game Mode parameter management
+##E.  Show status
+##F.  Enable
+##G.  Disable
+##H.  Delete parameter from registry
+##. GPU Planning parameter management
+##I.  Show status
+##J.  Enable
+##K.  Disable
+##L.  Delete parameter from registry (not recommended)
+#Q.  Restart ADB server on PC
 C.  System information
 #A.  Work with dumpsys
 ##A.  Save the full state list (dumpsys)
@@ -87,20 +154,8 @@ E.  Testing, diagnostics, resolving various issues
 ##B.  Restarting the headset shell (second option)
 ##C.  Force start of the bottom application bar
 ##D.  Forcing the start of the headset's home environment
-#C.  Managing Wi-Fi on the headset
-##D.  Disable Wi-Fi on the headset
-##E.  Enable Wi-Fi on the headset
-##F.  Restart Wi-Fi on the headset
-##G.  Open Wi-Fi settings on the headset
 #D.  Interactive test of connecting the headset to the PC
-#E.  Managing the Guardian
-##D.  Suspend Guardian
-##E.  Resume Guardian
-#F.  Proximity sensor management
-##D.  Disable Proximity Sensor
-##E.  Enable Proximity Sensor
 #G.  Fix volume button reboot issue (remove KeyMapper)
-#H.  Restart ADB server on PC
 #J.  Starting Fastboot commands
 ##A.  Fasboot devices                  : Check device availability
 ##B.  Fastboot oem device-info         : Collect and save device OEM information
@@ -119,8 +174,9 @@ E.  Testing, diagnostics, resolving various issues
 #O.  Camera functionality check (Quest 2 only)
 #P.  Measure Wi-Fi speed between the headset and PC
 ##A.  Auto Wi-Fi speed test with default values 
-##S.  Run Wi-Fi speed test 
-##T.  Analyze test results  
+##B.  Wi-Fi speed multi-test with values from a file
+##S.  Run Wi-Fi test with custom values
+##D.  Analyze test results  
 ##G.  Build a histogram or calculate the trend based on test results  
 ##H.  Additional explanations about tests, errors, logs, etc.
 ##F.  Firewall handling for Bad file descriptor error
@@ -139,7 +195,6 @@ E.  Testing, diagnostics, resolving various issues
 #R.  Display diagnostics
 ##1. Display test. 1 variant
 ##2. Display test. 2 variant
-#S.  Management parameters Hardware Acceleration and Game Mode
 ##A.  Show status
 ##B.  Enable
 ##C.  Disable
@@ -162,7 +217,7 @@ F.  Additional options
 ##A. Install Oculus Wireless ADB app
 ##B. Install Bugjaeger ADB app
 ##C. Connect to the headset via port 5555
-##D. Connect to the headset using a random port
+##D. Connect to the headset Wi-Fi Debug Mode
 ##E. Show all connections
 ##F. Disconnect all wireless connections
 ##G. Enter IP and connection port manually
@@ -197,6 +252,7 @@ F.  Additional options
 ##A.  Disable driver signature enforcement
 ##B.  Enable driver signature enforcement
 ##C.  Reboot the PC into recovery mode
+#S.  Remove pattern lock
 G.  Headset firmware update and firmware information
 #A.  Fully automatic firmware flashing
 ##A. Check the headset firmware for updates
@@ -445,8 +501,12 @@ J.  Application management
 ##F.  Download version 1.71
 ##G.  Download version 1.72
 ##I.  Download version 1.77
+
+
 K.  Setting CPU/GPU levels
-#C. Set CPU level
+L.  Setting CPU/GPU levels/RefreshRate//Resolution
+#. Set CPU/GPU levels
+#1. Set CPU level
 ##C.  Check current level
 ##M.  Return to menu
 ##0.  Minimum
@@ -456,7 +516,7 @@ K.  Setting CPU/GPU levels
 ##4.  Ultra
 ##5.  Maximum
 ##A.  Auto
-#G. Set GPU level
+#2. Set GPU level
 ##C.  Check current level
 ##M.  Return to menu
 ##0.  Minimum
@@ -466,9 +526,12 @@ K.  Setting CPU/GPU levels
 ##4.  Ultra
 ##5.  Maximum
 ##A.  Auto
-#S. Show current levels
-L.  Setting native RefreshRate and display resolution
-#R.  Get current resolution
+#3. Show current levels
+#. frameSync Mode Management
+##4.  Enable frameSync mode
+##5.  Disable frameSync mode
+##6.  Show current status
+#. Set resolution
 #A. 845 x 768
 #B. 1127 x 1024
 #C. 1408 x 1280
@@ -485,6 +548,8 @@ L.  Setting native RefreshRate and display resolution
 #O. 3942 x 3584   [EXP]  (Only for Meta Quest 3/Pro)
 #P. 4224 x 3840   [EXP]  (Only for Meta Quest 3/Pro)
 #Q. 4506 x 4096   [EXP]  (Only for Meta Quest 3/Pro)
+#R.  Get current resolution
+#. Set refresh rate
 #S. 120 Hz
 #T. 90 Hz
 #U. 80 Hz
@@ -540,7 +605,7 @@ Q.  Backup and restoring menu
 ##E.  Restore application data (old algorithm)
 ##H.  Description of the functions of this menu
 #C.  Applications File Save Menu  
-##A.  Full apps backup (APK+OBB+DATA)
+##A.  Full apps save (APK+OBB+DATA)
 ###1. All applications
 ###2. System applications
 ###3. Unofficial applications
@@ -584,7 +649,8 @@ Q.  Backup and restoring menu
 #I.  Remove the restriction on access to save files
 #J.  Set a permanent backup directory
 #K.  Enable the proximity sensor
-#l.  Copying or moving the selected archives into a separate subfolder
+#L.  Copying or moving the selected archives into a separate subfolder
+#N.  Delete old backups
 #H. Help on Backup and Restore Functions
 #R. Help on Transferring Saves
 R.  Stream video casting to PC
@@ -610,7 +676,7 @@ R.  Stream video casting to PC
 ##B.  Uninstall the Casting streaming application
 ##C.  Copy screenshots and video shots from the headset to the PC
 S.  Search
-H.  List of advanced commands and parameters
+H.  Help
 W.  Contact the author
 #A.  Program page on Github
 #B.  VRcomm community                 [RU]
@@ -618,11 +684,11 @@ W.  Contact the author
 #D.  Donate: By me the coffee         [QR code]
 #E.  Donate: By me the coffee         [Web browser]
 #F.  Leave feedback or send file
-X.  Open cmd console
+X.  Open ADB File Manager
 Y.  Open ADB console
-Z.  Help
 #I.  Website to check the availability of addresses (RU)
 #L.  Author's portal about VR: vr419.ru (RU)
 #N.  Download the latest version of Quas or leave a question/feedback/comment (RU)
 #O.  Download firmware for Quest 1/2/3/Pro
 #P.  WebADB: Headset management in the browser
+#U.  List of advanced commands and parameters

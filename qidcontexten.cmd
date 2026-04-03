@@ -17,7 +17,7 @@ rem set hidescndp=2^>NUL
 rem set hidefrstp=1^>InstallLog.txt
 rem set hidescndp=2^>ErrorsLog.txt
 
-set installname=%1
+set "installname=%1"
 rem call :_DeleteWrongSymbolsOk
 
 For %%v In (%installname%) Do ( 
@@ -26,12 +26,19 @@ For %%v In (%installname%) Do (
     set "attribs=%%~av"
     set "extname=%%~nxv"
     set "targetdir=%%~fv"
+    set "dlappl=%%~fv"
+    set "dlfile=%%~nxv"
+    set "dlname=%%~nv"
+    set "ext=%%~xv"
+    set "dlfolder=%%~dpv"
 )
 
-if /i "%extens%"==".apk" goto _SingleApkInstall
-if /i "%extens%"==".ab" goto _ABContextRestore
+if /i "!extens!"==".apk" goto _SingleApkInstall
+if /i "!extens!"==".ab" goto _ABContextRestore
+if /i "!extens!"==".apks" goto _SXApkInstall
+if /i "!extens!"==".xapk" goto _SXApkInstall
 if !attribs! GEQ d-------- goto _MultiApkInstall
-if /i "%extname%"=="install.txt" goto :_InstallCmdCreate
+if /i "!extname!"=="install.txt" goto :_InstallCmdCreate
 
 @echo.
 @echo.
@@ -51,6 +58,177 @@ rem EndEngTextBlock
 @echo --------------------------------------------------------------
 @echo.
 goto :_exitout
+
+:_SXApkInstall
+@echo off
+@echo ==========================================================
+rem StartRusTextBlock
+rem @echo  %_fBGreen%= Установка "!dlfile!"%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBRed%= Installing "%dlfile%"%_fReset%
+rem EndEngTextBlock
+if not exist "!dlappl!" (
+rem StartRusTextBlock
+rem @echo  %_fBRed%= Файл не найден:%_fReset% !dlappl!
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBRed%= File not found:%_fReset% %dlappl%
+rem EndEngTextBlock
+goto :_exitout
+)
+for %%F in ("!dlappl!") do set "ext=%%~xF"
+if /I not "!ext!"==".apks" if /I not "!ext!"==".xapk" (
+rem StartRusTextBlock
+rem @echo  %_fBRed%= Неподдерживаемый формат:%_fReset% !ext!
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBRed%= Unsupported format:%_fReset% %ext%
+rem EndEngTextBlock
+goto :_exitout
+)
+rem StartRusTextBlock
+rem @echo  %_fBYellow%= Распаковка%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBRed%= Unpacking%_fReset%
+rem EndEngTextBlock
+set "dlcat=!dlfile:~0,-5!"
+set "tmpzip=%cd%\apkinstall.zip"
+copy "!dlappl!" "%tmpzip%" >nul
+powershell -NoProfile -NoLogo -ExecutionPolicy Bypass -Command "$ProgressPreference = 'SilentlyContinue'; Expand-Archive -LiteralPath '%tmpzip%' -DestinationPath '!dlcat!' -Force"
+del /q /f "%tmpzip%" 1>nul 2>nul
+rem %MYFILES%\7z.exe x "%dlappl%" -o"%dlcat%" -y >nul
+if errorlevel 1 (
+rem StartRusTextBlock
+rem @echo  %_fBRed%= Ошибка распаковки%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBRed%= Unpacking error%_fReset%
+rem EndEngTextBlock
+goto :_exitout
+)
+set "APK_BASE="
+set "APK_LIST="
+set "APK_SPLITS="
+for /F "delims=" %%A in ('dir /s /b "!dlcat!\*.apk" 2^>nul') do (
+if /I "%%~nxA"=="base.apk" (
+set "APK_BASE="%%~fA""
+) else (
+set "APK_SPLITS=!APK_SPLITS! "%%~fA""
+)
+)
+set "APK_LIST=!APK_BASE! !APK_LIST!"
+if not defined APK_SPLITS if not defined APK_BASE (
+rem StartRusTextBlock
+rem @echo  %_fBRed%= APK не найдены%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBRed%= APK files not found%_fReset%
+rem EndEngTextBlock
+goto :_exitout
+)
+if defined APK_BASE (
+rem StartRusTextBlock
+rem @echo  %_fBGreen%= base.apk найден%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBGreen%= base.apk found%_fReset%
+rem EndEngTextBlock
+) else (
+rem StartRusTextBlock
+rem @echo  %_fYellow%= base.apk не найден%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fYellow%= base.apk not found%_fReset%
+rem EndEngTextBlock
+)
+rem ==================================================
+rem  ФИНАЛЬНЫЙ СПИСОК APK
+rem ==================================================
+if defined APK_BASE (
+    set "APK_LIST=!APK_BASE! !APK_SPLITS!"
+) else (
+    set "APK_LIST=!APK_SPLITS!"
+)
+rem StartRusTextBlock
+rem @echo  %_fBCyan%= Порядок установки:%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo %_fBCyan%= Installation order:%_fReset%
+rem EndEngTextBlock
+for %%A in (!APK_LIST!) do echo     %%~A
+@echo %_fReset%
+rem ==================================================
+rem  УСТАНОВКА APK
+rem ==================================================
+set "installLog=InstallLog.txt"
+set "errorsLog=ErrorsLog.txt"
+
+set hidefrstp=1^>tmp_install.log
+set hidescndp=2^>tmp_error.log
+
+set "installLog=InstallLog.txt"
+set "errorsLog=ErrorsLog.txt"
+rem StartRusTextBlock
+rem @echo  %_fBYellow%= Установка APK...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  %_fBYellow%= Installing APK...%_fReset%
+rem EndEngTextBlock
+
+%MYFILES%\adb install-multiple %APK_LIST% %hidefrstp% %hidescndp%
+rem 1>nul 2>nul
+if errorlevel 1 (
+rem StartRusTextBlock
+rem @echo  %_fBRed%= Ошибка установки APK%_fReset%
+rem @echo  -----------------------------------------
+rem @echo  %_fBYellow%Подробности содержатся в файлах %_fYellow%InstallLogt.txt%_fBYellow% и %_fYellow%ErrorsLog.txt%_fBYellow%
+rem @echo  расположенных в каталоге %_fYellow%%systemdrive%\Temp\SendToHeadset%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  %_fBRed%= APK installation error%_fReset%
+rem EndEngTextBlock
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
+call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
+rd /s /q "!dlcat!" 1>nul 2>nul
+goto :_exitout
+) else (
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
+call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
+)
+
+rem ==================================================
+rem  OBB (ТОЛЬКО ДЛЯ XAPK)
+rem ==================================================
+if /I "%ext%"==".xapk" (
+if exist "%dlcat%\Android\obb" (
+rem StartRusTextBlock
+rem @echo  %_fBYellow%= Копирование OBB...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  %_fBYellow%= OBB files copying...%_fReset%
+rem EndEngTextBlock
+%MYFILES%\adb push "%dlcat%\Android\obb" /sdcard/Android/
+) else (
+rem StartRusTextBlock
+rem @echo  %_fYellow%= OBB не найден%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo  %_fYellow%= OBB files not found%_fReset%
+rem EndEngTextBlock
+)
+)
+@echo.
+@echo ===============================================
+rem StartRusTextBlock
+rem @echo      %_fBGreen%=== Установка завершена ===%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo      %_fBGreen%=== Installation complete ===%_fReset%
+rem EndEngTextBlock
+rd /s /q "!dlcat!" 1>nul 2>nul
+goto :_exittimeout
 
 :_MultiApkInstall
 call :_SetColours

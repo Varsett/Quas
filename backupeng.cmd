@@ -40,6 +40,7 @@ exit
 
 :_PackagesListApkNameParser
 call :_BakdirCreateBackupsCmd
+if exist ExtractionList.txt ren ExtractionList.txt packages-list.txt
 @del /q /f NotCopiedAPK.txt 1>nul 2>nul
 cls
 @echo.
@@ -54,7 +55,6 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 setlocal enableextensions enabledelayedexpansion
 for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
-
 set applabel=%%a
 set pathname=%%b
 if not defined pathname set pathname=!applabel!
@@ -65,13 +65,57 @@ rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo   = Application name	: %_fBCyan%!applabel!%_fReset%
-@echo   = Package name		: %_fCyan%!pathname!%_fReset%
+@echo   = Package name	: %_fCyan%!pathname!%_fReset%
 rem EndEngTextBlock
+call :_ExtractPname
 
-for /f "tokens=*" %%a in ('%myfiles%\adb shell pm list packages -f !pathname!') do (
-set pkgname=%%a
-set pname=!pkgname:~8!
+rem rem StartRusTextBlock
+rem @echo   %_fBGreen%= Обработка приложения завершена%_fReset%
+rem rem EndRusTextBlock
+rem rem StartEngTextBlock
+rem rem @echo   %_fBGreen%= Application processing completed%_fReset%
+rem rem EndEngTextBlock
+)
+@md %bakdir%\Logs 1>nul 2>nul
+@move "ArchiveLog-%dt%.txt" "%bakdir%\Logs\ArchiveLog-%dt%.txt" 1>nul 2>nul
+exit /b
 
+
+:_ExtractPname
+set "pkgname="
+for /f "tokens=*" %%a in ('%myfiles%\adb shell pm list packages -f ^| findstr /I "!pathname!"') do (
+set "pkgname=%%a"
+set "pname=!pkgname:~8!"
+call :_ExtractPackageF
+call :_ExtractApkObbData
+rem Завершаем цикл после первого найденного
+goto :_After_ExtractPname
+)
+:_After_ExtractPname
+if not defined pkgname (
+rem StartRusTextBlock
+rem @echo   %_fBYellow%= Приложение отсутствует%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%= Application is missing%_fReset%
+rem EndEngTextBlock
+exit /b
+)
+set "pname="
+set "pkgname="
+exit /b
+
+
+:_ExtractApkObbData
+rem set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!==/!pkgnamed!==/!pkgnamee! !pkgnamef!"
+if [!pkgnamef!]==[] exit /b
+if [%apkbkpproc%]==[1] call :_ApkBackupProcedure
+if [%obbbkpproc%]==[1] call :_OBBBackupProcedure
+if [%datbkpproc%]==[1] call :_DataBackupProcedure
+exit /b
+
+
+:_ExtractPackageF
 @for /f "tokens=1,2,3,4,5,6 delims=/,=" %%a in ("!pname!") do (
 set pkgnamea=%%a
 set pkgnameb=%%b
@@ -106,23 +150,6 @@ set pkgnamef=!pkgnamee!
 )
 )
 )
-
-rem set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!==/!pkgnamed!==/!pkgnamee! !pkgnamef!"
-if [!pkgnamef!]==[] exit /b
-if [%apkbkpproc%]==[1] call :_ApkBackupProcedure
-if [%obbbkpproc%]==[1] call :_OBBBackupProcedure
-if [%datbkpproc%]==[1] call :_DataBackupProcedure
-rem StartRusTextBlock
-rem @echo   %_fBGreen%= Обработка приложения завершена%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-@echo   %_fBGreen%= Application processing completed%_fReset%
-rem EndEngTextBlock
-)
-)
-)
-@md %bakdir%\Logs 1>nul 2>nul
-@move "ArchiveLog-%dt%.txt" "%bakdir%\Logs\ArchiveLog-%dt%.txt" 1>nul 2>nul
 exit /b
 
 
@@ -304,7 +331,7 @@ rem @echo   = %_fBYellow%Статус приложения:%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo   = Application name	: %_fBCyan%!applabel!%_fReset%
-@echo   = Package name		: %_fCyan%!pathname!%_fReset%
+@echo   = Package name	: %_fCyan%!pathname!%_fReset%
 @echo.
 @echo   = %_fBYellow%Application status:%_fReset%
 rem EndEngTextBlock
@@ -706,7 +733,7 @@ set nomode=no
 rem md "%cd%\Backups\%dt%" 1>nul 2>nul
 @del /q /f ZeroSizeBackups.txt 1>nul 2>nul
 %myfiles%\adb shell input keyevent 224
-@echo       ================================================================
+@echo     ================================================================
 rem StartRusTextBlock
 rem @echo      %_fBYellow%Старт архивации по выбору.  Не прерывайте этот процесс.%_fReset%
 rem @echo   Лог архивации %dt% >>ArchiveLog-%dt%.txt
@@ -750,7 +777,7 @@ rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo   = App name		: %_fBCyan%!applabel!%_fReset%
-@echo   = Package name		: %_fCyan%!pathname!%_fReset%
+@echo   = Package name	: %_fCyan%!pathname!%_fReset%
 rem EndEngTextBlock
 call :_CheckBackupProcessBefore
 
@@ -818,14 +845,13 @@ rem call :_CurrentFileSizeBigger
 
 rem )
 
-
-for /f "usebackq delims=" %%a in ("%ListNumber%ListForBackups.txt") do (
+for /f "usebackq delims=" %%a in ("%bakdirlist%%ListNumber%ListForBackups.txt") do (
     set "line=%%a"
     rem Проверяем первый символ
     if not "!line:~0,1!"=="#" (
         set "pathname=!line!"
-        call :_BackupABProcess
-        call :_CurrentFileSizeBigger
+         call :_BackupABProcess
+         call :_CurrentFileSizeBigger
     )
 )
 
@@ -878,8 +904,6 @@ rem @move "ArchiveLog-%dt%.txt" "%cd%\Backups\ArchiveLog-%dt%.txt" 1>nul 2>nul
 exit /b
 
 :_BackupABProcess
-@%MYFILES%\adb shell am force-stop com.android.backupconfirm 1>nul 2>nul
-@start /min "" %myfiles%\adb backup -f "!pathname!.ab"  -%nomode%apk -%nomode%obb "!pathname!"
 @echo   ----------------------------------------------------------------
 if not defined applabelmark call :_ViewApkLabelInsideHeadsetPN
 rem StartRusTextBlock
@@ -888,8 +912,21 @@ rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo   = App name		: %_fBCyan%!applabel!%_fReset%
-@echo   = Package name		: %_fCyan%!pathname!%_fReset%
+@echo   = Package name	: %_fCyan%!pathname!%_fReset%
 rem EndEngTextBlock
+rem @%MYFILES%\adb shell am force-stop com.android.backupconfirm 1>nul 2>nul
+%MYFILES%\adb shell pm list packages | findstr /I "!pathname!" 1>nul 2>nul
+if "!errorlevel!"=="1" (
+rem StartRusTextBlock
+rem @echo   %_fBYellow%- Приложение на шлеме не найдено%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+@echo   %_fBYellow%- The application not found on the headset%_fReset%
+rem EndEngTextBlock
+exit /b
+)
+
+@start /min "" %myfiles%\adb backup -f "!pathname!.ab"  -%nomode%apk -%nomode%obb "!pathname!"
 call :_CheckBackupProcessBefore
 
 %myfiles%\adb shell input keyevent 61
@@ -962,7 +999,6 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 @echo  ------------------------------------>>ArchiveLog-%dt%.txt
 call :_DeleteWrongSymbolsOk
-pause
 @move "!pathname!.ab" "%bakdir%\%dt%\!applabel!.ab" 1>nul 2>nul
 )
 )
@@ -970,6 +1006,7 @@ pause
 exit /b
 
 :_CurrentFileSizeBigger
+if not exist !pathname!.ab exit /b
 set bakcuperror=
 rem powershell -ExecutionPolicy Bypass -File %myfiles%\checkab.ps1 -FilePath "!pathname!.ab" -LogPath "backup_check.log"
 for /f %%S in ('powershell -ExecutionPolicy Bypass -File %myfiles%\checkab.ps1 -FilePath "!pathname!.ab"') do (
@@ -999,7 +1036,6 @@ rem EndEngTextBlock
 rem StartRusTextBlock
 rem set bakcuperror=1
 rem @echo   %_fRed%= Не удалось создать бэкап%_fReset%
-rem pause
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo   %_fRed%= Failed to create backup%_fReset%
@@ -1084,7 +1120,7 @@ rem @echo   Имя пакета	: %_fCyan%!viewpn!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo   File name	: !archivename!>>ArchivesList.txt
-@echo   Package name	: !viewpn!>>ArchivesList.txt
+@echo   Package name: !viewpn!>>ArchivesList.txt
 @echo   ---------------------------------->>ArchivesList.txt
 @echo   Archive name	: !archivename!  
 @echo   Package name	: !viewpn!
@@ -1356,7 +1392,7 @@ rem @echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 @echo   = Application name	: %_fBCyan%!applabel!%_fReset%
-@echo   = Package name		: %_fCyan%!pathname!%_fReset%
+@echo   = Package name	: %_fCyan%!pathname!%_fReset%
 rem EndEngTextBlock
 @echo   = PID			: %_fBBlue%!pid!%_fReset%
 @echo !pid! !applabel! !pathname!>>"RunningApps.txt"
@@ -2058,7 +2094,6 @@ rem EndEngTextBlock
 start /min "" cmd /c "%myfiles%\adb restore "!archivename!" 1>nul 2>>"!tempErr!""
 @timeout 1 1>nul
 for /f %%Z in ('type "!tempErr!" ^| findstr /r /c:".*"') do (
-
 rem StartRusTextBlock
 rem @echo [ERROR] !date! !time! Архив: "!archivename!" >>RestoreErrors.txt
 rem EndRusTextBlock
@@ -2069,7 +2104,7 @@ rem EndEngTextBlock
         echo.>>RestoreErrors.txt
         echo -------------------------------------- >>RestoreErrors.txt
         del /q /f "!tempErr!" >nul 2>&1
-    )
+)
 
 %myfiles%\adb shell input keyevent 61
 @timeout 1 1>nul

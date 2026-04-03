@@ -1,0 +1,146 @@
+
+# --- ИНФО И СТАТУС ---
+adb devices
+adb devices -l
+adb shell getprop ro.product.model
+adb shell getprop ro.build.version.release
+adb shell uptime
+adb shell dumpsys
+adb shell dumpsys battery
+adb shell dumpsys batterystats --charged
+adb shell dumpsys DumpsysProxy OCMS
+adb shell dumpsys package <pkgname>
+adb shell dumpsys DumpsysProxy <service>
+adb shell dumpsys wifi | findstr "Wi-Fi is"
+adb shell getprop persist.sys.timezone
+adb shell input keyevent <key>
+
+# === ПРИЛОЖЕНИЯ (APK) ===
+adb shell pm list packages -3
+adb shell pm list packages -s
+adb shell pm list packages -d
+adb shell pm list packages -a
+adb install -r -g -d <appname.apk>
+adb shell pm disable-user --user 0 <pkgname>
+adb shell pm enable --user 0 <pkgname>
+adb shell pm uninstall -k --user 0 <pkgname>
+adb shell pm uninstall <pkgname>
+adb shell pm clear <pkgname>
+adb shell am force-stop <pkgname>
+adb shell monkey -p <pkgname> -c android.intent.category.LAUNCHER
+adb shell am start <pkgname>
+adb shell pm path <pkgname>
+adb shell pm clear <pkgname>
+adb shell am start -n <pkgname>/<activity>
+adb shell am startservice -n <pkgname>/<service>
+adb shell am broadcast -a <action>
+adb install -r -g <your.apk>
+adb shell monkey -p <pkgname> -c android.intent.category.LAUNCHER 1
+adb shell pm path <pkgname>
+
+# --- НАСТРОЙКИ И ТВИКИ ---
+adb shell settings put global stay_on_while_plugged_in 3
+adb shell cmd bluetooth_manager disable
+adb shell cmd bluetooth_manager enable
+
+# === QUEST СПЕЦИФИКА (VR) ===
+adb shell getprop
+adb shell getprop <services>
+adb shell getprop debug.oculus.gpuLevel
+adb shell getprop debug.oculus.cpuLevel
+adb shell setprop debug.oculus.refreshRate 120
+adb shell setprop debug.oculus.textureWidth 2560
+adb shell setprop debug.oculus.textureHeight 2560
+adb shell setprop debug.oculus.fullResTransformed 1
+adb shell setprop debug.oculus.cpuLevel 4
+adb shell setprop debug.oculus.gpuLevel 4
+adb shell am start -n com.oculus.vrshell/.MainActivity
+adb shell svc usb setFunctions mtp true
+adb shell dumpsys hardware_properties
+
+# === ЭКРАН И ГРАФИКА ===
+adb shell wm size
+adb shell wm density
+adb shell screencap -p /sdcard/screen.png
+adb pull /sdcard/screen.png .
+adb shell screenrecord --time-limit 30 /sdcard/demo.mp4
+
+# === ФАЙЛЫ И ПАМЯТЬ ===
+adb shell df -h
+adb push <pc_file> /sdcard/
+adb pull /sdcard/file.txt <pc_file>
+adb shell ls -R /sdcard/
+adb shell rm -rf /data/local/tmp/*
+
+# === СИСТЕМА И ЛОГИ ===
+adb kill-server
+adb start-server
+adb logcat -d
+adb logcat -c
+adb logcat *:E
+adb logcat *:E | findstr /i <filter>
+adb logcat | findstr /i /c:" E " /c:<filter>
+adb shell dumpsys activity top
+adb shell dumpsys window displays
+adb shell settings put global adb_enabled 1
+adb bugreport %cd%
+adb shell ps -A
+adb shell ps -A | findstr u0 | more
+adb shell settings list global
+adb shell settings list secure
+adb shell settings list system
+adb shell free -m
+
+# === СЕТЬ И DNS ===
+adb tcpip 5555
+adb disconnect
+adb connect IP:port
+adb shell ip addr show wlan0
+adb shell settings put global private_dns_mode off
+adb shell settings put global private_dns_specifier <dns_ip>
+adb shell settings get global private_dns_specifier
+adb shell settings get global private_dns_mode'
+adb shell svc wifi disable
+adb shell svc wifi enable
+adb shell netstat
+adb shell "am start -n 'com.android.settings/.Settings$VpnSettingsActivity'"
+
+# === ПЕРЕЗАГРУЗКА И FASTBOOT ===
+adb reboot
+adb reboot bootloader
+adb reboot fastboot
+adb reboot recovery
+adb reboot sideload
+adb shell reboot -p
+fastboot devices
+fastboot oem device-info
+fastboot getvar all
+fastboot reboot
+fastboot reboot-fastboot
+fastboot reboot-recovery 
+fastboot reboot-bootloader
+fastboot continue
+fastboot oem reboot-sideload
+
+# === СКРИПТЫ ===
+adb shell sh /data/local/tmp/<script>
+adb push <script> /data/local/tmp/
+adb shell chmod 755 /data/local/tmp/
+adb shell dos2unix /data/local/tmp/
+adb shell getprop ro.build.version.incremental
+
+# === ОТДЕЛЬНОЕ ОКНО ===
+powershell
+adb shell
+
+# === УТИЛИТЫ ===
+devcon find *VID_2833* | findstr /i /c:"XRSP"
+devcon find *VID_2833* | findstr /i /c:"Reality Labs"
+devcon find *VID_2833* | findstr /i /c:"ADB"
+devcon find *VID_2833*
+devcon findall *VID_2833*
+devcon find *Quest*
+devcon find *VID_2833* | findstr /i /c:"ADB"
+scrcpy
+scrcpy --audio-source=mic --video-codec=h265 --crop=1584:1440:1950:250 --max-size=3664 --video-bit-rate=5M --video-buffer=50 --max-fps=30 --stay-awake --power-off-on-close
+
