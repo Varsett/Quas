@@ -590,33 +590,33 @@ This also includes another program for broadcasting – **Casting**, which is a 
 
 **FAQ for the Quas app:**
 
-**Q: My antivirus software claims that there is a Trojan or virus in the program. Why?**
+**Q: My antivirus software claims that there is a Trojan or virus in the program. Why?**  
 **A:** The program and additional utilities are packaged in a single package using **the Quick Batch File Compiler application**, which, unfortunately, is often used for packaging malicious applications. As a result, anti-virus programs that detect a familiar packer signature do not bother checking the contents and immediately mark the package as malicious. You can unpack the package **Quas** the usual**7zip archiver** and study its contents, or you can go to [**GitHub**](https://github.com/Varsett/Quas) and see the package composition and source code. Also, starting with**v3. 1. 0**, the package includes **Quas** included app **AndroidMdnsDiscover.exe** designed for detecting the headset over **the mDNS protocol** and displaying the headset's IP address and port. The same functionality is provided by the Python script, which you can view and download here: https://github.com/thedroidgeek/oculus-wireless-adb/tree/main/script. The packer of this program is also not liked by antivirus programs.
 
-**Q: What is the difference between connecting a headset via Wi-Fi from the main menu (item 7) and connecting a headset via port 5555, items F-G-C?**
+**Q: What is the difference between connecting a headset via Wi-Fi from the main menu (item 7) and connecting a headset via port 5555, items F-G-C?**  
 **A:** If we are talking about connecting to a PC, then there is no difference in this case. However, the second option can also be used to connect directly to the headset from the headset itself, using the same port 5555. You can control the headset via **ADB** from the inside using apps like **Termux** or **Bugjaeger**. For example, you can change the resolution, refresh rate, or CPU/GPU level in this way. Similarly, you can easily connect the headset to a PC wirelessly on the so-called random port, if the Quest Games Optimizer program is running and running on the headset **Quest Games Optimizer**.
 
-**Q: Why is the program written in cmd?**
+**Q: Why is the program written in cmd?**  
 **A:** Because I do not know other languages, and I just needed a utility with a small set of ADB functions, so that I did not have to enter commands manually every time. I wrote it and decided to share it. But over time, the program has grown a little..
 
-**Q: I found an error, what should I do?**
+**Q: I found an error, what should I do?**  
 **A:** Write about it right here on the forum in the topic [Discussion of the Quas app](https://vrcomm.ru/topic/101-quest-adb-scripts-quas/) or directly from the program, **points W-F**\-**Leave a review or send a file**. I'll try to fix it for the next release.
 
-**B: Headset in Bootloader mode. I connect it with a cable to the PC, run Quas and it writes that the headset is not detected. The drivers are installed.**
+**B: Headset in Bootloader mode. I connect it with a cable to the PC, run Quas and it writes that the headset is not detected. The drivers are installed.**  
 **A:** Install more recent versions of drivers, while the best ones are**1.72**. [You can download them in the Downloads section](https://vrcomm.ru/files/file/5-%D0%B4%D1%80%D0%B0%D0%B9%D0%B2%D0%B5%D1%80%D1%8B-%D0%B4%D0%BB%D1%8F-oculus-quest/) of this forum.
 
-**B: At startup, the following messages appear: _"mode"is not an internal or external command, executable program, or batch file, and"chcp" is not an internal or external command, executable program, or batch file._**
+**B: At startup, the following messages appear: _"mode"is not an internal or external command, executable program, or batch file, and"chcp" is not an internal or external command, executable program, or batch file._**  
 **A:** Most likely, you are missing some mandatory elements of the system **PATH variable**, namely: **C:\\Windows, C:\\Windows\\System32**.
 To fix this error, add these missing parameters to the **PATH variable**.
 Open **the cmd console** with administrator rights and run this command there:
 `setx PATH "%PATH%;%SystemRoot%;%SystemRoot%\System32"`
 Then restart your computer and check again.
 
-**B: I flashed the headset with your program and now it won't load. Is it because of the manual firmware or is the program to blame?**
+**B: I flashed the headset with your program and now it won't load. Is it because of the manual firmware or is the program to blame?**  
 **A:** Neither. Unfortunately, this happens, and it doesn't matter how to flash it - officially over the air or manually. In fact, the program does not flash, it only loads the firmware file into the headset using the standard Android mechanism.: **adb sideload update.zip**. But after тогоthe firmware file is sent to the device, the headset itself is directly involved in installing the firmware, before double-checking the file for certificates and correct checksums. This is also the reason why it is impossible to flash a modified or inappropriate firmware file - the headset simply won't "approve" it and won't sew it.  It also checks whether the file version matches the headset version.
 You can also read this article: [What is the difference between over-the-air (OTA) headset firmware, manually, and via the Meta website?](https://vrcomm.ru/forums/topic/1115-%D0%B2-%D1%87%D0%B5%D0%BC-%D1%80%D0%B0%D0%B7%D0%BD%D0%B8%D1%86%D0%B0-%D0%BC%D0%B5%D0%B6%D0%B4%D1%83-%D0%BF%D1%80%D0%BE%D1%88%D0%B8%D0%B2%D0%BA%D0%BE%D0%B9-%D1%88%D0%BB%D0%B5%D0%BC%D0%B0-%D0%BF%D0%BE-%D0%B2%D0%BE%D0%B7%D0%B4%D1%83%D1%85%D1%83-ota-%D0%B2%D1%80%D1%83%D1%87%D0%BD%D1%83%D1%8E-%D0%B8-%D1%87%D0%B5%D1%80%D0%B5%D0%B7-%D0%B2%D0%B5%D0%B1-%D1%81%D0%B0%D0%B9%D1%82-meta)
 
-**B: I start the program and get a lot of messages" The system cannot write to the specified device".**
+**B: I start the program and get a lot of messages" The system cannot write to the specified device".**  
 **A:** This is due to console Cyrillic fonts, not all of them support Cyrillic characters in UTF-8. Open **the cmd console** and click **RMB**on the console window icon in the upper-left corner. Select "**Default**" and on **the Fonts tab**, set **the Lucida Console** or **Consolas** font. Or use the English version of Quas, there is no such problem.
 
 ----------------------
