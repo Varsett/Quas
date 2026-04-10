@@ -1,3 +1,6 @@
+[![Donate](https://img.shields.io/badge/Donate-Boosty-orange?style=for-the-badge)](https://boosty.to/varset/donate)
+
+
 ## **Quas - QUest ADB Scripts**
 
 #### **Utility - a collection of the most commonly used commands and actions for the headset. It's like a "multitool" for beginners and      beyond. No need to search for and learn adb commands, parameters, and so on.**
