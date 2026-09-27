@@ -162,11 +162,8 @@ for %%A in (!APK_LIST!) do echo     %%~A
 rem ==================================================
 rem  УСТАНОВКА APK
 rem ==================================================
-set "installLog=InstallLog.txt"
-set "errorsLog=ErrorsLog.txt"
 
 set hidefrstp=1^>tmp_install.log
-set hidescndp=2^>tmp_error.log
 
 set "installLog=InstallLog.txt"
 set "errorsLog=ErrorsLog.txt"
@@ -177,7 +174,7 @@ rem StartEngTextBlock
 @echo  %_fBYellow%= Installing APK...%_fReset%
 rem EndEngTextBlock
 
-%MYFILES%\adb install-multiple %APK_LIST% %hidefrstp% %hidescndp%
+%MYFILES%\adb install-multiple %APK_LIST% %hidefrstp%
 rem 1>nul 2>nul
 if errorlevel 1 (
 rem StartRusTextBlock
@@ -189,13 +186,11 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  %_fBRed%= APK installation error%_fReset%
 rem EndEngTextBlock
-call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
-call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
 rd /s /q "!dlcat!" 1>nul 2>nul
 goto :_exitout
 ) else (
-call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
-call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
 )
 
 rem ==================================================
@@ -232,11 +227,8 @@ goto :_exittimeout
 
 :_MultiApkInstall
 call :_SetColours
-set "installLog=InstallLog.txt"
-set "errorsLog=ErrorsLog.txt"
 
 set hidefrstp=1^>tmp_install.log
-set hidescndp=2^>tmp_error.log
 
 set "installLog=InstallLog.txt"
 set "errorsLog=ErrorsLog.txt"
@@ -292,18 +284,13 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo %_fBYellow%%MultiCounterOk%%_fReset%. = Installing "%_fBCyan%%applabel%%_fReset%"
 rem EndEngTextBlock
-@%MYFILES%\ADB install -r -g --no-streaming "%apkname%" %hidefrstp% %hidescndp%
-
-@IF !ERRORLEVEL!==0 (
-rem set /a MultiCounterOk=%MultiCounterOk%+1
-call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
-call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
-call :_MultiCopyObbInslallApk
-) else (
-rem set /a MultiCounterEr=%MultiCounterEr%+1
-call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
-call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
+@%MYFILES%\ADB install -r -g --no-streaming "%apkname%" %hidefrstp%
+@IF ERRORLEVEL 1 (
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
 call :_MultiInstallApkErr
+) else (
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
+call :_MultiCopyObbInslallApk
 )
 set /a MultiCounter=%MultiCounter%+1
 set applabel=
@@ -321,8 +308,10 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo     = Copying "%_fCyan%%pkgname%%_fReset%" to the OBB directory on the headset..
 rem EndEngTextBlock
-@%MYFILES%\ADB shell mkdir -p /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
-@%MYFILES%\ADB push "!FoundPath!" /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
+@%MYFILES%\ADB shell mkdir -p /sdcard/Android/obb/%pkgname% %hidefrstp%
+@%MYFILES%\ADB push "!FoundPath!" /sdcard/Android/obb/%pkgname% %hidefrstp%
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
+del /q "%tmpfile%" >nul 2>&1
 call :_MultiInstalledOk
 exit /b
 )
@@ -349,6 +338,7 @@ rem StartEngTextBlock
 rem EndEngTextBlock
 rem @echo  !apkname! >>%sendtofoldercmdfolder%\notinstalled.txt
 set /a MultiCounterEr=%MultiCounterEr%+1
+del /q "%tmpfile%" >nul 2>&1
 exit /b
 
 :_MultiInstalledOk
@@ -375,11 +365,7 @@ rem call :_DeleteWrongSymbolsOk
 rem set hidefrstp=1^>NUL
 rem set hidescndp=2^>NUL
 
-set "installLog=InstallLog.txt"
-set "errorsLog=ErrorsLog.txt"
-
 set hidefrstp=1^>tmp_install.log
-set hidescndp=2^>tmp_error.log
 
 set "installLog=InstallLog.txt"
 set "errorsLog=ErrorsLog.txt"
@@ -395,17 +381,14 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo = Installing "%_fBCyan%%applabel%%_fReset%"
 rem EndEngTextBlock
-%MYFILES%\ADB install -r -g %down% --no-streaming !apkname! %hidefrstp% %hidescndp%
-@IF !ERRORLEVEL!==0 (
-call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
-call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
-call :_SingleCopyObbInslallApk
-) else (
-call :_ProcessLog "!hidefrstp:~2!" "%installLog%"
-call :_ProcessLog "!hidescndp:~2!" "%errorsLog%"
+%MYFILES%\ADB install -r -g %down% --no-streaming !apkname! %hidefrstp%
+@IF ERRORLEVEL 1 (
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
 call :_SingleErrInstallApk
+) else (
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
+call :_SingleCopyObbInslallApk
 )
-rem @echo --
 rem StartRusTextBlock
 rem @echo  %_fBGreen%= Установлено успешно%_fReset%
 rem EndRusTextBlock
@@ -428,9 +411,10 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 @echo  = Copying "%_fCyan%%pkgname%%_fReset%" to the OBB directory on the headset..
 rem EndEngTextBlock
-@%MYFILES%\ADB shell mkdir -p /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
-%MYFILES%\ADB push "!FoundPath!" /sdcard/Android/obb/%pkgname% %hidefrstp% %hidescndp%
-rem call :_MultiInstalledOk
+@%MYFILES%\ADB shell mkdir -p /sdcard/Android/obb/%pkgname% %hidefrstp%
+%MYFILES%\ADB push "!FoundPath!" /sdcard/Android/obb/%pkgname% %hidefrstp%
+call :_ProcessLog "!hidefrstp:~2!" "%installLog%" "%errorsLog%"
+del /q "%tmpfile%" >nul 2>&1
 exit /b
 )
 )
@@ -693,27 +677,34 @@ exit /b
 
 :_ProcessLog
 set "tmpfile=%~1"
-set "mainlog=%~2"
+set "installLog=%~2"
+set "errorsLog=%~3"
 
-rem Проверяем, существует ли временный лог
-if not exist "%tmpfile%" goto :eof
+if not exist "%tmpfile%" exit /b
 
-rem Проверяем, пуст ли файл
 for %%A in ("%tmpfile%") do if %%~zA==0 (
     del "%tmpfile%" >nul 2>&1
-    goto :eof
+    exit /b
 )
 
-rem Добавляем дату и разделитель
->>"%mainlog%" echo ----------------------------------------
->>"%mainlog%" echo [%date% %time%]
-type "%tmpfile%" >>"%mainlog%"
->>"%mainlog%" echo.
+rem === проверяем, есть ли ошибка ===
+findstr /i "Failure Failed" "%tmpfile%" >nul
+if not errorlevel 1 (
+    set "targetLog=%errorsLog%"
+) else (
+    set "targetLog=%installLog%"
+)
 
-rem Удаляем временный файл
-del "%tmpfile%" >nul 2>&1
-goto :eof
+rem === пишем в нужный лог ===
+(
+    echo ----------------------------------------
+    echo [%date% %time%]
+    type "%tmpfile%"
+    echo.
+) >>"%targetLog%"
 
+del /q "%tmpfile%" >nul 2>&1
+exit /b
 
 :_SetColours
 @set _fReset=[0m

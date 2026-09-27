@@ -11,7 +11,8 @@ if (-not (Test-Path $InputFile)) {
 $html = Get-Content -Path $InputFile -Raw
 $result = @()
 
-$pattern = 'class=fw-link>(\d{17})</a><td>(\d+\.\d+\.\d+\.\d+)\.\d+.*?/([^/]+):user/'
+#$pattern = 'class=fw-link>(\d{17})</a><td>(\d+\.\d+\.\d+\.\d+)\.\d+.*?/([^/]+):user/'
+$pattern = 'class=fw-link>(\d+)</a><td>(\d+\.\d+\.\d+\.\d+)\.\d+.*?/([^/]+):user/'
 
 #$pattern = 'class=fw-link>(\d{17})</a><td>(\d+\.\d+\.\d+\.\d+)\.\d+.*?UP1A\.231005\.007\.A1/([^:]+):user/'
 

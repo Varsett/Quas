@@ -107,6 +107,7 @@ exit /b
 
 
 :_ExtractApkObbData
+rem echo on
 rem set "fullname=/!pkgnamea!/!pkgnameb!/!pkgnamec!==/!pkgnamed!==/!pkgnamee! !pkgnamef!"
 if [!pkgnamef!]==[] exit /b
 if [%apkbkpproc%]==[1] call :_ApkBackupProcedure
@@ -184,9 +185,20 @@ rem @FOR /F "tokens=2 delims='" %%g IN ('%myfiles%\aapt2 dump badging "!pkgnamef
 if [!applabel!]==[] set applabel=!pkgnamef!
 if [!pkgnamef!]==[] exit /b
 call :_DeleteWrongSymbolsOk
-@md "%bakdir%\%dt%\!applabel!" 2>nul 1>nul
+@md "%bakdir%\%dt%\!applabel!"
+rem  2>nul 1>nul
+
 rem @ren %cd%\!pkgnamef!.apk "!applabel!.apk" 2>nul 1>nul
+
 move "!pkgnamef!.apk" "%bakdir%\%dt%\!applabel!\!applabel!.apk" 1>nul 2>nul
+if errorlevel 1 (
+rem StartRusTextBlock
+@echo   %_fBRed%= Ошибка переноса файла в каталог бэкапов%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%= Error moving file to backup directory%_fReset%
+rem EndEngTextBlock
+)
 
 rem @move "!pkgnamef!.apk" "Backups\!applabel!" 1>nul 2>nul
 rem @move "!applabel!.apk" "Backups\!applabel!" 1>nul 2>nul
@@ -210,7 +222,7 @@ rem ) else (
 rem     @echo %_fBYellow%- Папка OBB не найдена%_fReset%
 rem )
 rem StartRusTextBlock
-dir /b /a "%bakdir%\%dt%\!applabel!\obb\!pkgnamef!\" | findstr . >nul 
+dir /b /a "%bakdir%\%dt%\!applabel!\obb\!pkgnamef!\" 2>nul | findstr . >nul 2>nul
 if errorlevel 1 (
 @echo   %_fBYellow%- OBB отсутствует%_fReset%
 ) else (
@@ -369,20 +381,28 @@ call :_PackagesListApkNameParser
 exit /b
 
 
-:_DeleteWrongSymbolsOk
+:_DeleteWrongSymbolsOkOld
 set "apknametest=%applabel%"
 @for %%a in ("%apknametest%") do (
 @set name=%%a
 call set "name=%%name:(=%%"
 call set "name=%%name:)=%%"
 call set "name=%%name:^!=%%"
-call set "name=%%name:+=%%"
+rem call set "name=%%name:+=%%"
 rem call set "name=%%name: =%%"
 call set "name=%%name::=%%"
 call set "name=%%name:&=%%"
 rem  cmd/v/c ren "%%a" "!name:%%=!"
 )
 set applabel=%name:~1,-1%
+exit /b
+
+
+:_DeleteWrongSymbolsOk
+(echo !applabel!) > "%QuasWorkDir%\filename.txt"
+for /f "delims=" %%A in ('powershell -ExecutionPolicy Bypass -NoProfile -NoLogo -Command "$n = Get-Content '%QuasWorkDir%\filename.txt'; $clean = $n -replace '[^a-zA-Z0-9._ \-]', ''; Write-Output $clean.Trim()"') do set "applabel=%%A"
+del /q "%QuasWorkDir%\filename.txt" 2>nul 1>nul
+rem set applabel=!applabel:~1,-1!
 exit /b
 
 
@@ -545,9 +565,6 @@ exit /b
 rem ===========================
 
 :_ExtractDataFromABFiles
-echo %archivename%
-echo %bakdir%
-pause
 set shscriptname=dataextract.sh
 @echo Extracting data from backup file...
 @echo ^( printf "\x1f\x8b\x08\x00\x00\x00\x00\x00" ; tail -c +25 "/data/local/tmp/%archivename%" ^) ^| tar xfvz - -C /data/local/tmp/>%shscriptname%
@@ -581,60 +598,23 @@ rem set applabel=!archivename!
 exit /b
 
 :_RestoreApplicationDataAB
+rem echo on
 @%MYFILES%\adb shell am force-stop com.android.backupconfirm 1>nul 2>nul
-%myfiles%\adb shell input keyevent 224
-@timeout 5 >nul
-%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
 
+del /q /f packages-list.txt 1>nul 2>nul
 @for /f "delims=" %%a in ('dir /b /a-d *.ab') do (
-set "archivename=%%~na"
-
-@echo -----------------------------------------------------------
-rem StartRusTextBlock
-@echo  = Восстанавливаем архив	: %_fBCyan%!archivename!%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  = Restoring archive	: %_fCyan%!archivename!%_fReset%
-rem EndEngTextBlock
-
-%myfiles%\adb shell input keyevent 224
-
-start /min "" %myfiles%\adb restore "!archivename!.ab" 1>nul 2>>RestoreErrors.txt
-@timeout 2 1>nul
-rem for %%A in ("RestoreErrors.txt") do set "filesize=%%~zA"
-rem if [%filesize%] GTR 3 (
-rem @echo. >>RestoreErrors.txt
-rem @echo  %_fBRed%= Произошла ошибка. Текст ошибки записан в файл RestoreErrors.txt%_fReset%
-rem @echo.
-rem ) else (
-rem if %restfilesize% LSS 3 (
-rem @del /q /f RestoreErrors.txt 1>nul 2>nul
-rem ) else (
-rem @echo.
-rem )
-rem )
-
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 66
-
-call :_CheckBackupProcessRest
-rem @echo  = Успешно
+set "abname=%%~na"
+set "archivename=%%~dpnxa"
+@echo date;!abname!;!abname!.ab;!archivename! >> packages-list.txt
 )
-timeout 1 1>nul
-@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+cls
+call :_RestoreProcessMain
+del /q /f "%cd%\TempRestoreResult*" 1>nul 2>nul
+del /q /f "%cd%\TempRestoreErr*" 1>nul 2>nul
+del /q /f "%QuasWorkDir%\TempRestoreResult*" 1>nul 2>nul
+del /q /f "%QuasWorkDir%\TempRestoreErr*" 1>nul 2>nul
+rem 1>nul 2>nul
 exit /b
-
-:_CheckBackupProcessRest
-@for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
-if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcessRest) else (exit /b)
-)
-
-
 
 :_BackupReadWrite
 call :_BakdirCreateBackupsCmd
@@ -692,32 +672,15 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   %_fBYellow%= Then restoring back...%_fReset%
 rem EndEngTextBlock
+set "archivename=%bakdir%\%dt%\!applabel!.ab"
+rem ===================================================
 
-%myfiles%\adb shell input keyevent 224
+@echo date;!applabel!;!applabel!;!archivename! > packages-list.txt
 
-start /min "" %myfiles%\adb restore "!pathname!.ab" 1>nul 2>nul
-@timeout 2 1>nul
-
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 66
-
-call :_CheckBackupProcessRest
-rem @echo  = Успешно
-)
-timeout 1 1>nul
-@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+call :_RestoreProcessMain
+del /q /f "%QuasWorkDir%\TempRestoreResult*" 1>nul 2>nul
+del /q /f "%QuasWorkDir%\TempRestoreErr*" 1>nul 2>nul
 exit /b
-
-:_CheckBackupProcessRest
-@for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
-if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcessRest) else (exit /b)
-)
-
 
 :_BackupChoises
 cls
@@ -958,53 +921,6 @@ if [%%c] NEQ [com.android.backupconfirm] (@timeout 1 1>nul && goto _CheckBackupP
 )
 exit /b
 
-:_CurrentFileSize
-@timeout 8 1>nul
-for /f "tokens=3" %%a in ('dir /-c "!pathname!.ab" ^| findstr /r /c:"[0-9][0-9]* !pathname!.ab$"') do (
-set filesize=%%a
-rem pause
-if "!filesize!"=="47" (
-rem @echo   ---
-rem StartRusTextBlock
-@echo   %_fBYellow%= Файл бэкапа имеет нулевой размер и будет удален%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fBYellow%= Backup file has zero size and will be delete%_fReset%
-rem EndEngTextBlock
-@echo !pathname!>>ZeroSizeBackups.txt
-del /q /f "!pathname!.ab"
-) else (
-if "!filesize!"=="0" (
-rem @echo   ---
-rem StartRusTextBlock
-@echo   %_fBYellow%= Файл бэкапа имеет нулевой размер и будет удален%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fBYellow%= Backup file has zero size and will be delete%_fReset%
-rem EndEngTextBlock
-@echo !pathname!>>ZeroSizeBackups.txt
-del /q /f "!pathname!.ab"
-) else (
-rem StartRusTextBlock
-@echo   %_fBGreen%= Архив создан успешно%_fReset%
-@echo  Имя приложения	: !applabel!>>ArchiveLog-%dt%.txt
-@echo  Название пакета	: !pathname!>>ArchiveLog-%dt%.txt
-@echo  Название архива	: !applabel!.ab>>ArchiveLog-%dt%.txt
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = %_fBGreen%Backup created successfully%_fReset%
-rem @echo  App name	: !applabel!>>ArchiveLog-%dt%.txt
-rem @echo  Package name	: !pathname!>>ArchiveLog-%dt%.txt
-rem @echo  Archive name	: !applabel!.ab>>ArchiveLog-%dt%.txt
-rem EndEngTextBlock
-@echo  ------------------------------------>>ArchiveLog-%dt%.txt
-call :_DeleteWrongSymbolsOk
-@move "!pathname!.ab" "%bakdir%\%dt%\!applabel!.ab" 1>nul 2>nul
-)
-)
-)
-exit /b
-
 :_CurrentFileSizeBigger
 if not exist !pathname!.ab exit /b
 set bakcuperror=
@@ -1076,8 +992,6 @@ rem )
 )
 exit /b
 
-rem Old
-
 
 :_ViewABPackageAppName
 setlocal enableextensions enabledelayedexpansion
@@ -1126,6 +1040,8 @@ rem @echo   Archive name	: !archivename!
 rem @echo   Package name	: !viewpn!
 rem EndEngTextBlock
 @echo   ----------------------------------
+set "viewpnnext=!viewpn!"
+set "archivenamenext=!archivename!"
 set viewpn=
 set archivename=
 rem set applabel=
@@ -1317,6 +1233,7 @@ call :_EstractTest
 
 @%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
 @del /q /f %shscriptname% 1>nul 2>nul
+@del /q /f o.txt 1>nul 2>nul
 
 @echo.
 rem @echo   ---
@@ -1670,7 +1587,8 @@ rem @echo   = Package name       : %_fCyan%!pathname!%_fReset%
 rem @echo   %_fBYellow%- Disabling application..%_fReset%
 rem EndEngTextBlock
 %MYFILES%\adb shell pm disable-user --user 0 !pathname! 1>nul 2>nul
-if %errorlevel%==0 (
+%MYFILES%\adb shell pm list packages -d | findstr /I "!pathname!" 1>nul 2>nul
+if not errorlevel 1 (
 rem StartRusTextBlock
 @echo   %_fBGreen%= Приложение отключено%_fReset%
 rem EndRusTextBlock
@@ -1771,18 +1689,18 @@ rem StartRusTextBlock
 @echo      %_fBYellow%Остановка приложения%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo      %_fBYellow%Start application%_fReset%
+rem @echo      %_fBYellow%Stop application%_fReset%
 rem EndEngTextBlock
 for /f "tokens=1,2 delims=;" %%a in (packages-list.txt) do (
 set "pid="
-set applabel=%%a
-set pathname=%%b
-set applabelsave=!applabel!
-if [!pathname!]==[] set pathname=!applabel!
+set "applabel=%%a"
+set "pathname=%%b"
+set "applabelsave=!applabel!"
+if "!pathname!"=="" set "pathname=!applabel!"
 @echo   ------------------------------------------------
 rem StartRusTextBlock
-@echo   = Имя приложения	: %_fBCyan%!applabel!%_fReset%
-@echo   = Название пакета	: %_fCyan%!pathname!%_fReset%
+@echo   = Имя приложения    : %_fBCyan%!applabel!%_fReset%
+@echo   = Название пакета   : %_fCyan%!pathname!%_fReset%
 @echo   %_fBYellow%+ Останавливаем приложение..%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -1790,7 +1708,7 @@ rem @echo   = Application name   : %_fBCyan%!applabel!%_fReset%
 rem @echo   = Package name       : %_fCyan%!pathname!%_fReset%
 rem @echo   %_fBYellow%+ Stopping application..%_fReset%
 rem EndEngTextBlock
-
+rem Проверяем PID
 for /f "delims=" %%P in ('"%myfiles%\adb" shell pidof !pathname! 2^>nul') do set "pid=%%P"
 if not defined pid (
 @echo   ------------------------------------------------
@@ -1800,12 +1718,19 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   %_fBGreen%= App already stopped%_fReset%
 rem EndEngTextBlock
-goto _StoppingAppFinishMessage
+) else (
+call :_StoppingAppProcess "!pathname!"
 )
+)
+goto _StoppingAppFinishMessage
+
 
 :_StoppingAppProcess
-%myfiles%\adb shell am force-stop "!pathname!" 1>nul 2>nul
-for /f "delims=" %%P in ('"%myfiles%\adb" shell pidof !pathname! 2^>nul') do set "pid=%%P"
+set "pathname=%~1"
+set "pid="
+%myfiles%\adb shell am force-stop "%pathname%" 1>nul 2>nul
+rem Проверяем ещё раз
+for /f "delims=" %%P in ('"%myfiles%\adb" shell pidof %pathname% 2^>nul') do set "pid=%%P"
 if not defined pid (
 @echo   ------------------------------------------------
 rem StartRusTextBlock
@@ -1819,7 +1744,7 @@ rem ) else (
 rem @echo   %_fBRed%= Stopping failed%_fReset%
 rem EndEngTextBlock
 )
-)
+exit /b
 
 :_StoppingAppFinishMessage
 @echo.
@@ -2030,22 +1955,9 @@ pause >nul
 exit /b
 
 
-:_RestoreApplicationDataABPS
-@%MYFILES%\adb shell am force-stop com.android.backupconfirm 1>nul 2>nul
 
-set "ERR=RestoreErrors.txt"
-set "OLD=RestoreErrorsOld.txt"
-REM Если есть новый лог — обрабатываем
-if exist "%ERR%" (
-if exist "%OLD%" (
-REM Дописываем старый лог
-type "%ERR%" >> "%OLD%"
-del "%ERR%"
-) else (
-REM Старого нет — просто переименовываем
-ren "%ERR%" "%OLD%"
-)
-)
+:_RestoreApplicationDataABPS
+rem echo on
 
 if not exist packages-list.txt (
 rem StartRusTextBlock
@@ -2058,80 +1970,9 @@ pause >nul
 exit /b
 )
 cls
-@echo.
-@echo.
-@echo   ===================================================================
-rem StartRusTextBlock
-@echo    %_fBYellow%Идет подготовка к восстановлению. Не прерывайте этот процесс.%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo    %_fBYellow%Preparing for restoration. Do not interrupt this process.%_fReset%
-rem EndEngTextBlock
-set "tempErr=TempRestoreErr.log"
-    if exist "!tempErr!" del "!tempErr!" >nul 2>&1
-%myfiles%\adb shell input keyevent 224
-
-rem @timeout 5 >nul
-
-%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
-
-for /f "tokens=1,2,3,4 delims=;" %%a in (packages-list.txt) do (
-set abname=%%b
-set packagename=%%c
-set archivename=%%d
-
-@echo   -------------------------------------------------------------------
-rem StartRusTextBlock
-@echo   = Название архива	: %_fBCyan%!abname!%_fReset%
-@echo   = Название пакета	: %_fCyan%!packagename!%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   = Archive name   : %_fBCyan%!abname!%_fReset%
-rem @echo   = Package name   : %_fCyan%!packagename!%_fReset%
-rem EndEngTextBlock
-
-%myfiles%\adb shell input keyevent 224
-start /min "" cmd /c "%myfiles%\adb restore "!archivename!" 1>nul 2>>"!tempErr!""
-@timeout 1 1>nul
-for /f %%Z in ('type "!tempErr!" ^| findstr /r /c:".*"') do (
-rem StartRusTextBlock
-@echo [ERROR] !date! !time! Архив: "!archivename!" >>RestoreErrors.txt
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo [ERROR] !date! !time! Archive: "!archivename!" >>RestoreErrors.txt
-rem EndEngTextBlock
-        type "!tempErr!" >>RestoreErrors.txt
-        echo.>>RestoreErrors.txt
-        echo -------------------------------------- >>RestoreErrors.txt
-        del /q /f "!tempErr!" >nul 2>&1
-)
-
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 61
-@timeout 1 1>nul
-%myfiles%\adb shell input keyevent 66
-
-call :_CheckBackupProcessRest
-rem StartRusTextBlock
-@echo   %_fBGreen%= Архив восстановлен%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fBGreen%= Archive restored%_fReset%
-rem EndEngTextBlock
-)
-del /q /f packages-list.txt 1>nul 2>nul
-timeout 1 1>nul
-@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+call :_RestoreProcessMain
+rem call :_RestoreFinish
 exit /b
-
-:_CheckBackupProcessRest
-@for /f "tokens=1,2,3 delims=:= " %%a in ('%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"') do (
-if [%%c] == [com.android.backupconfirm] (timeout 2 1>nul && goto _CheckBackupProcessRest) else (exit /b)
-)
-
 
 :_CopySelectedBackups
 if not exist packages-list.txt (
@@ -2284,3 +2125,214 @@ set "res=%%a"
 set "%1=%res%"
 @chcp 65001 >nul
 exit /b
+
+
+:_RestoreProcessMain
+@echo   =================================================
+rem StartRusTextBlock
+@echo    %_fBYellow%Идет восстановление. Не прерывайте этот процесс.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBYellow%Restoration in progress. Do not interrupt this process.%_fReset%
+rem EndEngTextBlock
+@%MYFILES%\adb shell am force-stop com.android.backupconfirm 1>nul 2>nul
+
+set "ERR=RestoreErrors.txt"
+set "OLD=RestoreErrorsOld.txt"
+
+if exist "%ERR%" (
+if exist "%OLD%" (
+type "%ERR%" >> "%OLD%"
+del "%ERR%"
+) else (
+ren "%ERR%" "%OLD%"
+)
+)
+
+set /a restoreIndex=0
+
+%myfiles%\adb shell input keyevent 224
+
+@timeout /t 2 /nobreak >nul
+
+%myfiles%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
+
+
+for /f "tokens=2 delims= " %%A in ('
+%myfiles%\adb shell am stack list ^| findstr /i "taskId=" ^| findstr /i "visible=true"
+') do (
+rem Из строки com.package/.Activity оставляем только пакет
+for /f "tokens=1 delims=/" %%P in ("%%A") do (
+set "PKG=%%P"
+if /i not "!PKG!"=="com.oculus.vrshell" ^
+if /i not "!PKG!"=="com.oculus.systemux" ^
+if /i not "!PKG!"=="com.oculus.panelapp.library" ^
+if /i not "!PKG!"=="com.oculus.panelapp.settings" ^
+if /i not "!PKG!"=="com.oculus.os.vrlockscreen" (
+rem @echo !PKG!
+%myfiles%\adb shell am force-stop "!PKG!" >nul 2>&1
+)
+)
+)
+
+
+
+for /f "tokens=1,2,3,4 delims=;" %%a in (packages-list.txt) do (
+set /a restoreIndex+=1
+rem echo %%d
+set "abname=%%b"
+set "packagename=%%c"
+set "archivename=%%d"
+rem echo !archivename!
+set "tempErr=TempRestoreErr_!restoreIndex!.log"
+set "tempResult=TempRestoreResult_!restoreIndex!.log"
+rem type packages-list.txt
+rem pause
+
+if exist "!tempErr!" del /q /f "!tempErr!" >nul 2>&1
+if exist "!tempResult!" del /q /f "!tempResult!" >nul 2>&1
+
+@timeout /t 2 /nobreak >nul
+
+@echo   -------------------------------------------------------------------
+rem StartRusTextBlock
+@echo   = Восстанавливаем архив	: %_fBCyan%!abname!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   = Restoring archive	: %_fCyan%!abname!%_fReset%
+rem EndEngTextBlock
+
+rem @echo   = Название архива	: %_fBCyan%!abname!%_fReset%
+rem @echo   = Название пакета	: %_fCyan%!packagename!%_fReset%
+rem @echo   = Archive name   : %_fBCyan%!abname!%_fReset%
+rem @echo   = Package name   : %_fCyan%!packagename!%_fReset%
+
+%myfiles%\adb shell input keyevent 224
+%myfiles%\adb shell dumpsys activity activities | findstr /i "ResumedActivity.*NavigatorLibraryActivity" >nul
+if not errorlevel 1 (
+%myfiles%\adb shell input keyevent 125
+)
+
+rem tempErr     = stderr adb
+rem tempResult  = результат завершения adb restore
+
+start /min "" cmd /c ^
+       "%myfiles%\adb restore "!archivename!" 1>nul 2>>"!tempErr!" & if errorlevel 1 (echo 1>"!tempResult!") else (echo 0>"!tempResult!")"
+
+rem   1. backupconfirm — можно подтверждать;
+rem   2. завершения adb без backupconfirm — ошибка.
+call :_WaitRestoreStartMain
+if errorlevel 1 (
+rem ---------------------------------------------------------------
+rem adb restore завершился, но backupconfirm так и не появился.
+rem ---------------------------------------------------------------
+rem StartRusTextBlock
+@echo [ERROR] !date! !time! Архив: "!archivename!" >>RestoreErrors.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo [ERROR] !date! !time! Archive: "!archivename!" >>RestoreErrors.txt
+rem EndEngTextBlock
+
+if exist "!tempErr!" (
+type "!tempErr!" >>RestoreErrors.txt
+) else (
+rem StartRusTextBlock
+@echo adb restore завершился с ошибкой, но сообщение stderr отсутствует.>>RestoreErrors.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo adb restore completed with an error, but stderr message is missing.>>RestoreErrors.txt
+rem EndEngTextBlock
+)
+@echo.>>RestoreErrors.txt
+@echo -------------------------------------- >>RestoreErrors.txt
+del /q /f "!tempErr!" >nul 2>&1
+el /q /f "!tempResult!" >nul 2>&1
+rem StartRusTextBlock
+@echo   %_fBRed%= Ошибка восстановления архива%_fReset%
+set backuperror=1
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%= Archive restore error%_fReset%
+rem EndEngTextBlock
+) else (
+rem ---------------------------------------------------------------
+rem backupconfirm появился — подтверждаем восстановление.
+rem ---------------------------------------------------------------
+
+@timeout /t 2 /nobreak >nul
+%myfiles%\adb shell input keyevent 61
+@timeout /t 1 /nobreak >nul
+%myfiles%\adb shell input keyevent 61
+@timeout /t 1 /nobreak >nul
+%myfiles%\adb shell input keyevent 61
+@timeout /t 1 /nobreak >nul
+%myfiles%\adb shell input keyevent 66
+
+rem После подтверждения ждем исчезновения backupconfirm.
+call :_CheckBackupProcessRestMain
+rem StartRusTextBlock
+@echo   %_fBGreen%= Архив восстановлен%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%= Archive restored%_fReset%
+rem EndEngTextBlock
+)
+del /q /f "!tempErr!" >nul 2>&1
+del /q /f "!tempResult!" >nul 2>&1
+@timeout /t 2 /nobreak >nul
+)
+rem exit /b
+
+rem :_RestoreFinish
+rem ============================
+@timeout /t 1 /nobreak >nul
+del /q /f "%QuasWorkDir%\TempRestoreResult*" 1>nul 2>nul
+del /q /f "%QuasWorkDir%\TempRestoreErr*" 1>nul 2>nul
+del /q /f "%QuasWorkDir%\restore_error.flag" 1>nul 2>nul
+del /q /f packages-list.txt 1>nul 2>nul
+%myfiles%\adb shell input keyevent 223
+@%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.automation_disable 1>nul 2>nul
+exit /b
+
+
+:_WaitRestoreStartMain
+rem -----------------------------------------------------------------------
+rem Ждем одно из двух событий:
+rem
+rem   backupconfirm появился
+rem       -> exit /b 0
+rem
+rem   adb restore завершился, но backupconfirm не появился
+rem       -> exit /b 1
+rem
+rem tempErr здесь НЕ используется для определения результата.
+rem -----------------------------------------------------------------------
+
+rem 
+for /f "tokens=1,2,3 delims=:= " %%a in ('
+%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"
+') do (
+if /i "%%c"=="com.android.backupconfirm" (
+exit /b 0
+)
+)
+
+if exist "!tempResult!" (
+exit /b 1
+)
+
+@timeout /t 2 /nobreak >nul
+goto :_WaitRestoreStartMain
+
+
+:_CheckBackupProcessRestMain
+@for /f "tokens=1,2,3 delims=:= " %%a in ('
+%myfiles%\adb.exe shell dumpsys activity activities ^| findstr /i /c:"taskAffinity"
+') do (
+if [%%c] == [com.android.backupconfirm] (
+@timeout /t 2 /nobreak 1>nul
+goto _CheckBackupProcessRestMain
+) else (
+exit /b
+)
+)

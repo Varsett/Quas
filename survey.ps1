@@ -1,15 +1,19 @@
 param(
     [string]$VID = "VID_2833"
 )
-
 $ErrorActionPreference = "SilentlyContinue"
 $buffer = ""
+$usbCheckInterval = 20   # проверять USB каждые 20 циклов = ~2 секунды
+$usbCheckCounter = 0
 
 while ($true) {
-
-    # --- Проверка подключения USB ---
-    $device = Get-PnpDevice | Where-Object { $_.InstanceId -like "*$VID*" -and $_.Status -eq "OK" }
-    if ($device) { exit 1 }  # CONNECTED
+    # --- Проверка подключения USB (не каждый цикл!) ---
+    if ($usbCheckCounter -le 0) {
+        $device = Get-PnpDevice | Where-Object { $_.InstanceId -like "*$VID*" -and $_.Status -eq "OK" }
+        if ($device) { exit 1 }  # CONNECTED
+        $usbCheckCounter = $usbCheckInterval
+    }
+    $usbCheckCounter--
 
     # --- Показываем приглашение ---
     if ($buffer -eq "") { Write-Host -NoNewline "`r> " }
@@ -17,10 +21,9 @@ while ($true) {
     # --- Чтение клавиши без блокировки ---
     if ([Console]::KeyAvailable) {
         $key = [Console]::ReadKey($true)
-
         switch ($key.Key) {
             'Enter' {
-                Write-Host ""  # перевод строки
+                Write-Host ""
                 switch ($buffer.ToUpper()) {
                     "0"  { exit 2 }
                     "S"  { exit 3 }
@@ -29,6 +32,7 @@ while ($true) {
                     "K"  { exit 6 }
                     "I"  { exit 7 }
                     "00" { exit 8 }
+                    "W"  { exit 9 }
                 }
                 $buffer = ""
             }

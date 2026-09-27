@@ -1,146 +1,557 @@
+[ Info & Status ]
+adb version ## Shows ADB client version and server path. | Example: adb version ##| Показывает версию ADB-клиента и путь к серверу. | Пример: adb version
+adb devices ## Lists all connected devices: serial and state. | Example: adb devices ##| Список всех подключённых устройств: серийный номер и статус. | Пример: adb devices
+adb devices -l ## Extended listing: model, product, transport ID. | Example: adb devices -l ##| Расширенный список: модель, продукт, transport ID. | Пример: adb devices -l
+adb shell getprop ## Dumps ALL system properties as key=value pairs. | Example: adb shell getprop | findstr "ro.product" ##| Выводит ВСЕ системные свойства в формате ключ=значение. | Пример: adb shell getprop | findstr "ro.product"
+adb shell getprop ro.product.model ## Returns device model name. ##| Возвращает модель устройства. | Пример: adb shell getprop ro.product.model
+adb shell getprop ro.build.version.release ## Returns Android version. ##| Возвращает версию Android.
+adb shell getprop ro.build.version.incremental ## Internal OTA build number. ##| Внутренний номер сборки OTA.
+adb shell getprop ro.build.version.sdk ## Returns Android SDK level. ##| Возвращает уровень Android SDK.
+adb shell getprop ro.serialno ## Device serial number. ##| Серийный номер устройства.
+adb shell getprop ro.product.brand ## Manufacturer brand. ##| Бренд производителя.
+adb shell getprop ro.product.cpu.abilist ## Supported CPU ABI architectures. ##| Поддерживаемые архитектуры CPU ABI.
+adb shell getprop persist.sys.timezone ## Current timezone string. ##| Текущий часовой пояс.
+adb shell getprop persist.sys.locale ## Current locale and language. ##| Текущая локаль и язык.
+adb shell getprop net.hostname ## Device network hostname. ##| Сетевое имя устройства.
+adb shell getprop wifi.interface ## Name of the Wi-Fi network interface. ##| Имя сетевого интерфейса Wi-Fi.
+adb shell uptime ## Time since last reboot and load averages. ##| Время с момента последней перезагрузки и средняя нагрузка.
+adb shell date ## Current device date and time. ##| Текущие дата и время на устройстве.
+adb shell id ## Current shell user identity. ##| Идентификатор текущего пользователя оболочки.
+adb shell whoami ## Current shell username. ##| Имя текущего пользователя оболочки.
+adb shell uname -a ## Kernel version and build info. ##| Версия ядра и информация о сборке.
+adb shell cat /proc/version ## Detailed kernel version string. ##| Подробная строка версии ядра.
+adb shell cat /proc/cpuinfo ## CPU details: cores, model, features. | Example: adb shell cat /proc/cpuinfo | findstr "model name" ##| Информация о CPU: ядра, модель, возможности. | Пример: adb shell cat /proc/cpuinfo | findstr "model name"
+adb shell cat /proc/meminfo ## Detailed memory stats in kB. | Example: adb shell cat /proc/meminfo | findstr "MemTotal" ##| Детальная статистика памяти в кБ. | Пример: adb shell cat /proc/meminfo | findstr "MemTotal"
+adb shell service list ## All running Android services with names. | Example: adb shell service list | findstr oculus ##| Список всех запущенных сервисов Android. | Пример: adb shell service list | findstr oculus
+adb shell dumpsys battery ## Full battery report: level, temp, voltage, health. ##| Полный отчёт об аккумуляторе: уровень, температура, напряжение, состояние.
+adb shell dumpsys batterystats --charged ## Power usage per app since last full charge. ##| Потребление энергии по приложениям с последней полной зарядки.
+adb shell dumpsys thermalservice ## Thermal status, sensors, throttle thresholds. ##| Тепловой статус, датчики, пороги троттлинга.
+adb shell dumpsys DumpsysProxy OCMS ## Quest-specific: Oculus Content Management Service. ##| Quest: статус сервиса управления контентом Oculus.
+adb shell dumpsys DumpsysProxy <service> ## Dump any Quest VR proxy service by name. | Example: adb shell dumpsys DumpsysProxy OVRRemoteService ##| Дамп любого VR-прокси сервиса Quest по имени. | Пример: adb shell dumpsys DumpsysProxy OVRRemoteService
+adb shell dumpsys package <pkgname> ## Full package info: version, permissions, activities. | Example: adb shell dumpsys package com.oculus.vrshell ##| Полная информация о пакете: версия, права, активности. | Пример: adb shell dumpsys package com.oculus.vrshell
+adb shell dumpsys wifi | findstr "Wi-Fi is" ## Quick Wi-Fi state check. ##| Быстрая проверка состояния Wi-Fi.
+adb shell dumpsys hardware_properties ## CPU/GPU frequencies, thermal limits, chip info. ##| Частоты CPU/GPU, тепловые ограничения, информация о чипе.
+adb shell dumpsys activity top ## Currently running foreground activity. | Example: adb shell dumpsys activity top | findstr "ACTIVITY" ##| Текущая активность переднего плана. | Пример: adb shell dumpsys activity top | findstr "ACTIVITY"
+adb shell dumpsys window displays ## Display resolution, refresh rate, DPI, rotation. | Example: adb shell dumpsys window displays | findstr "mBaseDisplayInfo" ##| Разрешение, частота, DPI, поворот экрана. | Пример: adb shell dumpsys window displays | findstr "mBaseDisplayInfo"
+adb shell dumpsys power ## Power manager state: wake locks, screen, idle. | Example: adb shell dumpsys power | findstr "mWakefulness" ##| Состояние менеджера питания: блокировки, экран, простой. | Пример: adb shell dumpsys power | findstr "mWakefulness"
+adb shell dumpsys audio ## Audio system: streams, volumes, focus, routing. | Example: adb shell dumpsys audio | findstr "volume" ##| Аудиосистема: потоки, громкость, фокус, маршрутизация. | Пример: adb shell dumpsys audio | findstr "volume"
+adb shell dumpsys input ## Input devices, touch calibration, key mappings. ##| Устройства ввода, калибровка касаний, назначение клавиш.
+adb shell dumpsys sensor ## Sensor list with types, vendors, ranges. | Example: adb shell dumpsys sensor | findstr "Name" ##| Список датчиков с типами, производителями, диапазонами. | Пример: adb shell dumpsys sensor | findstr "Name"
+adb shell dumpsys location ## Location providers, GPS status, last location. ##| Провайдеры местоположения, статус GPS, последнее местоположение.
+adb shell dumpsys connectivity ## Network connectivity, active networks, DNS. | Example: adb shell dumpsys connectivity | findstr "NetworkInfo" ##| Сетевое подключение, активные сети, DNS. | Пример: adb shell dumpsys connectivity | findstr "NetworkInfo"
+adb shell dumpsys meminfo ## Memory usage by process: PSS, RSS, heap. | Example: adb shell dumpsys meminfo | findstr "Total" ##| Использование памяти по процессам: PSS, RSS, куча. | Пример: adb shell dumpsys meminfo | findstr "Total"
+adb shell dumpsys meminfo <pkgname> ## Detailed memory breakdown for one app. | Example: adb shell dumpsys meminfo com.oculus.vrshell ##| Детальная разбивка памяти для одного приложения. | Пример: adb shell dumpsys meminfo com.oculus.vrshell
+adb shell dumpsys battery | findstr level ## Battery level ##| Уровень заряда батареи
+adb shell dumpsys battery | findstr temperature ## Battery temperature ##| Температура батареи
+adb shell dumpsys battery | findstr voltage ## Battery voltage ##| Напряжение батареи
+adb shell getprop ro.build.fingerprint ## Full build fingerprint uniquely identifying the exact firmware. ##| Полная строка fingerprint, однозначно определяющая сборку прошивки.
+adb shell getprop ro.build.display.id ## Human-readable build ID, same as shown in Settings > About. ##| Понятное человеку ID сборки, как в Настройках > О системе.
+adb shell getprop ro.product.manufacturer ## Device manufacturer name. ##| Имя производителя устройства.
+adb shell getprop ro.debuggable ## Returns 1 if this is a debuggable (userdebug/eng) build. ##| Возвращает 1, если сборка отладочная (userdebug/eng).
+adb shell getprop sys.boot_completed ## Returns 1 once the boot process has fully finished. ##| Возвращает 1 после полного завершения загрузки.
+adb shell dumpsys deviceidle ## Doze/idle mode state: whitelist, current idle stage. ##| Состояние режима Doze: список исключений, текущая стадия простоя.
+adb shell getprop ro.boot.hardware ## Hardware platform identifier. | Example: adb shell getprop ro.boot.hardware ##| Идентификатор аппаратной платформы.
+adb shell getprop ro.boot.flash.locked ## Bootloader lock state: 1=locked 0=unlocked. ##| Состояние блокировки загрузчика: 1=заблокирован 0=разблокирован.
+adb shell dumpsys usb ## USB manager state: current functions, port info. | Example: adb shell dumpsys usb | findstr "function" ##| Состояние USB-менеджера: функции, информация о порте.
+adb shell dumpsys display ## Display manager: brightness, state, configs. | Example: adb shell dumpsys display | findstr "brightness" ##| Менеджер дисплея: яркость, состояние, конфигурации.
+adb shell cat /proc/loadavg ## System load averages: 1, 5, 15 min + task counts. ##| Средняя нагрузка системы: 1, 5, 15 мин + количество задач.
+adb shell cat /proc/uptime ## Uptime in seconds and idle time. ##| Время работы в секундах и время простоя.
+adb shell getprop gsm.operator.alpha ## Mobile operator name if SIM is present. ##| Имя оператора мобильной связи при наличии SIM.
+adb shell dumpsys battery unplug ## Simulates unplugging charger for battery test. ##| Имитирует отключение зарядного устройства для тестов.
+!adb shell cmd power crash ## Triggers system crash (kernel panic) for crash dump testing. ##| Вызывает принудительный краш системы (kernel panic) для тестов.
+~adb shell cmd power set-adaptive-power-saver-enabled true ## Forces Adaptive Battery / Power Saver mode ON. ##| Принудительно включает адаптивный режим энергосбережения.
+~adb shell dumpsys deviceidle step ## Forcefully steps device into Deep Doze / Sleep state. ##| Принудительно переводит устройство в глубокий режим сна (Doze).
+~adb shell dumpsys deviceidle whitelist +<pkgname> ## Whitelists app to bypass Doze / Battery saver mode. ##| Добавляет приложение в белый список энергосбережения.
+adb shell dumpsys deviceidle whitelist -<pkgname> ## Removes app from Doze mode whitelist. ##| Удаляет приложение из белого списка энергосбережения.
+adb shell cmd uimode night auto ## Sets system dark mode to switch automatically based on time. ##| Настраивает авто-переключение тёмной темы по времени.
+adb shell dumpsys alarms ## Dumps all system alarm clocks and scheduled timers. ##| Показывает все системные будильники и запланированные таймеры.
+adb shell dumpsys jobscheduler ## Dumps status of all background scheduled tasks. ##| Показывает статус всех фоновых задач JobScheduler.
+adb shell cmd activity get-foreground-activity ## Current foreground activity. ##| Текущая Activity переднего плана.
+adb shell dumpsys activity top | findstr TASK ## Current task stack. ##| Текущий стек задач.
+adb shell dumpsys window windows | findstr mFocusedApp ## Focused application. ##| Приложение, имеющее фокус.
+adb shell getprop ro.product.device ## Device codename (eureka). ##| Кодовое имя устройства.
 
-# --- РРќР¤Рћ Р РЎРўРђРўРЈРЎ ---
-adb devices
-adb devices -l
-adb shell getprop ro.product.model
-adb shell getprop ro.build.version.release
-adb shell uptime
-adb shell dumpsys
-adb shell dumpsys battery
-adb shell dumpsys batterystats --charged
-adb shell dumpsys DumpsysProxy OCMS
-adb shell dumpsys package <pkgname>
-adb shell dumpsys DumpsysProxy <service>
-adb shell dumpsys wifi | findstr "Wi-Fi is"
-adb shell getprop persist.sys.timezone
-adb shell input keyevent <key>
+[ Apps ]
+adb shell pm list packages ## Lists all installed package names. | Example: adb shell pm list packages | findstr oculus ##| Список всех установленных пакетов. | Пример: adb shell pm list packages | findstr oculus
+adb shell pm list packages -3 ## Third-party (user-installed) packages only. ##| Только сторонние (пользовательские) пакеты.
+adb shell pm list packages -s ## System packages only. ##| Только системные пакеты.
+adb shell pm list packages -d ## Disabled packages only. ##| Только отключённые пакеты.
+adb shell pm list packages -a ## All packages including ones with leftover data. ##| Все пакеты, включая удалённые с оставшимися данными.
+adb shell pm list packages -f -a ## All packages with APK paths on device. ##| Все пакеты с путями к APK на устройстве.
+adb shell pm list packages -e ## Only currently enabled packages. ##| Только активные (включённые) пакеты.
+adb shell pm path <pkgname> ## Returns full APK path on device. | Example: adb shell pm path com.oculus.vrshell ##| Возвращает полный путь к APK на устройстве. | Пример: adb shell pm path com.oculus.vrshell
+adb shell pm dump <pkgname> ## Comprehensive dump: permissions, activities, providers. | Example: adb shell pm dump com.oculus.vrshell ##| Полный дамп: права, активности, провайдеры. | Пример: adb shell pm dump com.oculus.vrshell
+adb shell pm get-install-location ## Default install location: 0=auto 1=internal 2=external. ##| Место установки по умолчанию: 0=авто 1=внутреннее 2=внешнее.
+adb shell pm list features ## All device hardware and software features. | Example: adb shell pm list features | findstr "opengl" ##| Все аппаратные и программные возможности устройства. | Пример: adb shell pm list features | findstr "opengl"
+adb shell pm list permissions ## All defined Android permissions. | Example: adb shell pm list permissions | findstr "oculus" ##| Все определённые разрешения Android. | Пример: adb shell pm list permissions | findstr "oculus"
+adb shell pm list instrumentation ## Available test instrumentation packages. ##| Доступные пакеты тестовой инструментации.
+~adb shell pm disable-user --user 0 <pkgname> ## Disables app for user 0. Reversible with pm enable. | Example: adb shell pm disable-user --user 0 com.oculus.socialplatform ##| Отключает приложение для пользователя 0. Обратимо. | Пример: adb shell pm disable-user --user 0 com.oculus.socialplatform
+adb shell pm enable --user 0 <pkgname> ## Re-enables a previously disabled app. | Example: adb shell pm enable --user 0 com.oculus.socialplatform ##| Повторно включает ранее отключённое приложение. | Пример: adb shell pm enable --user 0 com.oculus.socialplatform
+adb shell pm grant <pkgname> <permission> ## Grants a runtime permission to an app. | Example: adb shell pm grant com.myapp android.permission.CAMERA ##| Предоставляет приложению разрешение во время выполнения. | Пример: adb shell pm grant com.myapp android.permission.CAMERA
+adb shell pm revoke <pkgname> <permission> ## Revokes a runtime permission from an app. | Example: adb shell pm revoke com.myapp android.permission.CAMERA ##| Отзывает разрешение у приложения. | Пример: adb shell pm revoke com.myapp android.permission.CAMERA
+~adb shell pm clear <pkgname> ## Wipes all app data and cache. Cannot be undone. | Example: adb shell pm clear com.myapp ##| Очищает все данные и кэш приложения. Необратимо. | Пример: adb shell pm clear com.myapp
+~adb shell pm uninstall -k --user 0 <pkgname> ## Removes app for user 0 only, keeps data. | Example: adb shell pm uninstall -k --user 0 com.myapp ##| Удаляет приложение только для пользователя 0, данные сохраняются. | Пример: adb shell pm uninstall -k --user 0 com.myapp
+~adb shell pm uninstall <pkgname> ## Fully removes app and data. Cannot be undone. | Example: adb shell pm uninstall com.myapp ##| Полностью удаляет приложение и данные. Необратимо. | Пример: adb shell pm uninstall com.myapp
+adb install -r -g <your.apk> ## Installs APK, replacing existing, granting all permissions. | Example: adb install -r -g MyApp.apk ##| Устанавливает APK, заменяя существующее, предоставляя все разрешения. | Пример: adb install -r -g MyApp.apk
+adb install -r -g -d <appname.apk> ## Install with downgrade allowed. | Example: adb install -r -g -d MyApp_old.apk ##| Установка с разрешением даунгрейда. | Пример: adb install -r -g -d MyApp_old.apk
+adb install --abi arm64-v8a <your.apk> ## Installs APK for a specific ABI only. | Example: adb install --abi arm64-v8a MyApp.apk ##| Устанавливает APK только для указанной ABI-архитектуры. | Пример: adb install --abi arm64-v8a MyApp.apk
+adb shell am start <pkgname> ## Launches app using default LAUNCHER activity. | Example: adb shell am start com.oculus.vrshell ##| Запускает приложение через активность LAUNCHER по умолчанию. | Пример: adb shell am start com.oculus.vrshell
+adb shell am start -n <pkgname>/<activity> ## Launches a specific activity. | Example: adb shell am start -n com.oculus.vrshell/.MainActivity ##| Запускает конкретную активность приложения. | Пример: adb shell am start -n com.oculus.vrshell/.MainActivity
+adb shell am start -a <action> -d <data_uri> ## Launches activity with intent action and data. | Example: adb shell am start -a android.intent.action.VIEW -d https://meta.com ##| Запускает активность с Intent-действием и данными. | Пример: adb shell am start -a android.intent.action.VIEW -d https://meta.com
+adb shell am start -a <action> --es <key> <value> ## Launches activity passing a string extra. | Example: adb shell am start -a my.ACTION --es param1 hello ##| Запускает активность с передачей строкового параметра. | Пример: adb shell am start -a my.ACTION --es param1 hello
+adb shell am startservice -n <pkgname>/<service> ## Starts a background service. | Example: adb shell am startservice -n com.myapp/.MyService ##| Запускает фоновый сервис приложения. | Пример: adb shell am startservice -n com.myapp/.MyService
+adb shell am stopservice -n <pkgname>/<service> ## Stops a running background service. | Example: adb shell am stopservice -n com.myapp/.MyService ##| Останавливает запущенный фоновый сервис. | Пример: adb shell am stopservice -n com.myapp/.MyService
+adb shell am broadcast -a <action> ## Sends a broadcast intent. | Example: adb shell am broadcast -a android.intent.action.BOOT_COMPLETED ##| Отправляет широковещательный Intent. | Пример: adb shell am broadcast -a android.intent.action.BOOT_COMPLETED
+adb shell am broadcast -a <action> -p <pkgname> ## Sends broadcast to a specific package. | Example: adb shell am broadcast -a my.ACTION -p com.myapp ##| Отправляет широковещательный Intent конкретному пакету. | Пример: adb shell am broadcast -a my.ACTION -p com.myapp
+~adb shell am force-stop <pkgname> ## Kills all processes of an app. Data preserved. | Example: adb shell am force-stop com.myapp ##| Принудительно завершает все процессы приложения. Данные сохраняются. | Пример: adb shell am force-stop com.myapp
+adb shell am kill <pkgname> ## Kills background processes (safer than force-stop). | Example: adb shell am kill com.myapp ##| Завершает фоновые процессы (безопаснее, чем force-stop). | Пример: adb shell am kill com.myapp
+adb shell am monitor ## Monitors activity manager events in real time. ##| Мониторинг событий менеджера активностей в реальном времени.
+adb shell monkey -p <pkgname> -c android.intent.category.LAUNCHER 1 ## Sends one synthetic launch event. ##| Отправляет одно синтетическое событие запуска.
+adb shell monkey -p <pkgname> --throttle 200 500 ## Sends 500 random UI events with 200ms delay. ##| Отправляет 500 случайных UI-событий с задержкой 200 мс.
+adb shell pm list users ## Lists all users on the device with IDs and names. ##| Список всех пользователей устройства с ID и именами.
+adb shell pm create-user <username> ## Creates a new user account on the device. | Example: adb shell pm create-user TestUser ##| Создаёт новую учётную запись пользователя.
+~adb shell pm remove-user <user_id> ## Removes a user account. Cannot remove user 0. | Example: adb shell pm remove-user 10 ##| Удаляет учётную запись пользователя. Нельзя удалить пользователя 0.
+adb shell pm list packages --user <id> ## Lists packages visible to a specific user. | Example: adb shell pm list packages --user 10 ##| Список пакетов для конкретного пользователя.
+adb shell am get-current-user ## Returns the ID of the currently active foreground user. ##| Возвращает ID текущего активного пользователя.
+~adb shell am switch-user <user_id> ## Switches the active foreground user. | Example: adb shell am switch-user 10 ##| Переключает активного пользователя переднего плана.
+~adb uninstall <pkgname> ## Uninstalls an app directly via adb (shortcut for pm uninstall). | Example: adb uninstall com.myapp ##| Удаляет приложение напрямую через adb (аналог pm uninstall). | Пример: adb uninstall com.myapp
+~adb uninstall -k <pkgname> ## Uninstalls but keeps app data and cache. | Example: adb uninstall -k com.myapp ##| Удаляет приложение, сохраняя данные и кэш. | Пример: adb uninstall -k com.myapp
+adb shell pm list libraries ## Lists shared system libraries available on the device. ##| Список общих системных библиотек, доступных на устройстве.
+adb shell dumpsys package packages | findstr versionName ## Version names of all installed packages. ##| Версии всех установленных пакетов.
+adb shell cmd package set-home-activity <pkgname>/<activity> ## Sets the default Home/launcher activity. | Example: adb shell cmd package set-home-activity com.oculus.shellenv/.HomeActivity ##| Устанавливает активность-лаунчер по умолчанию. | Пример: adb shell cmd package set-home-activity com.oculus.shellenv/.HomeActivity
+adb shell dumpsys activity services <pkgname> ## Lists running services for a specific package. | Example: adb shell dumpsys activity services com.oculus.vrshell ##| Список запущенных сервисов конкретного пакета. | Пример: adb shell dumpsys activity services com.oculus.vrshell
+adb shell pm path -f <pkgname> ## Shows all split APK paths (base + config splits). | Example: adb shell pm path -f com.myapp ##| Показывает пути ко всем split-APK (base + config). | Пример: adb shell pm path -f com.myapp
+adb shell cmd package get-app-links <pkgname> ## Shows verified domain (App Links) status for a package. ##| Показывает статус подтверждённых доменов (App Links) для пакета.
+adb shell pm list packages -i ## Shows the installer package name next to each app. ##| Показывает имя пакета-установщика рядом с каждым приложением.
+adb shell pm get-app-links <pkgname> ## Checks Domain Verification / App Links status for a package. ##| Проверяет статус диплинков (App Links) для приложения.
+adb shell pm set-app-links --state always <pkgname> ## Forces device to always open web links in this app. ##| Принудительно открывает веб-ссылки в этом приложении.
+adb shell pm set-installer <pkgname> <installer_pkg> ## Changes the installer package name (e.g. com.android.vending). ##| Меняет имя установщика для приложения (например, на Google Play).
+adb shell pm get-staged-sessions ## Lists active staged APK installation sessions. ##| Список активных поэтапных (staged) сессий установки APK.
+adb shell pm list permission-groups ## Shows all permission groups defined in system. ##| Список всех групп разрешений в системе.
+adb shell pm query-intent-activities -a android.intent.action.VIEW -d "https://google.com" ## Finds which app handles specific URL or Intent. ##| Показывает, какое приложение обрабатывает конкретный URL или Intent.
+adb shell cmd package compile -m verify <pkgname> ## Resets app DEX compilation back to verification state. ##| Сбрасывает DEX-компиляцию приложения до базовой проверки.
+adb shell cmd package snapshot-profile <pkgname> ## Generates ART execution profile snapshot for performance analysis. ##| Создаёт снимок профиля ART для анализа производительности.
+~adb shell cmd package suspend <pkgname> ## Suspends an app (grays out icon, blocks execution). ##| Замораживает приложение (делает иконку серой, блокирует запуск).
+adb shell cmd package unsuspend <pkgname> ## Unsuspends a previously suspended app. ##| Размораживает ранее заблокированное приложение.
+adb shell cmd activity get-uid-state <package> ## Current UID state. ##| Текущее состояние UID приложения.
+adb shell cmd activity get-inactive <package> ## App inactivity status. ##| Статус неактивности приложения.
+~adb shell cmd activity set-inactive <package> true ## Marks app as inactive. ##| Помечает приложение как неактивное.
+~adb shell cmd activity set-inactive <package> false ## Removes inactive state. ##| Снимает статус неактивности.
 
-# === РџР РР›РћР–Р•РќРРЇ (APK) ===
-adb shell pm list packages -3
-adb shell pm list packages -s
-adb shell pm list packages -d
-adb shell pm list packages -a
-adb install -r -g -d <appname.apk>
-adb shell pm disable-user --user 0 <pkgname>
-adb shell pm enable --user 0 <pkgname>
-adb shell pm uninstall -k --user 0 <pkgname>
-adb shell pm uninstall <pkgname>
-adb shell pm clear <pkgname>
-adb shell am force-stop <pkgname>
-adb shell monkey -p <pkgname> -c android.intent.category.LAUNCHER
-adb shell am start <pkgname>
-adb shell pm path <pkgname>
-adb shell pm clear <pkgname>
-adb shell am start -n <pkgname>/<activity>
-adb shell am startservice -n <pkgname>/<service>
-adb shell am broadcast -a <action>
-adb install -r -g <your.apk>
-adb shell monkey -p <pkgname> -c android.intent.category.LAUNCHER 1
-adb shell pm path <pkgname>
+[ ADB cmd Commands ]
+adb shell cmd package list packages ## Lists packages via cmd (alternative to pm). ##| Список пакетов через cmd (альтернатива pm).
+adb shell cmd package resolve-activity --brief <pkgname> ## Default activity for a package. | Example: adb shell cmd package resolve-activity --brief com.oculus.vrshell ##| Активность по умолчанию для пакета. | Пример: adb shell cmd package resolve-activity --brief com.oculus.vrshell
+adb shell cmd package install-existing <pkgname> ## Re-installs an existing package for current user. ##| Повторная установка существующего пакета для текущего пользователя.
+adb shell cmd activity start -n <pkgname>/<activity> ## Starts an activity via cmd activity manager. | Example: adb shell cmd activity start -n com.oculus.vrshell/.MainActivity ##| Запускает активность через cmd. | Пример: adb shell cmd activity start -n com.oculus.vrshell/.MainActivity
+adb shell cmd activity force-stop <pkgname> ## Force stops an app via cmd. | Example: adb shell cmd activity force-stop com.myapp ##| Принудительно останавливает приложение через cmd. | Пример: adb shell cmd activity force-stop com.myapp
+adb shell cmd statusbar expand-notifications ## Expands the notification shade. ##| Разворачивает шторку уведомлений.
+adb shell cmd statusbar collapse ## Collapses the notification shade. ##| Сворачивает шторку уведомлений.
+adb shell cmd notification list ## Lists active notifications. ##| Список активных уведомлений.
+adb shell cmd bluetooth_manager get-state ## Returns current Bluetooth state. ##| Возвращает текущее состояние Bluetooth.
+adb shell cmd wifi enable ## Enables Wi-Fi via cmd. ##| Включает Wi-Fi через cmd.
+adb shell cmd wifi disable ## Disables Wi-Fi via cmd. ##| Отключает Wi-Fi через cmd.
+adb shell cmd wifi list-networks ## Lists known/saved Wi-Fi networks. ##| Список известных/сохранённых Wi-Fi сетей.
+adb shell cmd wifi connect-network <ssid> open ## Connects to an open Wi-Fi network. | Example: adb shell cmd wifi connect-network MyNet open ##| Подключается к открытой Wi-Fi сети. | Пример: adb shell cmd wifi connect-network MyNet open
+adb shell cmd wifi forget-network <id> ## Forgets a saved Wi-Fi network by ID. ##| Удаляет сохранённую Wi-Fi сеть по ID.
+~adb shell cmd power set-mode 0 ## Sets power mode: 0=normal 1=save 2=performance. | Example: adb shell cmd power set-mode 2 ##| Устанавливает режим питания: 0=обычный 1=экономия 2=производительность. | Пример: adb shell cmd power set-mode 2
+adb shell cmd thermalservice override-status 0 ## Overrides thermal status for testing. 0=none...3=severe. ##| Переопределяет тепловой статус для тестирования.
+adb shell cmd thermalservice reset ## Resets thermal override back to hardware sensors. ##| Сбрасывает тепловое переопределение к аппаратным датчикам.
+adb shell cmd device_config list ## Lists all device config flags (feature flags). | Example: adb shell cmd device_config list | findstr "oculus" ##| Список всех флагов конфигурации устройства. | Пример: adb shell cmd device_config list | findstr "oculus"
+adb shell cmd device_config get <namespace> <key> ## Gets a specific device config flag value. | Example: adb shell cmd device_config get runtime_native_boot miniDebugInfo ##| Получает значение конкретного флага конфигурации. | Пример: adb shell cmd device_config get runtime_native_boot miniDebugInfo
+~adb shell cmd device_config put <namespace> <key> <value> ## Sets a device config flag. Persists across restarts. | Example: adb shell cmd device_config put runtime_native_boot miniDebugInfo false ##| Устанавливает флаг конфигурации. Сохраняется после перезагрузки. | Пример: adb shell cmd device_config put runtime_native_boot miniDebugInfo false
+adb shell cmd media_session dispatch pause ## Dispatches a media pause event. ##| Отправляет событие паузы медиа в активный сеанс.
+adb shell cmd media_session dispatch play ## Dispatches a media play event. ##| Отправляет событие воспроизведения медиа.
+adb shell cmd overlay list <pkgname> ## Lists overlay packages for a target app. | Example: adb shell cmd overlay list android ##| Список оверлей-пакетов для указанного приложения. | Пример: adb shell cmd overlay list android
+adb shell cmd appops get <pkgname> <op> ## Gets an app-op permission state. | Example: adb shell cmd appops get com.myapp CAMERA ##| Получает состояние разрешения app-op. | Пример: adb shell cmd appops get com.myapp CAMERA
+~adb shell cmd appops set <pkgname> <op> allow ## Sets an app-op permission to allowed. | Example: adb shell cmd appops set com.myapp CAMERA allow ##| Разрешает app-op разрешение для приложения. | Пример: adb shell cmd appops set com.myapp CAMERA allow
+~adb shell cmd appops set <pkgname> <op> deny ## Denies an app-op permission. | Example: adb shell cmd appops set com.myapp RECORD_AUDIO deny ##| Запрещает app-op разрешение для приложения. | Пример: adb shell cmd appops set com.myapp RECORD_AUDIO deny
+adb shell cmd appops reset <pkgname> ## Resets all app-ops for a package to defaults. | Example: adb shell cmd appops reset com.myapp ##| Сбрасывает все app-ops пакета к значениям по умолчанию. | Пример: adb shell cmd appops reset com.myapp
+adb shell cmd netpolicy list uid-rules ## Lists network policy rules per UID. ##| Список правил сетевой политики по UID.
+adb shell cmd uimode night yes ## Enables system night (dark) mode. ##| Включает ночной (тёмный) режим системы.
+adb shell cmd uimode night no ## Disables system night mode. ##| Отключает ночной режим системы.
+adb shell cmd uimode car yes ## Enables car mode UI. ##| Включает режим автомобильного UI.
+adb shell cmd battery set level <n> ## Sets battery level for testing (0-100). Resets on unplug. | Example: adb shell cmd battery set level 50 ##| Устанавливает уровень заряда для тестирования (0-100). | Пример: adb shell cmd battery set level 50
+adb shell cmd battery reset ## Resets battery to real hardware values after testing. ##| Сбрасывает аккумулятор к реальным значениям после тестирования.
+adb shell cmd battery set usb 1 ## Simulates USB connection for testing charging logic. ##| Симулирует подключение USB для тестирования логики зарядки.
+adb shell cmd input keyboard inject-event <key> ## Injects a keyboard event by key code. | Example: adb shell cmd input keyboard inject-event 26 ##| Инжектирует событие клавиатуры по коду клавиши. | Пример: adb shell cmd input keyboard inject-event 26
+adb shell cmd package compile -m speed <pkgname> ## AOT-compiles an app for maximum speed. | Example: adb shell cmd package compile -m speed com.myapp ##| Компилирует приложение AOT для максимальной скорости.
+adb shell cmd package compile -m everything -f <pkgname> ## Forces full AOT compilation of an app. ##| Принудительная полная AOT-компиляция приложения.
+adb shell cmd package bg-dexopt-job ## Triggers background dexopt for all packages. ##| Запускает фоновую dexopt-оптимизацию для всех пакетов.
+adb shell cmd alarm ## Lists all pending alarms on the device. | Example: adb shell cmd alarm | findstr "oculus" ##| Список всех ожидающих будильников на устройстве.
+adb shell cmd jobscheduler run -f <pkgname> <job_id> ## Forces a JobScheduler job to run immediately. ##| Принудительно запускает задание JobScheduler немедленно.
+adb shell cmd window list ## Lists all windows currently shown on screen. | Example: adb shell cmd window list | findstr "oculus" ##| Список всех окон на экране.
+adb shell cmd window get-display-size ## Returns current display size via cmd. ##| Возвращает текущий размер дисплея через cmd.
+adb shell cmd vibrator_manager vibrate ## Triggers a vibration on the device. ##| Вызывает вибрацию устройства.
+adb shell cmd shortcut get-shortcuts <pkgname> ## Lists dynamic/pinned shortcuts declared by an app. ##| Список динамических/закреплённых ярлыков приложения.
+adb shell cmd looper_stats enable ## Enables Looper (main thread) statistics collection. ##| Включает сбор статистики Looper (главного потока).
+adb shell cmd settings list config ## Lists device config flags via the settings cmd. ##| Список флагов конфигурации устройства через cmd settings.
+adb shell cmd stats print-stats ## Dumps collected system statsd metrics. ##| Выгружает собранные метрики statsd.
+adb shell cmd deviceidle whitelist ## Lists apps whitelisted from Doze/battery restrictions. ##| Список приложений, исключённых из ограничений Doze.
+adb shell cmd package query-activities -a android.intent.action.MAIN -c android.intent.category.LAUNCHER ## List of all launchable applications. These Activity components launch when clicking the app icon ##| Список всех запускаемых приложений. Именно эти Activity запускаются при нажатии на иконку приложения.
 
-# --- РќРђРЎРўР РћР™РљР Р РўР’РРљР ---
-adb shell settings put global stay_on_while_plugged_in 3
-adb shell cmd bluetooth_manager disable
-adb shell cmd bluetooth_manager enable
+[ Settings & Tweaks ]
+adb shell settings list global ## All global settings as key=value. | Example: adb shell settings list global | findstr dns ##| Все глобальные настройки в формате ключ=значение. | Пример: adb shell settings list global | findstr dns
+adb shell settings list secure ## Secure per-user settings. ##| Защищённые настройки пользователя.
+adb shell settings list system ## System UI settings: timeout, font, rotation. ##| Настройки системного UI: тайм-аут, шрифт, поворот.
+adb shell settings get global private_dns_mode ## Gets DNS-over-TLS mode. ##| Получает режим DNS-over-TLS.
+adb shell settings get global private_dns_specifier ## Gets custom DoT server hostname. ##| Получает имя хоста пользовательского DoT-сервера.
+~adb shell settings put global stay_on_while_plugged_in 3 ## Keeps screen on while charging. 7=all sources. | Example: adb shell settings put global stay_on_while_plugged_in 7 ##| Не даёт экрану гаснуть при зарядке. 7=все источники. | Пример: adb shell settings put global stay_on_while_plugged_in 7
+~adb shell settings put global adb_enabled 1 ## Enables ADB debugging via settings key. ##| Включает отладку ADB через ключ настроек.
+~adb shell settings put global private_dns_mode off ## Disables DNS-over-TLS completely. ##| Полностью отключает DNS-over-TLS.
+~adb shell settings put global private_dns_specifier <dns_ip> ## Sets custom DoT server. | Example: adb shell settings put global private_dns_specifier dns.google ##| Устанавливает пользовательский DoT-сервер. | Пример: adb shell settings put global private_dns_specifier dns.google
+~adb shell settings put global development_settings_enabled 1 ## Enables developer options without tapping Build Number. ##| Включает режим разработчика без нажатий на Номер сборки.
+~adb shell settings put global adb_wifi_enabled 1 ## Enables ADB over Wi-Fi. ##| Включает ADB по Wi-Fi.
+~adb shell settings put global adb_wifi_enabled 0 ## Disables wireless ADB. ##| Отключает беспроводной ADB.
+adb shell settings get global adb_wifi_enabled ## Checks if wireless ADB is active. Returns 1 or 0. ##| Проверяет активность беспроводного ADB. Возвращает 1 или 0.
+adb shell settings get system screen_off_timeout ## Gets screen timeout in ms. 60000=1 min. ##| Получает тайм-аут экрана в мс. 60000=1 минута.
+~adb shell settings put system screen_off_timeout 86400000 ## Sets screen timeout to 24 hours. ##| Устанавливает тайм-аут экрана 24 часа.
+~adb shell settings put global animator_duration_scale 0 ## Disables all UI animations. Speeds up UI. ##| Отключает все UI-анимации. Ускоряет интерфейс.
+~adb shell settings put global window_animation_scale 0 ## Disables window open/close animations. ##| Отключает анимации открытия/закрытия окон.
+~adb shell settings put global transition_animation_scale 0 ## Disables transition animations. ##| Отключает анимации переходов.
+adb shell settings get global airplane_mode_on ## Checks if airplane mode is on. Returns 1 or 0. ##| Проверяет режим полёта. Возвращает 1 или 0.
+~adb shell settings put global airplane_mode_on 1 ## Enables airplane mode. ##| Включает режим полёта.
+~adb shell settings put global always_finish_activities 1 ## Always destroys activities when user leaves. Good for leak testing. ##| Всегда уничтожает активности при выходе. Полезно для тестирования утечек.
+~adb shell settings put global show_touches 1 ## Shows touch indicators on screen. Good for demos. | Example: adb shell settings put global show_touches 0 ##| Показывает индикаторы касаний. Полезно для демонстраций.
+~adb shell settings put global pointer_location 1 ## Shows pointer location crosshair on screen. | Example: adb shell settings put global pointer_location 0 ##| Показывает перекрестие указателя на экране.
+adb shell settings get secure android_id ## Returns the unique Android ID of the device. ##| Возвращает уникальный Android ID устройства.
+~adb shell settings put system font_scale 1.0 ## Sets font scale. 1.0=normal 1.3=large 0.85=small. | Example: adb shell settings put system font_scale 1.15 ##| Масштаб шрифта. 1.0=норма 1.3=большой 0.85=маленький.
+~adb shell settings put secure location_mode 3 ## Location mode: 0=off 1=sensors 2=network 3=high accuracy. ##| Режим геолокации: 0=выкл 1=датчики 2=сеть 3=высокая точность.
+~adb shell svc wifi disable ## Disables Wi-Fi radio. ##| Отключает радиомодуль Wi-Fi.
+adb shell svc wifi enable ## Re-enables Wi-Fi radio. ##| Включает радиомодуль Wi-Fi.
+adb shell svc usb setFunctions mtp true ## Switches USB to MTP file transfer mode. ##| Переключает USB в режим передачи файлов MTP.
+adb shell svc usb setFunctions ptp true ## Switches USB to PTP camera mode. ##| Переключает USB в режим камеры PTP.
+adb shell svc power stayon true ## Keeps screen on forever while plugged in. ##| Не даёт экрану гаснуть пока подключено питание.
+~adb shell svc data disable ## Disables mobile data. ##| Отключает мобильные данные.
+adb shell svc data enable ## Enables mobile data. ##| Включает мобильные данные.
+adb shell input keyevent <key> ## Sends keypress. 3=Home 4=Back 26=Power 24=Vol+. | Example: adb shell input keyevent 26 ##| Отправляет нажатие клавиши. 125=Домой 4=Назад 26=Питание. | Пример: adb shell input keyevent 26
+adb shell input tap <x> <y> ## Simulates a tap at screen coordinates. | Example: adb shell input tap 540 960 ##| Симулирует касание в указанных координатах экрана. | Пример: adb shell input tap 540 960
+adb shell input swipe <x1> <y1> <x2> <y2> <ms> ## Simulates a swipe gesture with duration in ms. | Example: adb shell input swipe 100 500 900 500 300 ##| Симулирует жест свайпа с указанной длительностью. | Пример: adb shell input swipe 100 500 900 500 300
+adb shell input text <text> ## Types text into the focused field (ASCII only). | Example: adb shell input text "Hello World" ##| Вводит текст в активное поле (только ASCII). | Пример: adb shell input text "Hello World"
+~adb shell settings put system screen_brightness <0-255> ## Sets screen brightness directly. | Example: adb shell settings put system screen_brightness 150 ##| Устанавливает яркость экрана напрямую. | Пример: adb shell settings put system screen_brightness 150
+adb shell settings get system screen_brightness ## Gets current screen brightness (0-255). ##| Получает текущую яркость экрана (0-255).
+~adb shell settings put global bluetooth_on 1 ## Enables Bluetooth via settings key. ##| Включает Bluetooth через ключ настроек.
+~adb shell settings put global auto_time 0 ## Disables automatic network time sync. ##| Отключает автоматическую синхронизацию времени по сети.
+~adb shell settings put secure enabled_accessibility_services <service> ## Enables an accessibility service by component name. | Example: adb shell settings put secure enabled_accessibility_services com.myapp/.MyService ##| Включает службу специальных возможностей по имени компонента. | Пример: adb shell settings put secure enabled_accessibility_services com.myapp/.MyService
+adb shell settings get global bluetooth_on ## Checks if Bluetooth is currently enabled. ##| Проверяет, включён ли Bluetooth в данный момент.
+~adb shell settings put global development_settings_enabled 0 ## Disables developer options. ##| Отключает режим разработчика.
+~adb shell settings put global heads_up_notifications_enabled 0 ## Disables heads-up (pop-up) notifications. ##| Отключает всплывающие (heads-up) уведомления.
 
-# === QUEST РЎРџР•Р¦РР¤РРљРђ (VR) ===
-adb shell getprop
-adb shell getprop <services>
-adb shell getprop debug.oculus.gpuLevel
-adb shell getprop debug.oculus.cpuLevel
-adb shell setprop debug.oculus.refreshRate 120
-adb shell setprop debug.oculus.textureWidth 2560
-adb shell setprop debug.oculus.textureHeight 2560
-adb shell setprop debug.oculus.fullResTransformed 1
-adb shell setprop debug.oculus.cpuLevel 4
-adb shell setprop debug.oculus.gpuLevel 4
-adb shell am start -n com.oculus.vrshell/.MainActivity
-adb shell svc usb setFunctions mtp true
-adb shell dumpsys hardware_properties
+[ Quest VR ]
+adb shell getprop debug.oculus.gpuLevel ## Gets GPU performance level override (0-4). ##| Получает уровень производительности GPU (0-4).
+adb shell getprop debug.oculus.cpuLevel ## Gets CPU performance level override (0-4). ##| Получает уровень производительности CPU (0-4).
+~adb shell setprop debug.oculus.refreshRate 120 ## Forces display refresh rate. Quest 3: 72/90/120 Hz. | Example: adb shell setprop debug.oculus.refreshRate 90 ##| Принудительно устанавливает частоту обновления. Quest 3: 72/90/120 Гц. | Пример: adb shell setprop debug.oculus.refreshRate 90
+~adb shell setprop debug.oculus.textureWidth 2560 ## Overrides eye buffer width. Higher=sharper, heavier GPU. | Example: adb shell setprop debug.oculus.textureWidth 2064 ##| Переопределяет ширину буфера изображения для глаза. | Пример: adb shell setprop debug.oculus.textureWidth 2064
+~adb shell setprop debug.oculus.textureHeight 2560 ## Overrides eye buffer height. | Example: adb shell setprop debug.oculus.textureHeight 2208 ##| Переопределяет высоту буфера изображения для глаза. | Пример: adb shell setprop debug.oculus.textureHeight 2208
+~adb shell setprop debug.oculus.fullResTransformed 1 ## Full-resolution layer compositing. Set 0 to revert. ##| Композитинг слоёв в полном разрешении. 0 для отмены.
+~adb shell setprop debug.oculus.cpuLevel 4 ## Forces CPU to max level. Default=2. | Example: adb shell setprop debug.oculus.cpuLevel 2 ##| Принудительно устанавливает CPU на максимальный уровень. По умолчанию 2. | Пример: adb shell setprop debug.oculus.cpuLevel 2
+~adb shell setprop debug.oculus.gpuLevel 4 ## Forces GPU to max level. Default=2. | Example: adb shell setprop debug.oculus.gpuLevel 3 ##| Принудительно устанавливает GPU на максимальный уровень. По умолчанию 2. | Пример: adb shell setprop debug.oculus.gpuLevel 3
+~adb shell setprop debug.oculus.enableLinearColorSpace 1 ## Enables linear color space rendering. ##| Включает рендеринг в линейном цветовом пространстве.
+~adb shell setprop debug.oculus.foveation.level 0 ## Fixed foveation: 0=off 1=low 2=med 3=high 4=top. | Example: adb shell setprop debug.oculus.foveation.level 2 ##| Фиксированное фовеальное рендеринг: 0=выкл...4=максимум. | Пример: adb shell setprop debug.oculus.foveation.level 2
+adb shell getprop debug.oculus.foveation.level ## Gets current fixed foveation level. ##| Получает текущий уровень фовеального рендеринга.
+adb shell setprop debug.oculus.capture.record 1 ## Enables mixed reality capture debug recording. ##| Включает запись отладки захвата смешанной реальности.
+adb shell am start -n com.oculus.vrshell/.MainActivity ## Opens Meta VR Home shell / dashboard. ##| Открывает домашнюю оболочку Meta VR / панель управления.
+adb shell am start -n com.oculus.shellenv/.HomeActivity ## Opens the Home environment selector. ##| Открывает выбор домашней среды.
+adb shell dumpsys OVRRemoteService ## Dumps Oculus Remote Service state and controllers. ##| Дамп состояния Oculus Remote Service и контроллеров.
+adb shell cat /proc/driver/oculus_thermal ## Reads Quest thermal driver state if exposed. ##| Читает состояние теплового драйвера Quest.
+adb shell getprop debug.oculus.asw ## Gets Asynchronous Spacewarp (ASW) override state. ##| Получает состояние переопределения ASW (Asynchronous Spacewarp).
+~adb shell setprop debug.oculus.asw 0 ## Forces ASW off. Set to 1 to force on. | Example: adb shell setprop debug.oculus.asw 1 ##| Принудительно отключает ASW. 1 - включить принудительно. | Пример: adb shell setprop debug.oculus.asw 1
+adb shell getprop ro.boot.serialno ## Hardware serial number reported at boot time. ##| Аппаратный серийный номер, считанный при загрузке.
+~adb shell setprop debug.oculus.display.refreshRate 120 ## Forces Quest display refresh rate override (e.g. 120Hz). ##| Принудительно устанавливает герцовку дисплея Quest.
+~adb shell setprop debug.oculus.guardian_pause 1 ## Disables/pauses Guardian boundary tracking. ##| Отключает/ставит на паузу защитную систему Guardian.
+~adb shell setprop debug.oculus.guardian_pause 0 ## Re-enables Guardian boundary tracking. ##| Включает обратно защитную систему Guardian.
+~adb shell setprop debug.oculus.adpf.enable 1 ## Enables Android Dynamic Performance Framework for Quest VR. ##| Включает динамический фреймворк производительности.
+adb shell dumpsys DumpsysProxy OVRTrackedRemoteService ## Dumps Quest VR controllers tracking and battery state. ##| Дамп состояния трекинга и батарей контроллеров Quest.
+adb shell dumpsys DumpsysProxy OVRSystemUXService ## Dumps Quest VR system UI/overlay state. ##| Дамп состояния системного интерфейса Quest VR.
 
-# === Р­РљР РђРќ Р Р“Р РђР¤РРљРђ ===
-adb shell wm size
-adb shell wm density
-adb shell screencap -p /sdcard/screen.png
-adb pull /sdcard/screen.png .
-adb shell screenrecord --time-limit 30 /sdcard/demo.mp4
+[ Display & Graphics ]
+adb shell wm size ## Returns physical and current screen resolution. ##| Возвращает физическое и текущее разрешение экрана.
+adb shell wm density ## Returns physical and current DPI. ##| Возвращает физический и текущий DPI.
+~adb shell wm size <width>x<height> ## Overrides display resolution. | Example: adb shell wm size 1920x1080 ##| Переопределяет разрешение экрана. | Пример: adb shell wm size 1920x1080
+~adb shell wm density <dpi> ## Overrides display DPI. | Example: adb shell wm density 400 ##| Переопределяет DPI экрана. | Пример: adb shell wm density 400
+~adb shell wm size reset ## Resets resolution override to device default. ##| Сбрасывает переопределение разрешения.
+~adb shell wm density reset ## Resets DPI override to device default. ##| Сбрасывает переопределение DPI.
+adb shell screencap -p /sdcard/screen.png ## Takes screenshot and saves to /sdcard/. ##| Делает снимок экрана и сохраняет в /sdcard/.
+adb pull /sdcard/screen.png . ## Downloads screen.png to current PC folder. | Example: adb pull /sdcard/screen.png C:\screenshots\ ##| Загружает screen.png в текущую папку на ПК. | Пример: adb pull /sdcard/screen.png C:\screenshots\
+adb shell screenrecord --time-limit 30 /sdcard/demo.mp4 ## Records screen for up to 30 seconds. | Example: adb shell screenrecord --time-limit 10 /sdcard/test.mp4 ##| Записывает экран до 30 секунд. | Пример: adb shell screenrecord --time-limit 10 /sdcard/test.mp4
+adb shell screenrecord --bit-rate 4000000 /sdcard/demo.mp4 ## Records at custom bitrate (4 Mbps). | Example: adb shell screenrecord --bit-rate 8000000 /sdcard/hq.mp4 ##| Запись с пользовательским битрейтом (4 Мбит/с). | Пример: adb shell screenrecord --bit-rate 8000000 /sdcard/hq.mp4
+adb shell dumpsys gfxinfo ## GPU activity information by app, etc ##| Информация об активности GPU по приложениям и т.д.
+adb shell dumpsys gfxinfo <package> ## FPS, janks, and render time for a specific app ##| FPS, jank и время рендера конкретного приложения
+adb shell dumpsys SurfaceFlinger | findstr "refresh-rate" ## Shows the active display refresh rate from the compositor. ##| Показывает активную частоту обновления экрана от компоситора.
+adb shell dumpsys SurfaceFlinger --latency <window> ## Frame latency histogram for a specific window/app. | Example: adb shell dumpsys SurfaceFlinger --latency SurfaceView ##| Гистограмма задержки кадров для конкретного окна/приложения. | Пример: adb shell dumpsys SurfaceFlinger --latency SurfaceView
+adb shell screencap -p ## Captures a screenshot and streams raw PNG to stdout (no file saved on device). ##| Делает снимок экрана и выводит PNG напрямую в stdout (без сохранения файла).
+~adb shell settings put system accelerometer_rotation 0 ## Disables auto-rotate based on the accelerometer. ##| Отключает автоповорот экрана по акселерометру.
+adb shell cmd display get-brightness ## Gets brightness via the display cmd (alternative to settings). ##| Получает яркость через cmd display (альтернатива settings).
+~adb shell wm overscan 0,0,0,0 ## Resets display overscan to zero. ##| Сбрасывает overscan дисплея до нуля.
+adb shell input roll <dx> <dy> ## Simulates trackball / wheel scroll event. ##| Симулирует прокрутку колёсиком или трекболом.
+adb shell input draganddrop <x1> <y1> <x2> <y2> <ms> ## Simulates drag and drop touch action. ##| Симулирует перетаскивание (Drag & Drop) по экрану.
+adb shell cmd overlay enable <overlay_pkg> ## Enables specific RRO overlay theme/skin. ##| Включает указанный оверлей (RRO-тему интерфейса).
+adb shell cmd overlay disable <overlay_pkg> ## Disables specific RRO overlay theme. ##| Отключает указанный оверлей темы.
+adb shell settings put secure accessibility_display_inversion_enabled 1 ## Enables color inversion (high contrast). ##| Включает инверсию цветов на экране.
+adb shell settings put secure accessibility_display_inversion_enabled 0 ## Disables color inversion. ##| Отключает инверсию цветов.
+adb shell settings put secure accessibility_display_daltonizer_enabled 1 ## Enables colorblind correction mode. ##| Включает режим коррекции цвета для дальтоников.
+adb shell settings put secure accessibility_display_daltonizer 11 ## Sets colorblind mode to Deuteranomaly (green-weak). ##| Режим дальтонизма: дейтераномалия (зелёный).
+adb shell cmd display get-active-display-mode-at-start ## Shows the default active display mode. ##| Показывает режим дисплея, используемый при запуске.
+adb shell dumpsys SurfaceFlinger --list ## All rendering surfaces. ##| Все поверхности рендера.
+adb shell dumpsys SurfaceFlinger | findstr GLES ## Active OpenGL/Vulkan info. ##| Информация о графическом движке.
 
-# === Р¤РђР™Р›Р« Р РџРђРњРЇРўР¬ ===
-adb shell df -h
-adb push <pc_file> /sdcard/
-adb pull /sdcard/file.txt <pc_file>
-adb shell ls -R /sdcard/
-adb shell rm -rf /data/local/tmp/*
+[ Files & Memory ]
+adb shell df -h ## Disk usage in human-readable format. ##| Использование диска в удобочитаемом формате.
+adb shell free -m ## RAM usage in MB: total, used, free, buff/cache. ##| Использование ОЗУ в МБ: всего, занято, свободно, кэш.
+adb shell ls /sdcard/ ## Lists files and folders in /sdcard/ root. | Example: adb shell ls -la /sdcard/ ##| Список файлов и папок в корне /sdcard/. | Пример: adb shell ls -la /sdcard/
+adb shell ls -R /sdcard/ ## Recursive file listing of /sdcard/. | Example: adb shell ls -R /sdcard/ | findstr ".mp4" ##| Рекурсивный список файлов /sdcard/. | Пример: adb shell ls -R /sdcard/ | findstr ".mp4"
+adb shell find /sdcard/ -name "*.log" ## Finds all .log files on /sdcard/. | Example: adb shell find /sdcard/ -name "*.apk" ##| Находит все .log файлы в /sdcard/. | Пример: adb shell find /sdcard/ -name "*.apk"
+adb shell find /sdcard/ -newer /sdcard/screen.png ## Finds files newer than a reference file. ##| Находит файлы новее указанного файла-ориентира.
+adb shell cat /sdcard/<file> ## Prints file content to stdout. | Example: adb shell cat /sdcard/mylog.txt ##| Выводит содержимое файла в stdout. | Пример: adb shell cat /sdcard/mylog.txt
+adb shell stat /sdcard/<file> ## Shows file metadata: size, permissions, timestamps. | Example: adb shell stat /sdcard/screen.png ##| Показывает метаданные файла: размер, права, временные метки. | Пример: adb shell stat /sdcard/screen.png
+adb push <pc_file> /sdcard/ ## Copies a file from PC to device /sdcard/. | Example: adb push MyApp.apk /sdcard/ ##| Копирует файл с ПК в /sdcard/ устройства. | Пример: adb push MyApp.apk /sdcard/
+adb pull /sdcard/file.txt <pc_file> ## Downloads a file from device to PC. | Example: adb pull /sdcard/log.txt C:\logs\ ##| Загружает файл с устройства на ПК. | Пример: adb pull /sdcard/log.txt C:\logs\
+adb sync ## Syncs /system and /data from local build tree. | Example: adb sync data ##| Синхронизирует /system и /data из локального дерева сборки. | Пример: adb sync data
+~adb shell rm -rf /data/local/tmp/* ## Deletes everything in ADB temp folder. Irreversible. ##| Удаляет всё в папке ADB temp. Необратимо.
+~adb shell mkdir -p /sdcard/MyFolder ## Creates a directory on the device. | Example: adb shell mkdir -p /sdcard/Screenshots/Tests ##| Создаёт директорию на устройстве. | Пример: adb shell mkdir -p /sdcard/Screenshots/Tests
+adb shell md5sum /sdcard/<file> ## Calculates MD5 hash of a file on device. | Example: adb shell md5sum /sdcard/demo.mp4 ##| Вычисляет MD5-хеш файла на устройстве. | Пример: adb shell md5sum /sdcard/demo.mp4
+adb shell tar -czf /sdcard/backup.tar.gz /sdcard/MyFolder ## Creates a tar.gz archive on device. ##| Создаёт архив tar.gz на устройстве.
+adb shell dd if=/dev/zero of=/sdcard/test.bin bs=1M count=100 ## Write speed test: writes 100 MB to /sdcard/. ##| Тест скорости записи: записывает 100 МБ в /sdcard/.
+adb shell du -sh /sdcard/* ## Shows disk usage of top-level items in /sdcard/. ##| Использование диска элементами верхнего уровня /sdcard/.
+adb shell wc -l /sdcard/<file> ## Counts lines in a text file on device. | Example: adb shell wc -l /sdcard/log.txt ##| Подсчитывает строки в текстовом файле на устройстве.
+adb shell grep -r "<pattern>" /sdcard/ ## Searches for a pattern recursively in /sdcard/. | Example: adb shell grep -r "error" /sdcard/logs/ ##| Рекурсивный поиск шаблона в /sdcard/.
+adb shell tail -f /sdcard/<logfile> ## Follows a log file in real time (like tail -f). ##| Отслеживает лог-файл в реальном времени.
+adb shell head -20 /sdcard/<file> ## Shows first 20 lines of a file. | Example: adb shell head -20 /sdcard/log.txt ##| Показывает первые 20 строк файла.
+adb shell gzip /sdcard/<file> ## Compresses a file with gzip on the device. | Example: adb shell gzip /sdcard/log.txt ##| Сжимает файл на устройстве с помощью gzip.
+adb shell du -sh /sdcard/Android/obb/* ## File size in the OBB directory ##| Объем файлов в каталоге OBB
+adb shell du -sh /sdcard/Android/data/* ## File size in the Data directory ##| Объем файлов в каталоге Data
+adb shell du -sh /sdcard/Android/obb ## Total size of the OBB directory ##| Суммарный объем каталога OBB
+adb shell du -sh /sdcard/Android/data ## Total size of the Data directory ##| Суммарный объем каталога Data
+adb shell du -shac /sdcard/Android/data ## Data directory file sizes with detailed file information ##| Объем файлов в каталоге Data с информацией по каждому файлу
+adb shell du -shac /sdcard/Android/obb ## Data directory file sizes with detailed file information  ##| Объем файлов в каталоге OBB с информацией по каждому файлу
+adb shell ls -la /sdcard/Download ## Lists files in the Downloads folder with details. ##| Список файлов в папке Download с подробностями.
+adb shell mv /sdcard/<old> /sdcard/<new> ## Moves or renames a file/folder on the device. | Example: adb shell mv /sdcard/old.txt /sdcard/new.txt ##| Перемещает или переименовывает файл/папку на устройстве. | Пример: adb shell mv /sdcard/old.txt /sdcard/new.txt
+adb shell cp /sdcard/<src> /sdcard/<dst> ## Copies a file on the device itself, without a PC round-trip. | Example: adb shell cp /sdcard/a.txt /sdcard/b.txt ##| Копирует файл прямо на устройстве, без передачи через ПК. | Пример: adb shell cp /sdcard/a.txt /sdcard/b.txt
+adb shell sm list-volumes ## Lists storage volumes: internal, SD card, USB-OTG. ##| Список томов хранилища: внутреннее, SD-карта, USB-OTG.
+~adb push <folder> /sdcard/ ## Recursively copies an entire local folder to the device. | Example: adb push C:\MyFolder /sdcard/MyFolder ##| Рекурсивно копирует всю локальную папку на устройство. | Пример: adb push C:\MyFolder /sdcard/MyFolder
+adb shell lsof ## Lists all open files and active network sockets by process. ##| Список всех открытых файлов и сокетов по процессам.
+adb shell lsattr /sdcard/ ## Lists Linux extended file attributes on storage. ##| Показывает расширенные атрибуты файлов Linux.
+adb shell lspci ## Lists PCI bus devices (if kernel supports it). ##| Список устройств на шине PCI (если поддерживается).
+adb shell lsusb ## Lists connected USB devices and hubs. ##| Список подключённых USB-устройств и хабов.
+adb shell cat /proc/mounts ## Shows all mounted file systems and mount flags. ##| Показывает все смонтированные файловые системы.
+adb shell cat /proc/interrupts ## Shows CPU IRQ hardware interrupt counts. ##| Показывает количество аппаратных прерываний CPU.
+adb shell logcat -g ## Displays current logcat buffer sizes and utilization. ##| Показывает текущий размер и заполненность буферов logcat.
+adb shell dumpsys dbinfo ## Dumps SQLite database usage for all apps. ##| Показывает использование баз данных SQLite всеми приложениями.
+adb shell dumpsys usagestats ## Detailed app usage history (launch counts, time used). ##| Подробная история использования приложений (время, запуски).
+adb shell dumpsys procstats --hours 3 ## Shows RAM/CPU process statistics over last 3 hours. ##| Статистика процессов и ОЗУ за последние 3 часа.
+adb shell dumpsys meminfo --local <pkgname> ## Local memory only. ##| Память только процесса приложения.
+adb shell dumpsys meminfo --checkin <pkgname> ## Compact CSV-like output. ##| Компактный вывод для логов.
+adb shell ls -lR /sdcard/Android/data/<pkg> ## Recursive listing. ##| Рекурсивный список файлов приложения.
+adb shell du -ah /sdcard | sort -h ## Largest files. ##| Поиск самых крупных файлов.
 
-# === РЎРРЎРўР•РњРђ Р Р›РћР“Р ===
-adb kill-server
-adb start-server
-adb logcat -d
-adb logcat -c
-adb logcat *:E
-adb logcat *:E | findstr /i <filter>
-adb logcat | findstr /i /c:" E " /c:<filter>
-adb shell dumpsys activity top
-adb shell dumpsys window displays
-adb shell settings put global adb_enabled 1
-adb bugreport %cd%
-adb shell ps -A
-adb shell ps -A | findstr u0 | more
-adb shell settings list global
-adb shell settings list secure
-adb shell settings list system
-adb shell free -m
+[ System & Logs ]
+adb kill-server ## Stops local ADB server (port 5037). ##| Останавливает локальный ADB-сервер (порт 5037).
+adb start-server ## Starts ADB server explicitly. ##| Явно запускает ADB-сервер.
+adb logcat -d ## Dumps current logcat buffer and exits. | Example: adb logcat -d | findstr "Error" ##| Выгружает текущий буфер logcat и завершается. | Пример: adb logcat -d | findstr "Error"
+adb logcat -c ## Clears the logcat ring buffer. ##| Очищает кольцевой буфер logcat.
+adb logcat *:E ## Shows only Error-level messages from all tags. ##| Показывает только сообщения уровня Error.
+adb logcat -s <tag> ## Filters logcat to a specific tag. | Example: adb logcat -s OVRPlugin ##| Фильтрует logcat по конкретному тегу. | Пример: adb logcat -s OVRPlugin
+adb logcat -b main -b system -d ## Dumps main and system log buffers. | Example: adb logcat -b main -b system -d | findstr "crash" ##| Выгружает буферы основного и системного лога. | Пример: adb logcat -b main -b system -d | findstr "crash"
+adb logcat -b crash -d ## Dumps only the crash log buffer. ##| Выгружает только буфер логов сбоев.
+adb logcat *:E | findstr /i <filter> ## Filters error log by keyword. | Example: adb logcat *:E | findstr /i "VrApi" ##| Фильтрует лог ошибок по ключевому слову. | Пример: adb logcat *:E | findstr /i "VrApi"
+adb logcat | findstr /i /c:" E " /c:<filter> ## Filters for errors AND keyword. | Example: adb logcat | findstr /i /c:" E " /c:"myapp" ##| Фильтрует ошибки по ключевому слову. | Пример: adb logcat | findstr /i /c:" E " /c:"myapp"
+adb logcat --pid=<pid> -d ## Dumps logcat for a specific process ID. | Example: adb logcat --pid=1234 -d ##| Выгружает logcat для конкретного PID процесса. | Пример: adb logcat --pid=1234 -d
+adb logcat -v time *:E -d ## Error log with timestamps. | Example: adb logcat -v time *:E -d | findstr "VrApi" ##| Лог ошибок с временными метками. | Пример: adb logcat -v time *:E -d | findstr "VrApi"
+adb bugreport %cd% ## Generates full bug report ZIP. | Example: adb bugreport C:\bugreports\ ##| Создаёт полный отчёт об ошибках в формате ZIP. | Пример: adb bugreport C:\bugreports\
+adb shell ps -A ## Lists all running processes. | Example: adb shell ps -A | findstr vrshell ##| Список всех запущенных процессов. | Пример: adb shell ps -A | findstr vrshell
+adb shell ps -A | findstr u0 ## Filters to user 0 processes only. ##| Фильтрует процессы только пользователя 0.
+adb shell top -n 1 ## Shows one snapshot of CPU/memory usage by process. | Example: adb shell top -n 1 -s cpu ##| Один снимок использования CPU/памяти по процессам. | Пример: adb shell top -n 1 -s cpu
+adb shell top -b -n 3 ## Takes 3 snapshots of top in batch mode. | Example: adb shell top -b -n 3 | findstr "oculus" ##| 3 снимка top в пакетном режиме. | Пример: adb shell top -b -n 3 | findstr "oculus"
+adb shell vmstat ## Virtual memory stats: processes, memory, I/O, CPU. ##| Статистика виртуальной памяти: процессы, память, I/O, CPU.
+adb shell cat /proc/sys/vm/swappiness ## Gets the kernel swappiness value (0-100). ##| Получает значение swappiness ядра (0-100).
+adb shell dmesg | tail -50 ## Last 50 lines of kernel ring buffer. ##| Последние 50 строк кольцевого буфера ядра.
+adb shell dmesg | findstr /i thermal ## Kernel messages filtered for thermal events. ##| Сообщения ядра, отфильтрованные по тепловым событиям.
+adb shell logcat -v threadtime *:E -d ## Error log with thread IDs and timestamps. ##| Лог ошибок с ID потоков и временными метками.
+adb shell logcat -v json -d ## Logcat output in JSON format (Android 12+). ##| Вывод logcat в формате JSON (Android 12+).
+adb shell logcat --statistics ## Shows logcat buffer statistics per tag. ##| Показывает статистику буфера logcat по тегам.
+adb shell logcat -G 16M ## Sets logcat ring buffer size to 16 MB. ##| Устанавливает размер кольцевого буфера logcat 16 МБ.
+adb shell dumpsys activity activities | findstr ResumedActivity ## Which Activity is currently actually running ##| Какая Activity сейчас реально запущена
+adb shell dumpsys window windows | findstr mCurrentFocus ## Currently focused window ##| Текущее окно с фокусом
+adb shell getevent ## Real-time controller button monitoring ##| Мониторинг кнопок контроллеров в реальном времени
+adb shell getevent -lp ## Full list of input devices and buttons ##| Полный список устройств ввода и кнопок
+adb shell dumpsys sensorservice ## All IMUs, SLAM cameras, and sensor status ##| Все IMU, камеры SLAM и состояние датчиков
+adb mdns services ## All discovered ADB TLS devices ##| Все обнаруженные ADB TLS устройства
+adb mdns check ## Check for ADB client mDNS support ##| Проверка поддержки mDNS клиентом ADB
+adb shell dumpsys diskstats ## Storage benchmark: read/write speed test results. ##| Тест хранилища: результаты скорости чтения/записи.
+adb shell dumpsys procstats ## Historical process resource usage over time. ##| Историческое использование ресурсов процессами.
+adb shell getevent -lt ## Input events with type names and timestamps - handy for controller debugging. ##| События ввода с именами типов и временными метками - удобно для отладки контроллеров.
+adb shell cmd stats dump-report ## Dumps a full statsd report (system health, events). ##| Полный отчёт statsd (состояние системы, события).
+~adb shell dumpsys batterystats --reset ## Resets accumulated battery usage statistics. ##| Сбрасывает накопленную статистику расхода батареи.
+adb shell logcat -c && adb shell logcat ## Clears old logs, then streams fresh ones live. ##| Очищает старые логи и запускает потоковый вывод новых.
+adb shell dumpsys media.audio_flinger ## Dumps low-level audio HAL and stream status. ##| Выгружает низкоуровневый статус аудио-потоков и HAL.
+adb shell dumpsys media.player ## Dumps active media playing sessions and decoders. ##| Показывает активные сессии медиаплеера и декодеры.
+adb shell dumpsys camera ## Dumps camera hardware parameters, IDs, and features. ##| Показывает параметры камер, доступные ID и возможности.
+adb shell dumpsys bluetooth_manager ## Comprehensive status of Bluetooth stack and connected devices. ##| Подробный статус Bluetooth-стека и подключённых устройств.
+adb shell cmd vibrator_manager cancel ## Instantly stops any active hardware vibration. ##| Мгновенно останавливает любую активную вибрацию.
+adb shell cat /proc/bus/input/devices ## Detailed info on raw input hardware nodes. ##| Подробная информация об аппаратных устройствах ввода.
+~adb reconnect ## Forces ADB to drop and re-establish connection to device. ##| Принудительно переподключает ADB к устройству.
+~adb reconnect device ## Resets USB stack on host side for selected device. ##| Сбрасывает USB-стек со стороны ПК для выбранного устройства.
+~adb reconnect offline ## Reconnects all devices stuck in 'offline' status. ##| Переподключает устройства, застрявшие в статусе 'offline'.
+!adb disable-verity ## Disables dm-verity image verification (requires root/unlocked). ##| Отключает проверку целостности разделов dm-verity.
+~adb enable-verity ## Re-enables dm-verity partition verification. ##| Включает обратно проверку целостности dm-verity.
+!adb remount ## Remounts /system partition as read-write (requires root). ##| Перемонтирует /system в режим чтения и записи.
+!adb root ## Restarts adbd daemon with root permissions. ##| Перезапускает демона adbd с правами root.
+~adb unroot ## Restarts adbd daemon without root permissions. ##| Возвращает adbd к обычным правам (без root).
+adb shell cmd package list permissions -g ## Lists permissions grouped by permission group. ##| Показывает разрешения, сгруппированные по группам.
+adb shell cmd package list users ## Lists package manager users. ##| Показывает пользователей Package Manager.
+~adb shell cmd package uninstall-system-updates <pkgname> ## Removes updates from a system app and restores factory version. ##| Удаляет обновления системного приложения и восстанавливает заводскую версию.
+adb shell cmd activity get-config ## Shows the current activity configuration. ##| Показывает текущую конфигурацию Activity Manager.
+adb shell cmd activity get-isolated-pids ## Lists isolated process IDs. ##| Показывает список изолированных процессов.
+adb shell cmd activity write ## Forces Activity Manager to write its state to disk. ##| Принудительно сохраняет состояние Activity Manager на диск.
+adb shell cmd overlay lookup <package> <resource> ## Resolves which overlay supplies a resource. ##| Показывает, какой overlay предоставляет указанный ресурс.
+adb shell cmd media_session list-sessions ## Lists active media sessions. ##| Показывает все активные медиасеансы.
+adb shell cmd power get-mode ## Shows the current power mode. ##| Показывает текущий режим энергопотребления.
+adb shell cmd stats print-uid <uid> ## Prints statistics for one UID. ##| Показывает статистику для указанного UID.
+adb shell cmd jobscheduler heartbeat ## Displays the current JobScheduler heartbeat. ##| Показывает текущее значение heartbeat JobScheduler.
+~adb shell cmd jobscheduler timeout <pkgname> <jobId> ## Forces a job to time out immediately. ##| Принудительно завершает задание по тайм-ауту.
+adb shell cmd jobscheduler monitor-battery on ## Enables battery-aware JobScheduler monitoring. ##| Включает мониторинг JobScheduler с учётом батареи.
+adb shell cmd jobscheduler monitor-battery off ## Disables JobScheduler battery monitoring. ##| Отключает мониторинг JobScheduler с учётом батареи.
+adb shell cmd package list features ## Lists device features via Package Manager. ##| Показывает аппаратные возможности устройства через Package Manager.
+adb shell cmd package has-feature <feature> ## Checks whether a feature is supported. ##| Проверяет поддержку указанной аппаратной возможности.
+adb shell pidof <pkgname> ## Process ID of an application. ##| PID процесса приложения. | Пример: adb shell pidof com.android.settings возвращает PID приложения «Настройки» (например, 12345) или ничего, если процесс не запущен
+adb shell pidof -s <pkgname> ## Returns only the first PID. ##| Возвращает только первый PID.
+adb shell ps -A -o PID,PPID,NAME ## Custom process list. ##| Список процессов с PID, PPID и именем.
+adb shell ps -A | findstr <pkgname> ## Find application process. ##| Поиск процесса приложения.
+adb logcat --pid=$(adb shell pidof -s <pkgname>) ## Logs only one process. ##| Логи только одного процесса.
+adb logcat -T 5s ## Last 5 seconds only. ##| Логи только за последние 5 секунд.
+adb logcat -v color ## Colored logcat output. ##| Цветной вывод logcat.
 
-# === РЎР•РўР¬ Р DNS ===
-adb tcpip 5555
-adb disconnect
-adb connect IP:port
-adb shell ip addr show wlan0
-adb shell settings put global private_dns_mode off
-adb shell settings put global private_dns_specifier <dns_ip>
-adb shell settings get global private_dns_specifier
-adb shell settings get global private_dns_mode'
-adb shell svc wifi disable
-adb shell svc wifi enable
-adb shell netstat
-adb shell "am start -n 'com.android.settings/.Settings$VpnSettingsActivity'"
+[ Network ]
+adb pair IP:Port PairCode ## Pairs with Quest over Wi-Fi using pairing code. | Example: adb pair 192.168.1.50:37755 123456 ##| Сопрягает с Quest по Wi-Fi с использованием кода сопряжения. | Пример: adb pair 192.168.1.50:37755 123456
+adb connect IP:port ## Connects to paired device wirelessly. | Example: adb connect 192.168.1.50:5555 ##| Подключается к сопряжённому устройству по беспроводной сети. | Пример: adb connect 192.168.1.50:5555
+adb disconnect ## Disconnects all wireless ADB sessions. ##| Отключает все беспроводные ADB-сессии.
+adb tcpip 5555 ## Switches device to TCP/IP mode on port 5555. ##| Переключает устройство в режим TCP/IP на порту 5555.
+adb shell ip addr show wlan0 ## Shows Wi-Fi IP address and interface info. ##| Показывает IP-адрес Wi-Fi и информацию об интерфейсе.
+adb shell ip route ## Shows the device routing table. ##| Показывает таблицу маршрутизации устройства.
+adb shell ip link show ## Shows all network interfaces and MAC addresses. ##| Показывает все сетевые интерфейсы и MAC-адреса.
+adb shell netstat ## Lists all active TCP/UDP connections. ##| Список всех активных TCP/UDP-соединений.
+adb shell netstat -atuW ## Extended netstat with full addresses. ##| Расширенный netstat с полными адресами без усечения.
+adb shell nslookup google.com ## DNS lookup for a hostname from the device. | Example: adb shell nslookup google.com 8.8.8.8 ##| DNS-запрос для имени хоста с устройства. | Пример: adb shell nslookup google.com 8.8.8.8
+adb shell ping -c 4 8.8.8.8 ## Pings Google DNS 4 times. Tests connectivity. ##| Пингует Google DNS 4 раза. Тест базового подключения.
+adb shell curl -s https://ifconfig.me ## Gets the device's external IP address. ##| Получает внешний IP-адрес устройства.
+adb shell getprop dhcp.wlan0.ipaddress ## Gets current DHCP-assigned IP of wlan0. ##| Получает текущий DHCP-назначенный IP wlan0.
+adb shell getprop dhcp.wlan0.dns1 ## Gets primary DNS server assigned by DHCP. ##| Получает основной DNS-сервер, назначенный DHCP.
+adb shell iptables -L ## Lists all iptables firewall rules. | Example: adb shell iptables -L -n ##| Список всех правил брандмауэра iptables. | Пример: adb shell iptables -L -n
+adb shell "am start -n 'com.android.settings/.Settings$VpnSettingsActivity'" ## Opens VPN settings screen. ##| Открывает экран настроек VPN.
+adb shell cat /etc/hosts ## Shows the device hosts file. ##| Показывает файл hosts устройства.
+adb forward tcp:<local_port> tcp:<remote_port> ## Forwards a local PC port to a port on the device. | Example: adb forward tcp:8080 tcp:8080 ##| Перенаправляет локальный порт ПК на порт устройства. | Пример: adb forward tcp:8080 tcp:8080
+adb forward --list ## Lists all currently active port forwards. ##| Список всех активных переадресаций портов.
+adb reverse tcp:<remote_port> tcp:<local_port> ## Allows device to connect back to a port on PC. | Example: adb reverse tcp:9000 tcp:9000 ##| Позволяет устройству подключаться к порту на ПК. | Пример: adb reverse tcp:9000 tcp:9000
+adb reverse --list ## Lists all active reverse port forwards. ##| Список всех активных обратных переадресаций портов.
+adb shell ss -tlnp ## Shows listening TCP sockets with PID (faster than netstat). ##| Показывает слушающие TCP-сокеты с PID (быстрее netstat).
+adb shell cat /proc/net/arp ## ARP table: IP to MAC address mappings. ##| ARP-таблица: сопоставление IP с MAC-адресами.
+adb shell getprop net.dns1 ## Primary DNS server configured on the device. ##| Основной DNS-сервер устройства.
+adb shell getprop net.dns2 ## Secondary DNS server configured on the device. ##| Вторичный DNS-сервер устройства.
+adb shell wpa_cli status ## Wi-Fi supplicant status: SSID, BSSID, signal. ##| Статус Wi-Fi supplicant: SSID, BSSID, сигнал.
+adb shell cat /proc/net/wireless ## Wi-Fi signal quality from kernel. ##| Качество Wi-Fi сигнала из ядра.
+adb shell dumpsys wifi ## Full Wi-Fi subsystem dump: config, scan results, state machine (long output). ##| Полный дамп подсистемы Wi-Fi: конфигурация, результаты сканирования, состояние (длинный вывод).
+~adb shell settings put global wifi_scan_always_enabled 0 ## Disables Wi-Fi scanning while Wi-Fi itself is off. ##| Отключает сканирование Wi-Fi, когда сам Wi-Fi выключен.
+adb shell cmd wifi start-scan ## Forces an immediate Wi-Fi network scan. ##| Принудительно запускает сканирование Wi-Fi сетей.
+adb shell getprop wifi.direct.interface ## Wi-Fi Direct interface name, if supported. ##| Имя интерфейса Wi-Fi Direct, если поддерживается.
+adb usb ## Switches the device from TCP/IP mode back to USB mode. ##| Переключает устройство из режима TCP/IP обратно в режим USB.
+adb shell traceroute google.com ## Traces the network route to a host from the device (if available). ##| Трассировка сетевого маршрута до узла с устройства (если доступно).
+adb shell cmd wifi status ## Detailed current Wi-Fi connection and signal status. ##| Детальный статус текущего Wi-Fi соединения и сигнала.
+adb shell cmd wifi list-scan-results ## Lists all Wi-Fi networks visible in current scan. ##| Список всех доступных Wi-Fi сетей в зоне видимости.
+~adb shell cmd connectivity airplane-mode enable ## Enables airplane mode via Connectivity service. ##| Включает режим полета через сервис подключения.
+~adb shell cmd connectivity airplane-mode disable ## Disables airplane mode via Connectivity service. ##| Отключает режим полета через сервис подключения.
+~adb shell svc bluetooth enable ## Enables Bluetooth module. ##| Включает модуль Bluetooth.
+~adb shell svc bluetooth disable ## Disables Bluetooth module. ##| Отключает модуль Bluetooth.
+~adb shell svc nfc enable ## Enables NFC hardware module (if present). ##| Включает модуль NFC (если поддерживается).
+~adb shell svc nfc disable ## Disables NFC hardware module. ##| Отключает модуль NFC.
+adb shell netstat -rn ## Shows routing table with numeric IP addresses. ##| Показывает таблицу маршрутизации в числовом формате.
+adb shell cmd connectivity diagnostics ## Dumps connectivity diagnostics. ##| Показывает диагностическую информацию сетевого подключения.
+adb shell cmd netpolicy get restrict-background ## Shows whether background data restriction is enabled. ##| Показывает, включено ли ограничение фоновой передачи данных.
+adb shell cmd netpolicy list restrict-background-whitelist ## Lists UIDs exempt from background data restriction. ##| Показывает UID, исключённые из ограничения фоновой передачи данных.
+adb shell cmd netpolicy list restrict-background-whitelist ## Lists apps allowed to use data in background. ##| Показывает приложения, которым разрешена передача данных в фоне.
+adb shell ss -tulpn ## Open TCP/UDP sockets. ##| Открытые TCP/UDP сокеты.
+adb shell ip route  ## Routing table. ##| Таблица маршрутизации.
+adb shell ip addr  ## All network interfaces. ##| Все сетевые интерфейсы.
+adb shell ip neigh ## ARP / neighbor table. ##| Таблица соседей сети.
 
-# === РџР•Р Р•Р—РђР“Р РЈР—РљРђ Р FASTBOOT ===
-adb reboot
-adb reboot bootloader
-adb reboot fastboot
-adb reboot recovery
-adb reboot sideload
-adb shell reboot -p
-fastboot devices
-fastboot oem device-info
-fastboot getvar all
-fastboot reboot
-fastboot reboot-fastboot
-fastboot reboot-recovery 
-fastboot reboot-bootloader
-fastboot continue
-fastboot oem reboot-sideload
+[ Reboot ]
+adb reboot ## Standard reboot. Wait 30-60s to reconnect. ##| Стандартная перезагрузка. Подождите 30-60 сек для переподключения.
+~adb reboot bootloader ## Reboots into bootloader/fastboot mode. ##| Перезагрузка в режим загрузчика/fastboot.
+~adb reboot fastboot ## Reboots into fastboot mode. ##| Перезагрузка в режим fastboot.
+~adb reboot recovery ## Reboots into recovery mode. ##| Перезагрузка в режим восстановления.
+~adb reboot sideload ## Reboots into ADB sideload mode for OTA installation. ##| Перезагрузка в режим ADB sideload для установки OTA.
+~adb shell reboot -p ## Powers off device immediately. ##| Немедленно выключает устройство.
+~adb reboot edl ## Reboots into Emergency Download (EDL) mode on supported Qualcomm devices. ##| Перезагрузка в режим Emergency Download (EDL) на поддерживаемых Qualcomm-устройствах.
+adb wait-for-device ## Blocks until a device is detected and ready. Handy right after a reboot. ##| Блокирует выполнение, пока устройство не будет обнаружено и готово. Удобно сразу после перезагрузки.
 
-# === РЎРљР РРџРўР« ===
-adb shell sh /data/local/tmp/<script>
-adb push <script> /data/local/tmp/
-adb shell chmod 755 /data/local/tmp/
-adb shell dos2unix /data/local/tmp/
-adb shell getprop ro.build.version.incremental
+[ Fastboot ]
+fastboot devices ## Lists devices in fastboot mode. ##| Список устройств в режиме fastboot.
+fastboot oem device-info ## Shows bootloader lock state, serial, hardware version. ##| Показывает состояние блокировки загрузчика, серийный номер, версию HW.
+fastboot getvar all ## Dumps all fastboot variables: slots, battery, version. ##| Выгружает все переменные fastboot: слоты, аккумулятор, версию.
+fastboot getvar version ## Returns fastboot protocol version. ##| Возвращает версию протокола fastboot.
+fastboot getvar current-slot ## Returns current A/B boot slot: a or b. ##| Возвращает текущий загрузочный слот A/B: a или b.
+fastboot getvar battery-voltage ## Returns battery voltage in mV. ##| Возвращает напряжение аккумулятора в мВ.
+fastboot reboot ## Reboots device out of fastboot back to normal OS. ##| Перезагружает устройство из fastboot в нормальную ОС.
+~fastboot reboot-fastboot ## Reboots back into fastboot from fastboot mode. ##| Перезагружается обратно в fastboot из режима fastboot.
+~fastboot reboot-recovery ## Reboots from fastboot into recovery. ##| Перезагрузка из fastboot в режим восстановления.
+~fastboot reboot-bootloader ## Reboots back into bootloader from fastboot. ##| Перезагрузка обратно в загрузчик из fastboot.
+fastboot continue ## Continues normal boot without rebooting. ##| Продолжает нормальную загрузку без перезапуска.
+~fastboot oem reboot-sideload ## Enters sideload mode from fastboot. ##| Переход в режим sideload из fastboot.
+!fastboot --set-active=<slot> ## Sets active boot slot to a or b. Use with caution. | Example: fastboot --set-active=a ##| Устанавливает активный слот загрузки. Используйте осторожно. | Пример: fastboot --set-active=a
+fastboot flash <partition> <file> ## Flashes an image file to a named partition. | Example: fastboot flash boot boot.img ##| Прошивает образ в указанный раздел. | Пример: fastboot flash boot boot.img
+!fastboot erase <partition> ## Erases a partition. Very dangerous. | Example: fastboot erase userdata ##| Стирает раздел. Очень опасно. | Пример: fastboot erase userdata
+!fastboot oem unlock ## Unlocks the bootloader (wipes all user data). ##| Разблокирует загрузчик (стирает все пользовательские данные).
+~fastboot flashing unlock ## Alternative unlock command for newer devices. ##| Альтернативная команда разблокировки для новых устройств.
+~fastboot flashing lock ## Re-locks the bootloader. ##| Повторно блокирует загрузчик.
+!fastboot flashall ## Flashes all matching images from the current folder and reboots. ##| Прошивает все подходящие образы из текущей папки и перезагружает.
+fastboot boot <img> ## Boots a boot/recovery image once, without flashing it permanently. | Example: fastboot boot boot.img ##| Загружается с образа один раз, не прошивая его постоянно. | Пример: fastboot boot boot.img
+fastboot getvar product ## Returns the device's product/codename string. ##| Возвращает строку кодового имени устройства.
+!fastboot -w ## Wipes userdata and cache partitions. Equivalent to a factory reset. ##| Стирает разделы userdata и cache. Эквивалент сброса к заводским настройкам.
 
-# === РћРўР”Р•Р›Р¬РќРћР• РћРљРќРћ ===
-powershell
-adb shell
+[ Tools ]
+devcon find *VID_2833* | findstr /i /c:"XRSP" ## Finds Quest XRSP streaming interface by Meta VID. ##| Находит интерфейс XRSP Quest по Meta VID 2833.
+devcon find *VID_2833* | findstr /i /c:"Reality Labs" ## Finds Reality Labs USB devices. ##| Находит USB-устройства Reality Labs.
+devcon find *VID_2833* | findstr /i /c:"ADB" ## Finds ADB interface. Confirms ADB driver is installed. ##| Находит интерфейс ADB. Подтверждает установку ADB-драйвера.
+devcon find *VID_2833* ## Lists all USB devices with Meta/Oculus vendor ID 2833. ##| Список всех USB-устройств с VID 2833 (Meta/Oculus).
+devcon findall *VID_2833* ## Includes disconnected phantom devices from history. ##| Включает отключённые фантомные устройства из истории.
+devcon status *VID_2833* ## Shows driver status and binding for all Meta devices. ##| Показывает статус драйвера для всех устройств Meta.
+~devcon disable *VID_2833* ## Disables all Meta USB devices in Device Manager. ##| Отключает все USB-устройства Meta в Диспетчере устройств.
+~devcon enable *VID_2833* ## Re-enables all Meta USB devices. ##| Повторно включает все USB-устройства Meta.
+devcon rescan ## Rescans for new/changed hardware. ##| Повторное сканирование для обнаружения нового/изменённого оборудования.
+devcon find *Quest* ## Searches devices with Quest in their name. ##| Поиск устройств с Quest в названии.
+devcon hwids *VID_2833* ## Shows hardware IDs and compatible IDs for Meta devices. ##| Показывает HW ID и совместимые ID для устройств Meta.
+devcon drivernodes *VID_2833* ## Lists all available driver nodes for Meta USB devices. ##| Список доступных узлов драйвера для USB-устройств Meta.
+devcon stack *VID_2833* ## Shows driver stack for Meta devices. ##| Показывает стек драйверов для устройств Meta.
+devcon resources *VID_2833* ## Shows hardware resources (IRQ, memory ranges) used by Meta devices. ##| Показывает аппаратные ресурсы (IRQ, диапазоны памяти), используемые устройствами Meta.
+devcon driverfiles *VID_2833* ## Lists driver files associated with Meta devices. ##| Список файлов драйверов, связанных с устройствами Meta.
+aapt2 dump badging <apkname> ## Displays APK file metadata ##| Выводит метаданные файл apk
+aapt2 dump packagename <apkname> ## Extracts package name from APK file ##| Извлекает название пакета по файлу apk
 
-# === РЈРўРР›РРўР« ===
-devcon find *VID_2833* | findstr /i /c:"XRSP"
-devcon find *VID_2833* | findstr /i /c:"Reality Labs"
-devcon find *VID_2833* | findstr /i /c:"ADB"
-devcon find *VID_2833*
-devcon findall *VID_2833*
-devcon find *Quest*
-devcon find *VID_2833* | findstr /i /c:"ADB"
-scrcpy
-scrcpy --audio-source=mic --video-codec=h265 --crop=1584:1440:1950:250 --max-size=3664 --video-bit-rate=5M --video-buffer=50 --max-fps=30 --stay-awake --power-off-on-close
+[ Scripts ]
+adb shell sh /data/local/tmp/<script> ## Runs a shell script on device temp folder. | Example: adb shell sh /data/local/tmp/setup.sh ##| Запускает shell-скрипт из временной папки устройства. | Пример: adb shell sh /data/local/tmp/setup.sh
+adb push <script> /data/local/tmp/ ## Uploads a script from PC to device temp folder. | Example: adb push setup.sh /data/local/tmp/ ##| Загружает скрипт с ПК во временную папку устройства. | Пример: adb push setup.sh /data/local/tmp/
+adb shell chmod 755 /data/local/tmp/<script> ## Makes script executable. Required before running. | Example: adb shell chmod 755 /data/local/tmp/setup.sh ##| Делает скрипт исполняемым. Необходимо перед запуском. | Пример: adb shell chmod 755 /data/local/tmp/setup.sh
+adb shell dos2unix /data/local/tmp/<script> ## Converts Windows CRLF to Unix LF. | Example: adb shell dos2unix /data/local/tmp/setup.sh ##| Преобразует окончания строк Windows CRLF в Unix LF. | Пример: adb shell dos2unix /data/local/tmp/setup.sh
+adb shell "for f in /sdcard/*.log; do rm -f $f; done" ## Deletes all .log files in /sdcard/ via shell loop. ##| Удаляет все .log файлы в /sdcard/ через цикл оболочки.
+adb shell "run-as <pkgname> sh" ## Opens a shell with a debuggable app's own UID/permissions. | Example: adb shell run-as com.myapp sh ##| Открывает оболочку с UID/правами отлаживаемого приложения. | Пример: adb shell run-as com.myapp sh
+for /f %%i in ('adb shell "pm list packages -3"') do echo %%i ## Windows batch loop, processes adb output line by line. ##| Цикл Windows batch, построчно обрабатывающий вывод adb.
+curl "https://uploadlink/put" -X POST -F "file=@%uploadfile%" -Ss ## Uploads %uploadfile% to server via HTTP POST ##| Отправляет файл %uploadfile% на сервер методом HTTP POST
+curl -LJkO %curllink%  -# ## Download file from %curllink%, follow redirects, obtain filename from server if possible, ignore HTTPS certificate validation, and display progress ##| Скачать файл по ссылке %curllink%, пройти редиректы, по возможности взять имя файла от сервера, не проверять HTTPS-сертификат и показать прогресс.
+curl -f -Lko %dlappl% %curllink% %curlparam% -# ## Download from %curllink% to file %dlappl% regardless of filename on server ##| Скачать по ссылке %curllink% в конкретный файл %dlappl% независимо от того, как файл называется на сервере.
 
+[ Shells ]
+adb shell ## Opens interactive shell on device. Type exit to close. ##| Открывает интерактивную оболочку на устройстве. Введите exit для выхода.
+cmd ## Opens Windows Command Prompt. Stays open (/k mode). | Example: cmd /k echo ready ##| Открывает командную строку Windows. Остаётся открытой. | Пример: cmd /k echo ready
+powershell ## Opens PowerShell session with -NoExit flag. | Example: powershell -NoProfile ##| Открывает сессию PowerShell с флагом -NoExit. | Пример: powershell -NoProfile
+!adb shell su ## Opens a root shell if the device is rooted. Fails silently otherwise. ##| Открывает root-оболочку, если устройство рутировано. Иначе тихо завершается ошибкой.
+wsl ## Opens the default WSL (Windows Subsystem for Linux) shell, if installed. ##| Открывает оболочку дистрибутива WSL (Windows Subsystem for Linux), если установлен.
+
+[ Windows Utilities ]
+ipconfig /all ## Shows full network configuration of the PC: IP, DNS, adapters. ##| Показывает полную сетевую конфигурацию ПК: IP, DNS, адаптеры.
+ipconfig /flushdns ## Clears the Windows DNS resolver cache. ##| Очищает кэш DNS-резолвера Windows.
+netsh wlan show interfaces ## Shows the PC's active Wi-Fi connection: SSID, signal, channel. ##| Показывает активное Wi-Fi-подключение ПК: SSID, сигнал, канал.
+tracert <host> ## Traces the network route from the PC to a host. | Example: tracert google.com ##| Трассирует сетевой маршрут от ПК до узла. | Пример: tracert google.com
+certutil -hashfile <file> MD5 ## Computes an MD5 hash of a local file (built into Windows). | Example: certutil -hashfile MyApp.apk MD5 ##| Вычисляет MD5-хеш локального файла (встроено в Windows). | Пример: certutil -hashfile MyApp.apk MD5
+robocopy <src> <dst> /MIR ## Mirrors a folder tree between two PC locations (robust copy). | Example: robocopy C:\Backup D:\Backup /MIR ##| Зеркалирует дерево папок между двумя местами на ПК (надёжное копирование). | Пример: robocopy C:\Backup D:\Backup /MIR
+where adb ## Shows the full path(s) of adb.exe found on the PATH. ##| Показывает полный путь(и) к adb.exe, найденному в PATH.
+tasklist | findstr adb ## Lists running adb.exe processes on the PC. ##| Список запущенных процессов adb.exe на ПК.
+~taskkill /IM adb.exe /F ## Force-kills all adb.exe processes on the PC. Fixes a stuck ADB server. ##| Принудительно завершает все процессы adb.exe на ПК. Помогает при зависшем ADB-сервере.
+ping -t <host> ## Continuously pings a host from the PC until stopped (Ctrl+C). | Example: ping -t 192.168.1.50 ##| Непрерывно пингует узел с ПК до остановки (Ctrl+C). | Пример: ping -t 192.168.1.50

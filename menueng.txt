@@ -17,13 +17,15 @@
 #K. Security and Privacy
 #L. Storage
 2.  Sending a text string to the headset
-3.  Install Meta Quest drivers
+3.  Install drivers
 #A.  Install version 1.71  (Old Oculus drivers)
 #B.  Install version 1.72  (New Reality Labs drivers)
 #C.  Install version 1.77  (Reworked Reality Labs drivers)
+#D.  Install SteamLink Audio Drivers
 #F.  Download version 1.71
 #G.  Download version 1.72
 #I.  Download version 1.77
+#J.  Download SteamLink Audio Drivers
 4.  Reboot into different modes and current information
 #A.  Resuming booting from Bootloader mode
 #C.  Standard/Default Headset Reboot.
@@ -33,6 +35,7 @@
 ##K. Headset Firmware and Boot Slot Information
 ##S. Disable headset sensors (Only Meta Quest 3)
 ##Q. Enable headset sensors (Only Meta Quest 3)
+##P. Rescue flashing Mode
 ##Enter. Switch to button flashing mode
 #R.  Headset Reboot into Recovery Mode
 #F.  Headset Reboot into Fastboot Mode
@@ -45,11 +48,23 @@
 #B.  Series of headset screenshots, one per key press    
 #S.  Series of automatic screenshots with a specified interval   
 6.  Copying screenshots and videoshots from the headset to the PC
-7.  Connecting the headset via "ADB over Wi-Fi"
+7.  Connecting the headset to the PC
 #A.  Connect via standard Wi-Fi
 #B.  Connect via Wi-Fi using a random port
-8.  Reconnecting the headset via "ADB over cable"
-9.  Connecting the headset as a removable disk
+#C.  mDNS connection
+##A.  Auto-connect headset to PC via TLS using mDNS
+##B.  Launch graphical mDNS parameter configurator
+##F.  Detect IP and port without connecting
+##G.  mDNS port listener
+##I.  Restart ADB server
+##J.  View mDNS packet dump
+##K.  View network adapters
+##L.  View ADB version
+##N.  View diagnostic data
+##O.  Manual entry of headset and PC addresses for connection
+##H.  Description of options
+#D.  Reconnecting the headset via "ADB over cable"
+#E.  Connecting the headset as a removable disk
 A.  Manage headset and PC services
 #1.  Updates Management
 ##A.  Check update services status
@@ -80,6 +95,7 @@ A.  Manage headset and PC services
 ##E.  Enable Wi-Fi Debug Mode
 ##D.  Disable Wi-Fi Debug Mode
 ##F.  Mode check status
+#I.  Managing USB Network Control Model (NNCM) mode
 #K.  Device Storage Monitor   [EXPERIMENTAL]
 ##1. force-not-low -f   (immediately set to NORMAL)
 ##2. force-not-low      (set to NORMAL)
@@ -105,6 +121,24 @@ A.  Manage headset and PC services
 ##K.  Disable
 ##L.  Delete parameter from registry (not recommended)
 #Q.  Restart ADB server on PC
+B.  Log Management
+#A.  Work with Logcat
+##A.  Logcat: last 5 thousand lines
+##B.  Logcat: last 10 thousand lines
+##C.  Logcat: number of lines manually
+##D.  Logcat: last 5 minutes
+##E.  Logcat: last 10 minutes
+##F.  Logcat: number of minutes manually
+##G.  Logcat: unlimited [ Will open in a separate window ]
+##H.  Clear Logcat
+##I.  Entire Log
+##J.  Search in logcat [ Will open in a separate window ]
+#B.  Bugreport extraction
+#C.  USB device connection and disconnection log
+#D.  Save all system information in bulk into one archive
+#E.  View ADB logs
+#F.  View Update Engine logs
+#G.  Find and display errors in Meta Link installation logs
 C.  System information
 #A.  Work with dumpsys
 ##A.  Save the full state list (dumpsys)
@@ -121,26 +155,12 @@ C.  System information
 #E.  Save a list of installed packages (package names)
 #F.  Show headset serial number
 #G.  Save a list of system settings (system/global/security)
-#H.  Work with Logcat
-##A.  Logcat: last 5 thousand lines
-##B.  Logcat: last 10 thousand lines
-##C.  Logcat: number of lines manually
-##D.  Logcat: last 5 minutes
-##E.  Logcat: last 10 minutes
-##F.  Logcat: number of minutes manually
-##G.  Logcat: unlimited [ Will open in a separate window ]
-##H.  Clear Logcat
-##I.  Entire Log
-##J.  Search in logcat [ Will open in a separate window ]
 #I.  Battery information
 #J.  Running Apps List
-#K.  Bugreport extraction 
 #L.  View CPU-intensive applications 
 #N.  List of files/directories and their size 
 #O.  Show the amount of occupied space [EXP]
-#P.  USB device connection and disconnection log
 #Q.  Controllers information
-#R.  Save all system information in bulk into one archive
 D.  Diagnostic information
 #A.  Summary diagnostic information
 #B.  Information about all computer devices
@@ -150,10 +170,13 @@ D.  Diagnostic information
 #F.  Send any file for diagnostics
 E.  Testing, diagnostics, resolving various issues
 #A.  Restarting the headset shell and vr environment
-##A.  Restarting the headset shell
+##A.  Restarting the headset shell (first option)
 ##B.  Restarting the headset shell (second option)
-##C.  Force start of the bottom application bar
-##D.  Forcing the start of the headset's home environment
+##C.  Restarting the headset shell (third option)
+##D.  Restarting the headset shell (fourth option)
+##E.  Forcing the start of the headset's home environment (first option)
+##F.  Forcing the start of the headset's home environment (second option)
+##G.  Force start of the bottom application bar (old interface enable)
 #D.  Interactive test of connecting the headset to the PC
 #G.  Fix volume button reboot issue (remove KeyMapper)
 #J.  Starting Fastboot commands
@@ -173,21 +196,44 @@ E.  Testing, diagnostics, resolving various issues
 #N.  Cable functionality check
 #O.  Camera functionality check (Quest 2 only)
 #P.  Measure Wi-Fi speed between the headset and PC
-##A.  Auto Wi-Fi speed test with default values 
-##B.  Wi-Fi speed multi-test with values from a file
-##S.  Run Wi-Fi test with custom values
-##D.  Analyze test results  
-##G.  Build a histogram or calculate the trend based on test results  
-##H.  Additional explanations about tests, errors, logs, etc.
-##F.  Firewall handling for Bad file descriptor error
-###A.  Disable firewall
-###B.  Enable firewall
-###C.  Open port 5201 in the firewall (add rule)
-###D.  Close port 5201 in the firewall (remove rule)
-###E.  Check port 5201 (only Windows 10 and above)
-##C.  Service connection check
-##I.  Start the iperf server as a separate process
-##V.  Set C:\Temp as the iperf server launch directory
+##A.  Auto Wi-Fi speed test with default values
+##C.  Advanced test options and settings
+###S.  Standard Wi-Fi speed test with selectable values in MultiTest Editor
+###C.  Advanced real-time graphical tests with iPerf Test Configurator
+###F.  Auto-fiting maximum bitrate with zero packet lost
+###V.  Launch iPerf Visual Analyzer log visualization tool
+###L.  Assign a label (prefix) to the archive name for results of previous tests
+###LB.  Assign a label to the archive name for results of previous tests and backup it
+###P.  Switch protocols TCP/UDP
+###H.  Additional explanations about menu options
+##D.  Analyze test results (Table)
+##E.  Analyze test results (Visual Analyzer)
+##G.  Build a histogram or calculate the trend based on test results
+###R.  Histogram of reverse test results
+###D.  Histogram of direct test results
+###E.  Graphical chart of direct reverse check results with "comb"
+###F.  Graphical chart of direct reverse check results without "comb"
+###T.  Trend calculation based on reverse test results
+###S.  Trend calculation based on direct test results
+###G.  How to Create a Chart in Google Sheets (Instructions)
+##L.  Assign a label (prefix) to the archive name for results of previous tests
+##P.  Switch protocols TCP/UDP
+##T.  Troubleshooting connection issues and running tests
+###F.  Firewall handling for Bad file descriptor error
+####A.  Disable firewall
+####B.  Enable firewall
+####C.  Open port 5201 in the firewall (add rule)
+####D.  Close port 5201 in the firewall (remove rule)
+####E.  Check port 5201 (only Windows 10 and above)
+###C.  Service connection check
+###I.  Start the iperf server as a separate process
+###V.  Set C:\Temp as the iperf server launch directory
+###W.  Write the directory C:\Temp to the registry and make it permanent
+###R.  Grant full access permissions to the C:\Temp directory
+###P.  Switch protocols TCP/UDP
+###H.  Additional explanations about menu options
+###S.  Return to the Wi-Fi test menu
+##H.  Additional explanations about tests, errors, logs, etc
 #Q.  Network connection statistics (netstat)
 ##A. Alll statistics
 ##B. Connection with status ESTABLISHED only
@@ -234,7 +280,8 @@ F.  Additional options
 ##J. Remove the "iPerf Temp Dir" key from the registry
 ##K. Remove the "Backups Dir" key from the registry
 ##T. Check for the presence of keys in the registry
-##X. Remove the Quas registry branch with all keys (old and new)
+##V. Export the HKEY_CURRENT_USER\Software\Quas registry branch to a file
+##X. Delete all these keys from the registry
 #I.  Social Platform management
 ##D.  Disable Social Platform
 ##E.  Enable Social Platform
@@ -269,7 +316,8 @@ G.  Headset firmware update and firmware information
 #E.  Show the current firmware version of the headset and check for updates
 #F.  Firmware analyzer: check the update.zip file for correctness and compatibility
 #G.  Download compatibility tables for environment versions and headset firmware versions
-#I. [additional explanations about incremental firmware updates]
+#I.  Additional explanations about incremental firmware updates
+#R.  Rescue flashing Mode
 I.  Download/update progress, DNS setup
 #A.  View download progress             
 #B.  Record DNS servers to headset
@@ -470,8 +518,9 @@ J.  Application management
 ##K.  = Steam Auto Crack GUI
 ##L.  = Quest Patcher for Beat Saber
 ##N.  = APPID
+##O.  = PCVR Mods Hub
 #T.  ADB tools installation
-##A.  = Embed the ADB package into the system and also remove all this junk from it
+##A.  = Embed ADB package into system and remove all this junk from it
 ###A.  Embed ADB and utility package into the system
 ###B.  Embed only ADB into the system
 ###C.  Remove ADB and utility package from the system
@@ -494,18 +543,18 @@ J.  Application management
 ##PU.  Select and add applications to the uninstall list
 ##PD.  Select and add applications to the disable list
 ##H.  Help and addition information
-#X.  Install Meta Quest drivers
+#X.  Install drivers
 ##A.  Install version 1.71  (Old Oculus drivers)
 ##B.  Install version 1.72  (New Reality Labs drivers)
 ##C.  Install version 1.77  (Reworked Reality Labs drivers)
+##D.  Install SteamLink Audio Drivers
 ##F.  Download version 1.71
 ##G.  Download version 1.72
 ##I.  Download version 1.77
-
-
+##J.  Download SteamLink Audio Drivers
 K.  Setting CPU/GPU levels
-L.  Setting CPU/GPU levels/RefreshRate//Resolution
-#. Set CPU/GPU levels
+L.  Setting CPU/GPU levels/RefreshRate/Resolution
+L.  Set CPU/GPU levels
 #1. Set CPU level
 ##C.  Check current level
 ##M.  Return to menu
@@ -527,11 +576,11 @@ L.  Setting CPU/GPU levels/RefreshRate//Resolution
 ##5.  Maximum
 ##A.  Auto
 #3. Show current levels
-#. frameSync Mode Management
-##4.  Enable frameSync mode
-##5.  Disable frameSync mode
-##6.  Show current status
-#. Set resolution
+L. frameSync Mode Management
+#4.  Enable frameSync mode
+#5.  Disable frameSync mode
+#6.  Show current status
+L. Set resolution
 #A. 845 x 768
 #B. 1127 x 1024
 #C. 1408 x 1280
@@ -602,7 +651,8 @@ Q.  Backup and restoring menu
 ##B.  Standard recovery (instant backup scan)
 ##C.  Restore with manual backup directory selection
 ##D.  Restore with manual backup file selection
-##E.  Restore application data (old algorithm)
+##E.  Restore app data from the current directory only
+##F.  Restore app data from the current directory, including all subdirectories
 ##H.  Description of the functions of this menu
 #C.  Applications File Save Menu  
 ##A.  Full apps save (APK+OBB+DATA)
@@ -684,8 +734,11 @@ W.  Contact the author
 #D.  Donate: By me the coffee         [QR code]
 #E.  Donate: By me the coffee         [Web browser]
 #F.  Leave feedback or send file
-X.  Open ADB File Manager
-Y.  Open ADB console
+#G.  Donate: Boosty			[QR code]
+#I.  Donate: Boosty			[Web browser]
+#J.  Gift a Claude AI subscription
+X.  Quas ADB Commander
+Y.  Quas Command Shell
 #I.  Website to check the availability of addresses (RU)
 #L.  Author's portal about VR: vr419.ru (RU)
 #N.  Download the latest version of Quas or leave a question/feedback/comment (RU)

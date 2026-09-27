@@ -8,7 +8,7 @@ REM Copyrights: Varset
 REM Trademarks: 
 REM Originalname: Quas
 REM Comments: 
-REM Productversion:  6. 1. 0. 0
+REM Productversion:  7. 0. 0. 0
 REM Fileversion:  0. 0. 0. 0
 REM Internalname: 
 REM ExeType: consoleold
@@ -18,30 +18,23 @@ REM AdministratorManifest: No
 REM  QBFC Project Options End
 @ECHO ON
 
+
 @if /i [%1]==[v] (set "verbecho=echo on") else (set "verbecho=echo off")
 @%verbecho%
 :_NormalStart
-rem @echo off
+cls
 title Quas
-
 set "QUAS_APP=%~f0"
 set "QUAS_APP_NAME=%~nx0"
 set "QUAS_APP_DIR=%~dp0"
-rem echo %QUAS_APP%
-rem echo %QUAS_APP_NAME%
-rem echo %QUAS_APP_DIR%
-rem pause
-rem @set myfiles=d:\Quest2\adb
-rem @set myfiles=%~dp0Source
-@mode con:cols=100 lines=52
+set "QuasStartParams=%*"
+if not defined QuasWorkPath set "QuasWorkPath=%CD%"
+
+rem set myfiles=%~dp0Source
 @color 07
-
 @set cp=utf
-::@set cp=oem
-
 @call :_%cp%
 %codepage% 1>nul
-
 
 if /i "%QUAS_APP_NAME:~0,1%"=="d" goto :_StartDiagnosticMenu
 
@@ -54,8 +47,6 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo ADB is starting..
 rem EndEngTextBlock
-rem setlocal enabledelayedexpansion
-rem call :_CheckInitialStatusKey
 if /i [%1]==[a] set right=1 && goto _adminright
 if /i [%1]==[u] set right=2 && goto _userright 
 if /i [%1]==[c] set right=3 && goto _uacright
@@ -64,10 +55,8 @@ if /i [%1]==[d] goto _DiagInformation
 if /i [%1]==[b] set s=NO&& goto _beginn
 if /i [%1]==[f] call :_TaskkillADB
 
-rem echo %1 | findstr /i "qq" >nul && call :_BakdirCreate&&call :_ExtractListNumber %1&& goto _BackupListsQCommandLine
 echo %1 | findstr /i "qq" >nul && call :_ExtractListNumber %1&& goto _BackupListsQCommandLine
 
-rem (call :_CheckInitialStatusKey) else (call :_CheckInitialStatusKey)
 call :_CheckInitialStatusKey
 if [%1]==[] goto :_tabBegin
 
@@ -93,14 +82,13 @@ rem StartRusTextBlock
 @echo.
 @echo      1.  Прямой доступ к настройкам Андроид
 @echo      2.  Отправка строки текста на шлем
-@echo      3.  Установка драйверов Meta Quest
+@echo      3.  Установка драйверов
 @echo      4.  Перезагрузка в разные режимы и информация о текущем
 @echo      5.  Создание скриншотов дисплея шлема
 @echo      6.  Копирование скриншотов и видео со шлема на ПК
-@echo      7.  Подключение шлема "ADB по Wi-Fi"
-@echo      8.  Переподключение шлема "ADB по кабелю"
-@echo      9.  Подключение шлема как съемного диска
+@echo      7.  Подключение шлема к ПК
 @echo      A.  Управление сервисами шлема и ПК
+@echo      B.  Работа с логами
 @echo      C.  Cистемная информация
 @echo      D.  Диагностическая информация
 @echo      E.  Тестирование, диагностика, решение различных проблем
@@ -117,9 +105,9 @@ rem StartRusTextBlock
 @echo.
 @echo      %_fBCyan%S.  Поиск по опциям меню%_fReset%
 @echo      H.  Помощь в решении проблем
-@echo      W.  Связь с автором
-@echo      X.  Открыть ADB File Manager
-@echo      Y.  Открыть графическую консоль
+@echo      W.  Связь с автором и поддержка
+@echo      X.  Quas ADB Commander
+@echo      Y.  Quas Command Shell
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo            %_fBYellow%MAIN MENU%_fReset%
@@ -128,14 +116,13 @@ rem @echo      0.  Exit from the program
 rem @echo.
 rem @echo      1.  Direct access to hidden settings
 rem @echo      2.  Sending a text string to the headset
-rem @echo      3.  Install Meta Quest drivers
+rem @echo      3.  Install drivers
 rem @echo      4.  Reboot into different modes and current information
 rem @echo      5.  Making screenshots of the headset display
 rem @echo      6.  Copying screenshots and videoshots from the headset to the PC
-rem @echo      7.  Connecting the headset via "ADB over Wi-Fi"
-rem @echo      8.  Reconnecting the headset via "ADB over cable"
-rem @echo      9.  Connecting the headset as a removable disk
+rem @echo      7.  Connecting the headset  to the PC
 rem @echo      A.  Manage headset and PC services
+rem @echo      B.  Log Management
 rem @echo      C.  System information
 rem @echo      D.  Diagnostic information
 rem @echo      E.  Testing, diagnostics, resolving various issues
@@ -152,7 +139,7 @@ rem @echo      R.  Stream video casting to PC
 rem @echo.
 rem @echo      %_fBCyan%S.  Search%_fReset%
 rem @echo      H.  Help
-rem @echo      W.  Contact the author
+rem @echo      W.  Contact the author and donat
 rem @echo      X.  Open ADB File Manager
 rem @echo      Y.  Open graphical console
 rem EndEngTextBlock
@@ -170,21 +157,23 @@ if /i "%choice%"=="5" (GOTO _screenshotmenu)
 if /i "%choice%"=="6" (GOTO _scrshcopy)
 if /i "%choice%"=="7" (GOTO _adbwifimenu)
 if /i "%choice%"=="77" (GOTO _ConnectRandomPort)
-if /i "%choice%"=="8" (GOTO _reconnect)
-if /i "%choice%"=="9" (GOTO _usbflash)
 if /i "%choice%"=="a" (GOTO :_ServiceControlMenu)
+if /i "%choice%"=="b" (GOTO _genlogsmenu)
 if /i "%choice%"=="c" (GOTO _syscommenu)
+if /i "%choice%"=="ca" (GOTO :_InstallCustomApps)
 if /i "%choice%"=="d" (GOTO _DiagnosticInformationMenu)
 if /i "%choice%"=="e" (GOTO _shellmenu)
 if /i "%choice%"=="f" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="g" (call :_CyrillicPathCheckAll&&GOTO _fwmenu)
 if /i "%choice%"=="gg" (GOTO _fwmenuskip)
-if /i "%choice%"=="h" (call :_ShowAllUndocCommands)
+rem if /i "%choice%"=="h" (call :_ShowAllUndocCommands)
 if /i "%choice%"=="i" (GOTO _todmenu)
 if /i "%choice%"=="j" (GOTO _installmenugen)
+if /i "%choice%"=="job" (call :_UninstallAppsStuff)
 if /i "%choice%"=="l" (GOTO _resolutionfix)
 if /i "%choice%"=="m" (GOTO _oculuslink)
 if /i "%choice%"=="n" (GOTO _qctprocedure)
+if /i "%choice%"=="na" (GOTO :_OwnApplicationListInstallMenu)
 if /i "%choice%"=="p" (GOTO _datetimecorrmenu)
 if /i "%choice%"=="q" (GOTO _BackupAndRestoreMenu)
 if /i "%choice:~0,2%"=="qq" (goto _BackupListsQ)
@@ -192,6 +181,7 @@ if /i "%choice%"=="pt" (cls && GOTO _WiFiTestCSVAnalyzer)
 if /i "%choice%"=="r" (GOTO _streamingmenu)
 if /i "%choice%"=="st" (GOTO _ServiceTools)
 if /i "%choice%"=="s" (GOTO _searchmenuoption)
+if /i "%choice%"=="sa" (GOTO _StartAppPSFast)
 if /i "%choice%"=="w" (GOTO _contactauthor)
 if /i "%choice%"=="y" (GOTO _openshellgui)
 if /i "%choice%"=="x" (GOTO _openadbfm)
@@ -203,18 +193,29 @@ if /i "%choice%"=="103" (GOTO _103info)
 if /i "%choice%"=="adbe" (GOTO _onlyadbintegration)
 if /i "%choice%"=="adbi" (GOTO _adbintegration)
 if /i "%choice%"=="adbd" (GOTO _desadbintegration)
+if /i "%choice%"=="af" (GOTO :_AutoFitingTestsBegin)
+
 @cls
 goto _beginn
 
+:_ScriptLang
+rem StartRusTextBlock
+set scriptlang=RU
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set scriptlang=EN
+rem EndEngTextBlock
+exit /b
 
 :_openadbfm
-start " " /min powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%myfiles%\adbfm-6.9.5.ps1"
+call :_ScriptLang
+start " " /min powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%myfiles%\adbcm.v10.5.ps1" -lang %scriptlang%
 cls
 @echo.
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo        %_fBGreen%Как пользоваться ADB File Manager%_fReset%
+@echo        %_fBGreen%Как пользоваться Quas ADB Commander%_fReset%
 @echo.
 @echo   %_fBYellow%Панель слева - %_fYellow%ваш ПК%_fBYellow%. Панель справа - %_fYellow%шлем%_fBYellow%. Переключение панелей с активной на пассивную
 @echo   с помощью клавиши %_fYellow%Tab%_fBYellow%. Активная панель обозначается %_fYellow%курсором (синей полоской) %_fBYellow%на ней.
@@ -344,6 +345,7 @@ call :_MenuChoiceEnter
 if not defined choice goto :_HiddenSettingsOpenMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
+if /i "%choice%"=="`" (GOTO _beginn)
 if /i "%choice%"=="m" (GOTO _beginn)
 rem StartRusTextBlock
 if /i "%choice%"=="1" (set "hiddenname=Скрытые настройки"&& set "hiddenset=com.android.settings/.homepage.DeepLinkHomepageActivity"&& goto :_HiddenSettingsOpen)
@@ -428,6 +430,59 @@ goto :_HiddenSettingsOpenMenu
 call :_prevmenu
 goto :_HiddenSettingsOpenMenu
 
+
+:_GenLogsMenu
+call :_settime
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo        МЕНЮ РАБОТЫ С ЛОГАМИ
+@echo        ====================
+@echo.
+@echo.
+@echo    A.  Работа с Logcat
+@echo    B.  Извлечение багрепорта                 	
+@echo    C.  Журнал подключений и отключений USB устройств
+@echo.   D.  Сохранение всей системной информации оптом в один архив
+@echo.   E.  Просмотр логов ADB
+@echo.   F.  Просмотр логов Update Engine
+@echo    G.  Найти и показать ошибки в логах установки Meta Link
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo        LOG MANAGEMENT MENU
+rem @echo        ==================
+rem @echo.
+rem @echo.
+rem @echo    A.  Work with Logcat
+rem @echo    B.  Bugreport extraction [EXP]
+rem @echo    C.  USB device connection and disconnection log
+rem @echo.   D.  Save all system information in bulk into one archive
+rem @echo.   E.  View ADB logs
+rem @echo.   F.  View Update Engine logs
+rem @echo    G.  Find and display errors in Meta Link installation logs
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+call :_MenuChoiceEnter
+if not defined choice goto :_GenLogsMenu
+if /i "%choice%"=="0" (exit)
+if /i "%choice%"=="00" (goto _RestartQUAS)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="a" (GOTO _adblogcat)
+if /i "%choice%"=="b" (GOTO _bugreportextr)
+if /i "%choice%"=="c" (GOTO _USBConnectionsList)
+if /i "%choice%"=="d" (GOTO _AllSystemFiles)
+if /i "%choice%"=="e" (GOTO _ViewAdbLogs)
+if /i "%choice%"=="f" (GOTO _ViewUpdateEngineLogs)
+if /i "%choice%"=="g" (GOTO _OculusSetupErrorsView)
+goto :_GenLogsMenu
+
+
+
 :_ServiceControlMenu
 cls
 call :_hat
@@ -447,6 +502,7 @@ rem StartRusTextBlock
 @echo    E.  Управление Bluetooth на шлеме
 @echo    F.  Управление Режимом полета на шлеме
 @echo    G.  Управление ADB Wi-Fi по TLS (Отладка по Wi-Fi)
+@echo    I.  Управление режимом USB Network Control Model (NCM)
 @echo    K.  Управление Device Storage Monitor	[EXPERIMENTAL]
 @echo.
 @echo    P.  Управление параметрами Планирование GPU, Аппаратное ускорение и Игровой режим
@@ -464,6 +520,7 @@ rem @echo    D.  Proximity sensor management
 rem @echo    E.  Managing Bluetooth on the headset
 rem @echo    F.  Managing AirPlane Mode on the headset
 rem @echo    G.  Managing ADB Wi-Fi over TLS (Wi-Fi Debug Mode)
+rem @echo    I.  Managing USB Network Control Model (NNCM) mode
 rem @echo    K.  Device Storage Monitor	[EXPERIMENTAL]
 rem @echo.
 rem @echo    P.  Management parameters Hardware Acceleration and Game Mode
@@ -484,12 +541,118 @@ if /i "%choice%"=="d" (GOTO _proxsensor)
 if /i "%choice%"=="e" (GOTO _BTManagerMenu)
 if /i "%choice%"=="f" (GOTO :_AirPlaineModeMenu)
 if /i "%choice%"=="g" (GOTO :_WiFiADBManage)
+if /i "%choice%"=="i" (GOTO :_NCMManage)
 if /i "%choice%"=="k" (GOTO :_ForceLowManagingMenu)
 if /i "%choice%"=="p" (GOTO _hwagamecontrol)
 if /i "%choice%"=="q" (GOTO _ADBServerRestart)
 goto :_ServiceControlMenu
 
 :: Проверить adb shell cmd devicestoragemonitor force-not-low
+
+
+
+:_NCMManage
+cls
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo    E.  Включить только NCM режим
+@echo    D.  Отлючить  NCM режим
+@echo    F.  Определить статус
+@echo.
+@echo.
+@echo  Режим %_fBYellow%NCM (USB Network Control Model)%_fReset% превращает ваш шлем в виртуальный %_fBYellow%Ethernet-адаптер%_fReset%
+@echo  для компьютера. Шлем становится сетевым устройство, вставленным в ПК и определяется там
+@echo  как сетевой адаптер.%_fReset%
+@echo.
+@echo  %_fBYellow%ВАЖНО:  После включения этого режима потребуется вручную установить драйверы %_fYellow%1.77%_fBYellow% (пункт %_fYellow%3%_fBYellow%).
+@echo          На устройство %_fYellow%CDC NCM %_fBYellow%поставить встроенный драйвер %_fYellow%Microsoft - UsbNcm Host Device%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    E.  Enable NCM mode only
+rem @echo    D.  Disable NCM mode
+rem @echo    F.  Detect status
+rem @echo.
+rem @echo.
+rem @echo  %_fBYellow%NCM (USB Network Control Model)%_fReset% mode turns your headset into a virtual %_fBYellow%Ethernet adapter%_fReset%
+rem @echo  for your computer. The headset becomes a network device plugged into the PC
+rem @echo  and is detected there as a network adapter.%_fReset%
+rem @echo.
+rem @echo  %_fBYellow%IMPORTANT: After enabling this mode, you will need to manually install drivers %_fYellow%1.77%_fBYellow% (item %_fYellow%3%_fBYellow%) and
+rem @echo             install the %_fYellow%Microsoft - UsbNcm Host Devicerem EndMarker%_fBYellow% driver for the %_fYellow%CDC NCM%_fBYellow% device%_fReset%
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+@echo.
+call :_MenuChoiceEnter
+if not defined choice goto :_NCMManage
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="00" (goto _RestartQUAS)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="e" (GOTO _NcmModeEnable)
+if /i "%choice%"=="d" (GOTO _NcmModeDisable)
+if /i "%choice%"=="f" (GOTO _NcmStatusCheck)
+goto :_NCMManage
+
+
+:_NcmModeEnable
+%myfiles%\adb shell svc usb setFunctions ncm 1>nul 2>nul
+goto :_NcmModeEnabled
+
+:_NcmModeDisable
+@echo.
+%myfiles%\adb shell svc usb setFunctions 1>nul 2>nul
+rem StartRusTextBlock
+@echo   %_fBYellow%Режим NCM отключен%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%NCM mode disabled%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_NCMManage
+
+:_NcmStatusCheck
+For /F %%a In ('%MYFILES%\adb shell svc usb getFunctions') Do set ncmcheck=%%a
+if not defined ncmcheck goto :_NcmNotDefined
+if %ncmcheck% == ncm goto :_NcmModeEnabled
+if %ncmcheck% == mtp goto :_MtpModeEnabled
+
+:_NcmNotDefined
+@echo.
+rem StartRusTextBlock
+@echo   %_fBYellow%Режим не установлен%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Mode not enabled%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_NCMManage
+
+:_NcmModeEnabled
+@echo.
+rem StartRusTextBlock
+@echo   %_fBGreen%Установлен режим NCM%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%NCM mode enabled%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_NCMManage
+
+:_MtpModeEnabled
+@echo.
+rem StartRusTextBlock
+@echo   %_fBGreen%Установлен режим MTP%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%MTP mode enabled%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_NCMManage
 
 
 :_WiFiADBManage
@@ -962,6 +1125,7 @@ call :_hat
 @echo.
 @echo.
 rem StartRusTextBlock
+set "langscript=RU"
 @echo   Поиск производится в названиях всех меню и всех опций в программе %_fBYellow%Quas%_fReset%.
 @echo   Он регистронезависимый и может искать по подстроке, то есть по части слова.
 @echo.
@@ -980,12 +1144,15 @@ rem StartRusTextBlock
 @echo.
 @echo   Чтобы вывести в файл полную структуру меню, не вводите ничего, а просто нажмите %_fBYellow%Enter%_fReset%
 @echo.
+@echo   Из списка найденных опций возможен автопереход к выбранной опции. 
+@echo.
 @echo.
 set "menusearch="
 set menutxt=menurus.txt
 set /p menusearch=" Введите строку для поиска: "
 rem EndRusTextBlock
 rem StartEngTextBlock
+rem set "langscript=EN"
 rem @echo   The search is performed across all menu names and all options in the %_fBYellow%Quas%_fReset% program.
 rem @echo   It is case-insensitive and works by substring matching, meaning you can search by part of a word.
 rem @echo.
@@ -1004,6 +1171,8 @@ rem @echo   To cancel the search, enter three colons in a row %_fBYellow%:::%_fR
 rem @echo.
 rem @echo   To export the full menu structure to a file, just press %_fBYellow%Enter%_fReset% without typing anything.
 rem @echo.
+rem @echo    Auto-navigation to the selected option is available from the list of found options.
+rem @echo.
 rem @echo.
 rem set "menusearch="
 rem set menutxt=menueng.txt
@@ -1018,18 +1187,25 @@ if not defined menusearch (
 rem StartRusTextBlock
 @echo   %_fBYellow%Полная структура меню сохранена в файл %_fYellow%menu_export.txt%_fReset%
 ) else (
-@echo      %_fBYellow%Результаты поиска по "%_fYellow%%menusearch%%_fBYellow%":%_fReset%
+@echo      %_fBYellow%Результаты поиска по ключевой фразе "%_fYellow%%menusearch%%_fBYellow%"
+@echo      Для автоперехода на выбранный пункт введите его номер и нажмите %_fYellow%Enter%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   %_fBYellow%The full menu structure has been saved to the file %_fYellow%menu_export.txt%_fReset%
 rem ) else (
-rem @echo      %_fBYellow%Search results for "%_fYellow%%menusearch%%_fBYellow%":%_fReset%
+rem @echo      %_fBYellow%Search results for the keyword phrase "%_fYellow%%menusearch%%_fBYellow%"
+rem @echo      To auto-navigate to the selected item, enter its number and press %_fYellow%Enter%_fReset%
 rem EndEngTextBlock
 )
 @echo.
-powershell -ExecutionPolicy Bypass -File %myfiles%\searchmenu.ps1 -MenuFile "%myfiles%\%menutxt%" -Query "%menusearch%"
+set "sbl="
+if not "%choice%" == "sa" set "sbl=-StopBeforeLast"
+rem echo %choice%
+rem echo %sbl%
+rem pause
+powershell -ExecutionPolicy Bypass -NoLogo -NoProfile -File %myfiles%\SearchMenu.v2.2.ps1 -MenuFile "%myfiles%\%menutxt%" -Query "%menusearch%" -Navigate %sbl% -lang %langscript%
 @echo  --------------------------------------------------------
-call :_returnmenu
+rem call :_returnmenu
 goto _beginn
 
 
@@ -1118,10 +1294,16 @@ if /i "%choice%"=="b" (GOTO _RestoreMenu)
 if /i "%choice%"=="c" (GOTO _SaveDataMenu)
 if /i "%choice%"=="f" (GOTO _CreateListForBackups)
 if /i "%choice%"=="fa" (set appsmark=1&&GOTO _CreateListForBackups)
+if /i "%choice%"=="fp" (GOTO :_CreateListFullPathApps)
 if /i "%choice%"=="g" (set extractmark=1&&set vbfl=1&&goto _RestoreMainProcedure)
 if /i "%choice%"=="gf" (set searchmark=1&&set extractmark=1&&set vbfl=1&&goto _RestoreMainProcedure)
 if /i "%choice%"=="i" (goto _AppDataReadWriteBackup)
-if /i "%choice%"=="j" (set backupmenureturn=1&& goto _setbackupsdirkey)
+rem StartRusTextBlock
+if /i "%choice%"=="j" (set backupmenureturn=1&& @echo   %_fBYellow%Выберите каталог для бэкапов и нажмите Ok%_fReset%&&  goto _setbackupsdirkey)
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem if /i "%choice%"=="j" (set backupmenureturn=1&& @echo   %_fBYellow%Select Backup dir and press Ok%_fReset%&&  goto _setbackupsdirkey)
+rem EndEngTextBlock
 if /i "%choice%"=="k" (goto :_ProximitySensorOn)
 if /i "%choice%"=="l" (set searchmark=1&& goto :_CopyMoveToSelectedBackup)
 if /i "%choice%"=="ls" (goto :_CopyMoveToSelectedBackup)
@@ -1159,18 +1341,21 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    Archive %_fBCyan%%%b%_fReset% - %_fBYellow%deleted%_fReset%
 rem EndEngTextBlock
-@echo %%d >>del.txt
-rem del /q /f "%%c" 1>nul 2>nul
+@echo %%d >>AppsDeleted.txt
+del /q /f "%%d" 1>nul 2>nul
 )
 @echo.
 @echo   ------------------------------------
 rem StartRusTextBlock
 @echo        %_fBGreen%Архивы удалены%_fReset%
+@echo  %_fBYellow%Список удаленных архивов находится в файле %_fYellow%AppsDeleted.txt%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo         %_fBGreen%Archives deleted%_fReset%
+rem @echo  %_fBYellow%List of deleted archives is saved in %_fYellow%AppsDeleted.txt%_fReset%
 rem EndEngTextBlock
 del /q /f packages-list.txt 1>nul 2>nul
+rem del /q /f del.txt 1>nul 2>nul
 call :_prevmenu
 goto _BackupAndRestoreMenu
 
@@ -1207,17 +1392,20 @@ rem StartRusTextBlock
 @echo   Опция %_fBGreen%Показать и создать список приложений%_fReset% позволит сохранить в файл список названий пакетов
 @echo   для выбранных приложений из желаемой категории (Системные, Неофициальные и т.д.) Эту опцию 
 @echo   удобно использовать для создания файла %_fBYellow%ListForBackups.txt%_fReset%. Чтобы создать список приложений
-@echo   с именами и названиями пакетов, этот пункт следует выбирать двумя буквами, вот так: %_fBYellow%fa%_fReset%
+@echo   с именами и названиями пакетов, этот пункт следует выбирать двумя буквами: %_fBYellow%fa%_fReset%
+@echo   Для создания списка приложений с полными путями, выберите этот пункт так: %_fBYellow%fp%_fReset%
 @echo.
 @echo   Опция %_fBGreen%Извлечение данных из файла бэкапа%_fReset% распаковывает файлы бэкапа и извлекает содержимое
 @echo   в каталог для бэкапов с подкаталогами по именам файлов бэкапов. 
 @echo   %_fBYellow%Перед использованием этой опции шлем должен быть подключен к ПК%_fReset%.
 @echo.
 @echo   Опция %_fBGreen%Убрать запрет доступа к файлам сохранений%_fReset% снимает ограничения на чтение и запись
-@echo   по ADB файлов сохранений в каталоге шлема %_fBYellow%Android/data.
+@echo   по ADB файлов сохранений в каталоге шлема %_fBYellow%Android/data%_fReset%.
 @echo.       
-@echo   пция %_fBGreen%Установить постоянный каталог для бэкапов%_fReset% позволяет прописать в реестр каталог, куда
+@echo   Опция %_fBGreen%Установить постоянный каталог для бэкапов%_fReset% позволяет прописать в реестр каталог, куда
 @echo   будут сохраняться бэкапы и где будет выполняться поиск бэкапов для их восстановления.
+@echo   %_fBCyan%Настоятельно рекомендуется использовать эту опцию. Все ваши бэкапы сохранений будут лежать
+@echo   в одном месте и Quas всегда станет использовать этот каталог для бэкапов и восстановления%_fReset%.
 @echo.       
 @echo   Опция %_fBGreen%Включить датчик приближения%_fReset% просто включает датчик приближения, если процесс бэкапа
 @echo   или восстановления был прерван.
@@ -1251,6 +1439,7 @@ rem @echo   %_fBGreen%The "Show and create application list" option%_fReset% all
 rem @echo   for selected applications from the desired category (System, Unofficial, etc.). This option
 rem @echo   is convenient for creating the %_fBYellow%ListForBackups.txt%_fReset% file. To create a list of applications
 rem @echo   with app names and package names, this item should be selected with two letters, like this: %_fBYellow%fa%_fReset%
+rem @echo   To create a list of applications with full paths, select this option as: %_fBYellow%fp%_fReset%
 rem @echo.
 rem @echo   %_fBGreen%The "Extract data from a backup file" option%_fReset% unpacks backup files and extracts their contents
 rem @echo   into the backup directory with subdirectories named after the backup files.
@@ -1551,7 +1740,6 @@ exit /b
 :_RestoreHelp
 cls
 @echo.       
-@echo.
 rem StartRusTextBlock
 @echo   %_fBGreen%Опция "Стандартное восстановление (тщательное сканирование бэкапов)"%_fReset% выполняет восстановление
 @echo   файлов данных приложений. Перед этим будет выполнено сканирование файлов бэкапов из каталога
@@ -1569,19 +1757,22 @@ rem StartRusTextBlock
 @echo   Имя приложения или название пакета можно скопировать %_fBYellow%двойным кликом мыши%_fReset% или через %_fBYellow%Ctrl-C%_fReset%.
 @echo.
 @echo   %_fBGreen%Опция "Стандартное восстановление (мгновенное сканирование бэкапов)"%_fReset% покажет только
-@echo   количество найденных бэкапов и выведет их список в окне выбора. Проверка на установленные
-@echo   приложения выполнена не будет. В окне выбора отобразятся только названия файлов бэкапов,
-@echo   без названий пакетов.
+@echo   количество найденных бэкапов и выведет их список в окне выбора, без проверки на на установленные
+@echo   приложения. В окне выбора отобразятся только названия файлов бэкапов, без названий пакетов.
 @echo.
 @echo   %_fBGreen%Опция "Восстановление с выбором каталога бэкапов вручную"%_fReset% откроет окно выбора каталога,
 @echo   где должны быть расположены файлы бэкапов. После выбора каталога нажмите %_fBYellow%Оk%_fReset% в том же окне.
 @echo.
 @echo   %_fBGreen%Опция "Восстановление с выбором файла бэкапа вручную"%_fReset% откроет окно выбора файла. Выберите
-@echo   файл бэкапа и нажмите %_fBYellow%Ok%_fReset% в том же окне. Бэкап будет восстановлен.
+@echo   файл бэкапа с расширением %_fBYellow%ab%_fReset% и перетащите его в окно программы, затем нажмите %_fBYellow%Enter%_fReset%. После
+@echo   подтверждения бэкап будет восстановлен. Или нажмите %_fBYellow%Enter%_fReset%, выберите файл на ПК и нажмите %_fBYellow%Ok%_fReset%. 
 @echo.
-@echo   %_fBGreen%Опция "Восстановление данных приложений (старый алгоритм)"%_fReset% восстанавливает данные из созданных
-@echo   ранее бэкапов. Поместите файл архива рядом с программой %_fBYellow%Quas%_fReset% и выберите эту опцию,
-@echo   программа выведет список найденных бэкапов. 
+@echo   %_fBGreen%Опция "Восстановление данных приложений только из текущего каталога"%_fReset% Поместите файлы архивов
+@echo   рядом %_fBYellow%Quas%_fReset% и выберите эту опцию, программа выведет их список для восстановления. 
+@echo.
+@echo   %_fBGreen%Опция "Восстановление данных приложений из текущего каталога, включая все вложенные"%_fReset%
+@echo   Как предыдущая опция, но поиск бэкапов будет произведен по всем вложенным папкам.
+@echo.
 @echo   %_fBYellow%Внимательно проверьте список перед подтверждением восстановления%_fReset%.
 @echo   Имена архивов могут быть какими угодно, главное чтобы расширение было %_fBYellow%ab%_fReset%
 @echo   %_fBRed%ВАЖНО: В  этой опции будут восстановлены все архивы, которые программа найдет рядом с собой,
@@ -1624,10 +1815,13 @@ rem @echo.
 rem @echo   %_fBGreen%Option "Restore with manual selection of a backup file"%_fReset% opens a file selection window.
 rem @echo   Select a backup file and press %_fBYellow%Ok%_fReset% in the same window. The backup will be restored.
 rem @echo.
-rem @echo   %_fBGreen%Option "Restore application data (old algorithm)"%_fReset% restores data from backups
-rem @echo   created earlier. Place the archives you want to restore into the program directory
-rem @echo   %_fBYellow%Quas%_fReset% and select this option. After selection, the program will display
-rem @echo   a list of found backups. %_fBYellow%Carefully review the list before confirming the restore%_fReset%.
+rem @echo    %_fBGreen%Option "Restore app data from the current directory only"%_fReset% Place the archive files
+rem @echo    next to %_fBYellow%Quas%_fReset% and select this option; the program will list them for restoration. 
+rem @echo.
+rem @echo    %_fBGreen%Option "Restore app data from the current directory, including all subdirectories"%_fReset%
+rem @echo    Same as the previous option, but it will search for backups in all subfolders.
+rem @echo.
+rem @echo   %_fBYellow%Carefully review the list before confirming the restore%_fReset%.
 rem @echo   Archive names may be anything, the only requirement is the %_fBYellow%ab%_fReset% extension.
 rem @echo   %_fBRed%IMPORTANT: This option will restore all archives that the program finds next to itself,
 rem @echo              even if the corresponding applications are not installed on the headset.%_fReset%
@@ -1643,7 +1837,14 @@ rem @echo      3. Exit the game%_fReset%
 rem @echo.
 rem @echo   After that, you can restore from the backup.
 rem EndEngTextBlock
-call :_exitwindow
+@echo   ----------------------------------------------------
+rem StartRusTextBlock
+@echo   ^>^>^> Нажмите что-нибудь для закрытия этого окна ^<^<^<
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   ^>^>^> Press any key for close the window ^<^<^<
+rem EndEngTextBlock
+pause >nul
 exit /b
 
 
@@ -1686,6 +1887,7 @@ if not defined choice goto _SaveDataMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _BackupAndRestoreMenu)
 if /i "%choice%"=="a" (goto _FullApplicationBackupPS)
 if /i "%choice%"=="b" (goto _SaveAPKPS)
 if /i "%choice%"=="c" (goto _SaveAPKOBBPS)
@@ -1733,6 +1935,7 @@ if not defined choice goto _BackupMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _BackupAndRestoreMenu)
 if /i "%choice%"=="a" (GOTO _BackupChoisesPS)
 if /i "%choice%"=="b" (GOTO _EnterListNumber)
 if /i "%choice%"=="c" (GOTO _BackupAllAppsQ)
@@ -1773,7 +1976,7 @@ call :_MakeAppsDataListSH
 @%myfiles%\adb shell chmod 0755 /data/local/tmp/aapt-arm-pie2
 @%myfiles%\adb shell sh /data/local/tmp/%shscriptname% >o.txt 2>nul
 @del /q /f %shscriptname%  1>nul 2>nul
-powershell -ExecutionPolicy Bypass -File "%myfiles%\selector5.ps1" "o.txt" "packages-list.txt"
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "o.txt" "packages-list.txt"
 if not exist packages-list.txt (
 @echo.
 rem StartRusTextBlock
@@ -1854,7 +2057,8 @@ rem StartRusTextBlock
 @echo    B.  Стандартное восстановление (мгновенное сканирование бэкапов)
 @echo    C.  Восстановление с выбором каталога бэкапов вручную
 @echo    D.  Восстановление с выбором файла бэкапа вручную
-@echo    E.  Восстановления данных приложений (старый алгоритм)
+@echo    E.  Восстановления данных приложений только из текущего каталога
+@echo    F.  Восстановления данных приложений из текущего каталога, включая все вложенные
 @echo.
 @echo    %_fBYellow%H. Описание функций этого меню%_fReset%
 rem EndRusTextBlock
@@ -1866,7 +2070,8 @@ rem @echo    A.  Standard recovery (thorough backup scan)
 rem @echo    B.  Standard recovery (instant backup scan)
 rem @echo    C.  Restore with manual backup directory selection
 rem @echo    D.  Restore with manual backup file selection
-rem @echo    E.  Restore application data (old algorithm)
+rem @echo    E. Restore app data from the current directory only
+rem @echo    F. Restore app data from the current directory, including all subdirectories
 rem @echo.
 rem @echo    %_fBYellow%H. Description of the functions of this menu%_fReset%
 rem EndEngTextBlock
@@ -1882,6 +2087,7 @@ if not defined choice goto _RestoreMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _BackupAndRestoreMenu)
 if /i "%choice%"=="a" (set searchmark=&&GOTO _RestoreMainProcedure)
 if /i "%choice%"=="b" (set searchmark=1&&GOTO _RestoreMainProcedure)
 if /i "%choice%"=="af" (set fullpathviewkey=-f&&set searchmark=&&GOTO _RestoreMainProcedure)
@@ -1891,17 +2097,11 @@ if /i "%choice%"=="cs" (set searchmark=1&&goto _RestoreWithDirSelection)
 rem if /i "%choice%"=="c" (set retmenu=_RestoreMenu&&call :_SelectiveBackupFolder&&set bakdir=%filefolder%&&goto _ViewBackupFilesList)
 if /i "%choice%"=="d" (GOTO _RestoringAloneABFileMenu)
 if /i "%choice%"=="e" (GOTO _Restoring)
+if /i "%choice%"=="f" (set searchmark=&& GOTO :_RestoreBackupsFromCurrentDir)
+if /i "%choice%"=="ff" (set searchmark=1&& GOTO :_RestoreBackupsFromCurrentDir)
 if /i "%choice%"=="h" (call :_RestoreHelp)
 if /i "%choice%"=="t" (call :_TestConf)
 goto _RestoreMenu
-
-:_TestConf
-set "enterconfirmation=GOTO _beginn"
-set "escapeconfirmation=GOTO _beginn"
-call :_ActionConfirmationReguest
-echo Hm
-pause
-exit
 
 :_RestoreWithDirSelection
 set retmenu=_RestoreMenu
@@ -1955,6 +2155,21 @@ call :_prevmenu
 goto :_BackupAndRestoreMenu
 
 
+:_RestoreBackupsFromCurrentDir
+set "fullpathviewkey=-d -f"
+@echo  -------------------------------------------------------------------
+rem StartRusTextBlock
+@echo   %_fBYellow%Для поиска бэкапов используется текущий каталог, включая все  вложенные каталоги%_fReset%%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%The backup directory path was taken from the registry%_fReset%
+rem EndEngTextBlock
+rem set BAKDIR=%~dp0
+set BAKDIR=%cd%
+
+if defined searchmark (GOTO _ViewBackupFilesListNoScan) else (goto _ViewBackupFilesListScan)
+
+
 :_RestoreMainProcedure
 call :_cdc
 For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BackupsDir 2^>nul') do set backupsdir=%%a
@@ -1985,17 +2200,13 @@ rem EndEngTextBlock
 
 ) else (
 set BAKDIR=%backupsdir%
-
 if defined searchmark (GOTO _ViewBackupFilesListNoScan) else (goto _ViewBackupFilesListScan)
 )
 
-
 @echo  ---
 dir /a /b "%cd%\Backups" 2>nul | findstr . >nul
-
 if errorlevel 1 (
 rem StartRusTextBlock
-
 @echo   %_fYellow%+++  Каталог по умолчанию пуст или не существует  +++%_fReset%%
 rem EndRusTextBlock
 rem StartEngTextBlock
@@ -2014,9 +2225,7 @@ rem EndEngTextBlock
 set BAKDIR=%cd%\Backups
 if defined searchmark (GOTO _ViewBackupFilesListNoScan) else (goto _ViewBackupFilesListScan)
 )
-
-
-@echo  ---
+@echo  -------------------------------------------------------------------
 rem StartRusTextBlock
 @echo   %_fBRed%+++  Каталоги бэкапов не обнаружены  +++%_fReset%%
 @echo.
@@ -2033,7 +2242,7 @@ rem EndEngTextBlock
 set pathmode=folder
 call :_SelectFileFolder SelectedFolder
 if defined SelectedFolder (
-set BAKDIR=%SelectedFolder%
+set BAKDIR=!SelectedFolder!
 if defined searchmark (GOTO _ViewBackupFilesListNoScan) else (goto _ViewBackupFilesListScan)
 )
 @echo.
@@ -2063,7 +2272,18 @@ exit /b
 
 
 :_ViewBackupFilesListScan
-if defined  vbfl goto _ViewBackupFilesList
+if defined  vbfl (
+@echo.
+@echo  -----
+rem StartRusTextBlock
+@echo  %_fBYellow%Сканируем каталоги с бэкапами для создания списка с именами пакетов приложений...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBYellow%Scanning backup directories to create a list of application package names...%_fReset%
+rem EndEngTextBlock
+@echo.
+goto _ViewBackupFilesList
+)
 @echo  -------------------------------------------------------------------
 rem StartRusTextBlock
 @echo   %_fBYellow%Идет сканирование каталогов с бэкапами, это займет некоторое время.
@@ -2133,7 +2353,7 @@ rem echo %SelectFolder%
 rem echo %filefolder%
 rem pause
 
-powershell -ExecutionPolicy Bypass -File "%myfiles%\selector5.ps1" "backup_list.txt" "packages-list.txt" -d %fullpathviewkey% -m
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "backup_list.txt" "packages-list.txt" -d %fullpathviewkey% -m
 @del /q /f backup_list.txt 1>nul 2>nul
 if not exist packages-list.txt (
 @echo.
@@ -2256,10 +2476,8 @@ exit /b
 
 
 :_GetABFilesFromDirs
+for /f %%A in ('copy /z "%~f0" nul') do set "CR=%%A"
 set "countbak=0"
-rem echo %BAKDIR%
-rem pause
-
 for /r "%BAKDIR%" %%F in (*.ab) do (
 set /a countbak+=1
 )
@@ -2277,17 +2495,16 @@ set "count=0"
 for /r "%BAKDIR%" %%F in (*.ab) do (
 if %%~zF geq 48 (
 set /a count+=1
+set "archivename=%%~nF"
+<nul set /p ="[2K[1G"
 rem StartRusTextBlock
-<nul set /p str="%_fCyan%Сканируем бэкапы: %_fBCyan%!count!%_fReset%"
+<nul set /p ="!CR!%_fCyan%Сканируем бэкапы: %_fBCyan%!count!/%countbak%  %_fBBlue%!archivename!%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem <nul set /p str="%_fCyan%Scanning backups: %_fBCyan%!count!%_fReset%"
+rem <nul set /p ="!CR!%_fCyan%Scanning backups: %_fBCyan%!count!/%countbak%  %_fBBlue%!archivename!%_fReset%
 rem EndEngTextBlock
-<nul set /p str=""
 set "dt=%%~tF"
-set "archivename=%%~nF"
 set "fullpath=%%F"
-
 %myfiles%\adb push "!fullpath!" /data/local/tmp/ 1>nul 2>nul
 %myfiles%\adb shell sh /data/local/tmp/%scriptn% '/data/local/tmp/!archivename!.ab' 1>nul 2>nul
 rem if errorlevel 1
@@ -2488,10 +2705,10 @@ rem set "TITLE=Select a folder"
 rem EndEngTextBlock
 ) else (
 rem StartRusTextBlock
-    echo Некорректный режим: %pathmode%
+@echo Некорректный режим: %pathmode%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem echo Incorrected mode: %pathmode%
+rem @echo Incorrected mode: %pathmode%
 rem EndEngTextBlock
     exit /b 1
 )
@@ -2570,33 +2787,17 @@ exit /b
 set filefolder=%SelectedFile%
 exit /b
 
-
-
-:_testpsfilefolder
-
-rem For /f "tokens=3" %%a in ('reg query HKEY_CURRENT_USER\Software\Quas /v BackupsDir 2^>nul') do set backupsdir=%%a
-rem @if not defined backupsdir (set "keybackupsdir=Не установлен") else (set "keybackupsdir=%backupsdir%")
-
-rem set "pathmode=file"
-rem set "pathmode=folder"
-rem set "pathmode=file"
-rem call :_SelectFileOrFolderPS
-rem if defined SelectedFile   echo Выбран файл: %SelectedFile%
-rem if defined SelectedFolder echo Выбрана папка: %SelectedFolder%
-pause
-exit
-
-
 :_AppDataReadWriteBackup
 rem Resident Evil 4
 rem In Death - Unchained
 rem A Fisherman Tale
 rem Vader Immortal I
-
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_BackupReadWrite"
 set "datbkpproc=1"
-set "quaspath=%~dp0"
+rem set "quaspath=%~dp0"
+set "quaspath=%cd%"
 Set "SelectorParameters=-o"
+rem set "fullpathviewkey=-f"
 set "ReturnMenuLabel=_BackupAndRestoreMenu"
 if not defined backuperror (
 set "ScriptFinishLabel=_ReadWriteMessage"
@@ -2612,6 +2813,47 @@ rem set "action1=to look"
 rem set "action2=looking"
 rem EndEngTextBlock
 goto _UniversalAppsHanflerScript
+
+
+:_CreateListFullPathApps
+set getfullpathapps=1
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_ViewAppListReturn"
+Set "SelectorParameters=-p"
+set "ReturnMenuLabel=_BackupAndRestoreMenu"
+set "ScriptFinishLabel=_CreateListFullPathAppsMess"
+rem StartRusTextBlock
+set "action1=вывести"
+set "action2=вывода в файл"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set "action1=save"
+rem set "action2=save to file"
+rem EndEngTextBlock
+goto _UniversalAppsHanflerScript
+
+:_GetListFullPathApps
+rem start powershell -WindowStyle Hidden -NoProfile -NoLogo -ExecutionPolicy Bypass -File %myfiles%\GetPackagePaths.ps1 packages-list.txt FullPathApps.txt
+start powershell -ExecutionPolicy Bypass -File %myfiles%\GetPackagePaths.ps1 packages-list.txt FullPathApps.txt
+timeout 2 >nul
+exit /b
+
+:_CreateListFullPathAppsMess
+@echo   ==============================================
+rem StartRusTextBlock
+@echo              %_fBGreen%Создание списка завершено%_fReset%
+@echo   ==============================================
+@echo.
+@echo   %_fBYellow%Он называется %_fYellow%FullPathApps.txt %_fBYellow%и находится рядом с программой%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo              %_fBGreen%List creation completed%_fReset%
+rem @echo   ==============================================
+rem @echo.
+rem @echo   %_fBYellow%It is called %_fYellow%FullPathApps.txt %_fBYellow%and is located next to the program%_fReset%
+rem EndEngTextBlock
+@echo.  
+goto _returnmenu
+
 
 
 :_CreateListForBackups
@@ -2630,8 +2872,8 @@ set "action2=вывода в файл"
 set "lfbmess=%_fBYellow%Его можно использовать для создания списка бэкапов, просто переименовав в %_fYellow%ListForBackups.txt%_fReset%"
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem set "action1=to back up"
-rem set "action2=the back up"
+rem set "action1=save"
+rem set "action2=save to file"
 rem set "lfbmess=%_fBYellow%It can be used to create a list of backups, simply by renaming it to %_fYellow%ListForBackups.txt%_fReset%"
 rem EndEngTextBlock
 goto _UniversalAppsHanflerScript
@@ -2664,7 +2906,8 @@ set "ActionList=ExtractionList.txt"
 set "apkbkpproc=1"
 set "obbbkpproc=1"
 set "datbkpproc=1"
-set "quaspath=%~dp0"
+rem set "quaspath=%~dp0"
+set "quaspath=%cd%"
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
 Set "SelectorParameters="
 set "ReturnMenuLabel=_BackupAndRestoreMenu"
@@ -2690,7 +2933,8 @@ goto _UniversalAppsHanflerScript
 call :_BakdirCreate
 set "ActionList=ExtractionList.txt"
 set "datbkpproc=1" 
-set "quaspath=%~dp0"
+rem set "quaspath=%~dp0"
+set "quaspath=%cd%"
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
 Set "SelectorParameters="
 set "ReturnMenuLabel=_BackupAndRestoreMenu"
@@ -2716,7 +2960,8 @@ goto _UniversalAppsHanflerScript
 call :_BakdirCreate
 set "ActionList=ExtractionList.txt"
 set "apkbkpproc=1" 
-set "quaspath=%~dp0"
+rem set "quaspath=%~dp0"
+set "quaspath=%cd%"
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
 Set "SelectorParameters="
 set "ReturnMenuLabel=_BackupAndRestoreMenu"
@@ -2743,7 +2988,8 @@ call :_BakdirCreate
 set "ActionList=ExtractionList.txt"
 set "apkbkpproc=1" 
 set "obbbkpproc=1" 
-set "quaspath=%~dp0"
+rem set "quaspath=%~dp0"
+set "quaspath=%cd%"
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_PackagesListApkNameParser"
 Set "SelectorParameters="
 set "ReturnMenuLabel=_BackupAndRestoreMenu"
@@ -2803,11 +3049,11 @@ goto _UniversalAppsHanflerScript
 rem O
 :_StopAppPS
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_StopApps"
-if %choice% == gg (
-Set "SelectorParameters="
-)else (
-Set "SelectorParameters=-o"
-)
+rem if %choice% == gg (
+rem Set "SelectorParameters="
+rem )else (
+rem Set "SelectorParameters=-o"
+rem )
 set "ReturnMenuLabel=_installmenugen"
 set "ScriptFinishLabel=_installmenugen"
 rem StartRusTextBlock
@@ -2823,7 +3069,7 @@ goto _UniversalAppsHanflerScript
 rem O
 :_StartAppPS
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_StartApps"
-Set "SelectorParameters=-o"
+rem Set "SelectorParameters=-o"
 set "ReturnMenuLabel=_installmenugen"
 set "ScriptFinishLabel=_installmenugen"
 rem StartRusTextBlock
@@ -2835,6 +3081,26 @@ rem set "action1=to launch"
 rem set "action2=to start"
 rem EndEngTextBlock
 goto _UniversalAppsHanflerScript
+
+:_StartAppPSFast
+set listpackages=-3
+set pkgchoice=thrid-party
+set "CallBackupFileProcedure=%myfiles%\backup.cmd :_StartApps"
+rem Set "SelectorParameters=-o"
+set "ReturnMenuLabel=_installmenugen"
+set "ScriptFinishLabel=_installmenugen"
+rem StartRusTextBlock
+set "action1=запустить"
+set "action2=старта"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set "action1=to launch"
+rem set "action2=to start"
+rem EndEngTextBlock
+goto :_UniversalAppsHanflerScriptNoAIM
+rem goto _UniversalAppsHanflerScript
+
+
 
 rem Ok
 :_SoftUninstallAppsPS
@@ -2877,11 +3143,11 @@ goto _UniversalAppsHanflerScript
 rem Ok
 :_DisableAppsPS
 set "CallBackupFileProcedure=%myfiles%\backup.cmd :_DisableApps"
-if %choice% == dd (
+rem if %choice% == dd (
 Set "SelectorParameters="
-)else (
-Set "SelectorParameters=-o"
-)
+rem )else (
+rem Set "SelectorParameters=-o"
+rem )
 set "ReturnMenuLabel=_installmenugen"
 set "ScriptFinishLabel=_installmenugen"
 rem StartRusTextBlock
@@ -3050,7 +3316,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   Select the applications you want to add to the list
 rem EndEngTextBlock
-powershell -ExecutionPolicy Bypass -File "%myfiles%\selector5.ps1" "o.txt" "packages-list.txt"
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "o.txt" "packages-list.txt"
 ren packages-list.txt RunningApps.txt 1>nul 2>nul
 @echo.
 @echo.
@@ -3140,8 +3406,18 @@ ren apps-source.txt apps-source.txt.old 1>nul 2>nul
 ren o.txt apps-source.txt 1>nul 2>nul
 del /q /f apps-source.txt.old 1>nul 2>nul
 )
+
 rem @%MYFILES%\adb shell pm list packages %listpackages% >packages-list-source.txt
-powershell -ExecutionPolicy Bypass -File "%MYFILES%\selector5.ps1" "apps-source.txt" "packages-list.txt" %SelectorParameters%
+rem powershell -ExecutionPolicy Bypass -File "%MYFILES%\selector7.7.ps1" "apps-source.txt" "packages-list.txt" %SelectorParameters% %fullpathviewkey%
+powershell -ExecutionPolicy Bypass -File "%MYFILES%\selector7.7.ps1" "apps-source.txt" "packages-list.txt" %SelectorParameters%
+
+if defined getfullpathapps (
+call :_GetListFullPathApps
+rem ren apps-source.txt apps-source.txt.old 1>nul 2>nul
+rem ren o.txt apps-source.txt 1>nul 2>nul
+rem del /q /f apps-source.txt 1>nul 2>nul
+)
+
 @del /q /f apps-source.txt 1>nul 2>nul
 @del /q /f %shscriptname%  1>nul 2>nul
 if not exist packages-list.txt goto %ReturnMenuLabel%
@@ -3156,7 +3432,9 @@ rem ren packages-list.txt AppsList-%pkgchoice%.csv
 set FileExtend=txt
 rem ren packages-list.txt AppsList-%pkgchoice%.txt
 )
-@ren packages-list.txt AppsList-%pkgchoice%.%FileExtend% 1> nul 2>nul
+if not defined getfullpathapps ren packages-list.txt AppsList-%pkgchoice%.%FileExtend% 1> nul 2>nul
+del /q /f "%QuasWorkDir%\TempRestoreResult*" 1>nul 2>nul
+del /q /f "%QuasWorkDir%\TempRestoreErr*" 1>nul 2>nul
 @del /q /f packages-list.txt  1>nul 2>nul
 goto %ScriptFinishLabel%
 
@@ -3207,29 +3485,29 @@ rem set "pathmode=folder"
 
 rem --- Определяем ключ для PowerShell и заголовок ---
 if /I "%pathmode%"=="file" (
-    set "PSKEY=-sf"
+set "PSKEY=-sf"
 rem StartRusTextBlock
-    set "TITLE=Выберите файл"
+set "TITLE=Выберите файл"
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem set "TITLE=Select a file"
 rem EndEngTextBlock
 ) else if /I "%pathmode%"=="folder" (
-    set "PSKEY=-sfolder"
+set "PSKEY=-sfolder"
 rem StartRusTextBlock
-    set "TITLE=Выберите папку"
+set "TITLE=Выберите папку"
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem set "TITLE=Select a folder"
 rem EndEngTextBlock
 ) else (
 rem StartRusTextBlock
-    echo Некорректный режим: %pathmode%
+@echo Некорректный режим: %pathmode%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem echo Incorrected mode: %pathmode%
+rem @echo Incorrected mode: %pathmode%
 rem EndEngTextBlock
-    exit /b 1
+exit /b 1
 )
 
 rem --- Создаём временный PowerShell-скрипт рядом с батником ---
@@ -3435,7 +3713,7 @@ rem StartRusTextBlock
 @echo.
 @echo       Не прерывайте процесс восстановления. На время восстановления датчик приближения
 @echo       будет отключен. Если процесс все-же прервался по каким-то причинам,
-@echo       не забудьте включить датчик в пунктах E-F-E из Главного меню.%_fReset%
+@echo       не забудьте включить датчик в пунктах A-D-E из Главного меню.%_fReset%
 @echo      -------------------------------------------------------------------------------------
 @echo.
 @Set /p choice="Подтвердите восстановление нажатием Enter или введите 0 и Enter для возврата в меню: "
@@ -3443,7 +3721,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo       %_fBYellow%Do not interrupt the restoration process. During the restoration, the proximity sensor
 rem @echo       will be disabled. If the process is interrupted for any reason,
-rem @echo       do not forget to enable the sensor in the E-F-E section from the Main menu.%_fReset%
+rem @echo       do not forget to enable the sensor in the A-D-E section from the Main menu.%_fReset%
 rem @echo      -------------------------------------------------------------------------------------
 rem @echo.
 rem @Set /p choice="Confirm restoration by pressing Enter, or enter 0 and press Enter to return to the menu: "
@@ -3559,7 +3837,7 @@ set /a prf=!prf!+1
 @echo. %diaginfo%
 @echo   -------- %_fCyan%Headset data%_fReset% -----------------%diaginfo%
 @curl.exe 1>nul 2>nul
-if %errorlevel%==2 (set "curlinst=%_fBGreen%installed%_fReset%") else ("curlinst=%_fBRed%Not installed%_fReset%")
+if %errorlevel%==2 (set "curlinst=%_fBGreen%installed%_fReset%") else (set "curlinst=%_fBRed%Not installed%_fReset%")
 @echo   %_fBYellow%Curl%_fReset%		: %curlinst%%diaginfo%
 rem @%myfiles%\adb devices | findstr "device"$ 1>nul 2>nul
 @FOR /F "skip=1 tokens=*" %%G IN ('@%MYFILES%\adb devices ^| findstr /i /c:"device"') DO set adbdevices=%%G
@@ -3755,8 +4033,11 @@ rem StartRusTextBlock
 @echo    A.  Страница автора на Github
 @echo    B.  Сообщество Виаркомм			[RU]
 @echo    C.  Описание работы программы
-@echo    D.  Подкинуть монет: By me the coffee	[QR code]
-@echo    E.  Подкинуть монет: By me the coffee	[Web browser]
+@echo    D.  Подкинуть монет: Buy me the coffee	[QR code]
+@echo    E.  Подкинуть монет: Buy me the coffee	[Web browser]
+@echo    G.  Поддержать проект на Boosty		[QR code]
+@echo    I.  Поддержать проект на Boosty		[Web browser]
+@echo    J.  Подарить подписку на ИИ Claude
 @echo.
 @echo    %_fBGreen%F.  Оставить отзыв или отправить файл%_fReset%
 @echo.
@@ -3780,8 +4061,11 @@ rem StartEngTextBlock
 rem @echo    A.  Program page on Github
 rem @echo    B.  VRcomm community			[RU]
 rem @echo    C.  Program description
-rem @echo    D.  Donate: By me the coffee		[QR code]
-rem @echo    E.  Donate: By me the coffee		[Web browser]
+rem @echo    D.  Donate: Buy me the coffee	[QR code]
+rem @echo    E.  Donate: Buy me the coffee	[Web browser]
+rem @echo    G.  Donate: Boosty			[QR code]
+rem @echo    I.  Donate: Boosty			[Web browser]
+rem @echo    J.  Gift a Claude AI subscription
 rem @echo.
 rem @echo    F.  Leave feedback or send file
 rem @echo.
@@ -3810,17 +4094,17 @@ if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (start " " "https://github.com/Varsett/Quas" && goto _beginn)
 if /i "%choice%"=="b" (start " " "https://vrcomm.ru/" && goto _beginn)
 if /i "%choice%"=="f" (call :_UploadFileFeedbackGUI)
-
 rem StartRusTextBlock
-if /i "%choice%"=="c" (start " " "https://docs.google.com/document/d/1VOyN6Tcz5FUVwpywOZKCGdLITgTaaCWhV1pxvGWZuwc")
+if /i "%choice%"=="c" (start " " "https://docs.google.com/document/d/1VOyN6Tcz5FUVwpywOZKCGdLITgTaaCWhV1pxvGWZuwc" && goto _beginn)
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem if /i "%choice%"=="c" (start " " "https://docs.google.com/document/d/1jQh_Kmpx9mXPeTnw-A334XEIQvEsqYRW2nbeboEAbYk")
+rem if /i "%choice%"=="c" (start " " "https://docs.google.com/document/d/1jQh_Kmpx9mXPeTnw-A334XEIQvEsqYRW2nbeboEAbYk" && goto _beginn)
 rem EndEngTextBlock
-if /i "%choice%"=="d" (start " " "%myfiles%\bmc_qr.png")
+if /i "%choice%"=="d" (start explorer "%myfiles%\bmc_qr.png" && goto _beginn)
 if /i "%choice%"=="e" (start " " "https://buymeacoffee.com/varset" && goto _beginn)
-rem if /i "%choice%"=="b" (GOTO _shellrestart2)
-rem if /i "%choice%"=="q" (start " " "_____")
+if /i "%choice%"=="g" (start explorer "%myfiles%\bstdnt.png" && goto _beginn)
+if /i "%choice%"=="i" (start " " "https://boosty.to/varset/donate" && goto _beginn)
+if /i "%choice%"=="j" (start " " "https://claude.ai/gift && goto _beginn)
 goto _contactauthor
 
 
@@ -3834,6 +4118,7 @@ rem @curl "https://app.koofr.net/content/receivers/dc753b2c-2e85-4847-ab5e-fa395
 
 rem set uploadfile=test.txt
 :_UploadFileFeedbackCurl
+call :_CheckCurlExist
 rem @curl "https://app.koofr.net/content/receivers/1574cf54-aaeb-403f-8bcf-a1a9498e5e62/files/put" -X POST -F "file=@%uploadfile%" -Ss 1>nul 2>nul
 if defined FeedbackFolder (
 @curl "https://app.koofr.net/content/receivers/dc753b2c-2e85-4847-ab5e-fa3953b2037e/files/put" -X POST -F "file=@%uploadfile%" -Ss 1>nul 2>nul
@@ -4112,6 +4397,7 @@ rem StartRusTextBlock
 @echo 	pt	= Отобразить результаты теста Wi-Fi из меню Диагностики или из Главного меню
 @echo 	qqXX	= Быстрый бэкап по списку с номером XX	
 @echo 	s	= Отладочная информация
+@echo 	sa	= Ускоренный выбор приложения для запуска
 @echo 	st	= Окно консоли Quas
 @echo 	adbe	= Быстро встроить утилиту ADB в систему
 @echo 	adbd	= Быстро удалить пакет ADB из системы
@@ -4154,6 +4440,7 @@ rem @echo 	77	= Connect to the headset via a random port (similar to F-G-D optio
 rem @echo 	pt	= Display Wi-Fi test results from the Diagnostics menu or Main menu
 rem @echo 	qqXX    = Quick backup by the list with number XX
 rem @echo 	s	= Debug information
+rem @echo 	sa	= Quick selection of an app to launch
 rem @echo  	st	= Quas console
 rem @echo 	adbe	= Quickly install the ADB package into the system
 rem @echo 	adbd	= Quickly remove the ADB package from the system
@@ -4295,19 +4582,39 @@ rem StartRusTextBlock
 @echo        МЕНЮ ПЕРЕЗАПУСКА ОБОЛОЧКИ И ВИРТУАЛЬНОГО ОКРУЖЕНИЯ
 @echo        ==================================================
 @echo.
-@echo    A.  Перезапуск оболочки шлема
+@echo    A.  Перезапуск оболочки шлема (первый вариант)
 @echo    B.  Перезапуск оболочки шлема (второй вариант)
-@echo    C.  Принудительный старт нижней панели приложений
-@echo    D.  Принудительный старт домашнего окружения шлема
+@echo    C.  Перезапуск оболочки шлема (третий вариант)
+@echo    D.  Перезапуск оболочки шлема (четвертый вариант)
+@echo    E.  Принудительный старт домашнего окружения шлема (первый вариант)
+@echo    F.  Принудительный старт домашнего окружения шлема (второй вариант)
+@echo    G.  Принудительный старт нижней панели приложений (включить старый интерфейс)
+@echo    I.  Включить старый интерфейс  (только для прошивок ниже v2.0.7)
+@echo.
+@echo.
+@echo     %_fBYellow%Для перезапуска оболочки с предварительным отключением Wi-Fi
+@echo     введите пункты с символом "%_fYellow%w%_fBYellow%", например %_fYellow%aw, bw, cw, dw.
+@echo.
+@echo     %_fBYellow%Чтобы снова включить Wi-Fi воспользуйтесь пунктами %_fYellow%A-B-E %_fBYellow%из Главного меню%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo        VR ENVIRONMENT AND SHELL RESTART MENU
 rem @echo        =====================================
 rem @echo.
-rem @echo    A.  Restarting the headset shell
+rem @echo    A.  Restarting the headset shell (first option)
 rem @echo    B.  Restarting the headset shell (second option)
-rem @echo    C.  Force start of the bottom application bar
-rem @echo    D.  Forcing the start of the headset's home environment
+rem @echo    C.  Restarting the headset shell (third option)
+rem @echo    D.  Restarting the headset shell (fourth option)
+rem @echo    E.  Forcing the start of the headset's home environment (first option)
+rem @echo    F.  Forcing the start of the headset's home environment (second option)
+rem @echo    G.  Force start of the bottom application bar (old interface enable)
+rem @echo    I.  Enable old interface (only for firmware below v2.0.7)
+rem @echo.
+rem @echo.
+rem @echo      %_fBYellow%To restart the shell with Wi-Fi disabled beforehand,
+rem @echo      enter options with the letter "%_fYellow%w%_fBYellow%", e.g. %_fYellow%aw, bw, cw, dw.
+rem @echo.
+rem @echo      %_fBYellow%To turn Wi-Fi back on, use options %_fYellow%A-B-E %_fBYellow%from the Main Menu%_fReset%
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -4318,10 +4625,20 @@ if not defined choice goto _ShellRestartMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
-if /i "%choice%"=="a" (GOTO _shellrestart)
+if /i "%choice%"=="a" (GOTO _shellrestart1)
+if /i "%choice%"=="aw" (GOTO _shellrestart1)
 if /i "%choice%"=="b" (GOTO _shellrestart2)
-if /i "%choice%"=="c" (GOTO _homescreen)
-if /i "%choice%"=="d" (GOTO _StartApplicationsPanel)
+if /i "%choice%"=="bw" (GOTO _shellrestart2)
+if /i "%choice%"=="c" (GOTO _shellrestart3)
+if /i "%choice%"=="cw" (GOTO _shellrestart3)
+if /i "%choice%"=="d" (GOTO _shellrestart4)
+if /i "%choice%"=="dw" (GOTO _shellrestart4)
+if /i "%choice%"=="e" (GOTO _homescreen)
+if /i "%choice%"=="f" (GOTO _StartApplicationsPanel)
+if /i "%choice%"=="g" (GOTO _StartOldApplicationsPanel)
+if /i "%choice%"=="i" (GOTO _oldinterface)
+
+
 cls
 goto _ShellRestartMenu
 
@@ -4393,6 +4710,20 @@ rem @echo   Monitoring will open in a separate window. Simply close it when you 
 rem EndEngTextBlock
 call :_prevmenu
 goto _shellmenu
+
+
+:_StartOldApplicationsPanel
+@%MYFILES%\adb shell am start com.oculus.systemux/com.oculus.panelapp.anytimeui.AnytimeUIActivity
+call :_erlvl
+@echo ========================================
+rem StartRusTextBlock
+@echo  Панель приложений запущена
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  The application panel is launched
+rem EndEngTextBlock
+call :_prevmenu
+@goto _shellmenu
 
 
 :_StartApplicationsPanel
@@ -4942,6 +5273,22 @@ if /i "%choice%"=="s" (GOTO :_ResetGraphicKeyMenu)
 goto _AdditionalOptionsMenu
 
 
+:_oldinterface
+%myfiles%\adb shell pm clear com.oculus.vrshell 1>nul 2>nul
+@echo   ---------------------------------------------------
+rem StartRusTextBlock
+@echo   %_fBGreen%Оболочка переключена на старый интерфейс.
+@echo   %_fBYellow%Эта опция работает только до перезагрузки.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBGreen%The shell has been switched to the old interface.
+rem @echo    %_fBYellow%This option is only active until the next reboot.%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto _AdditionalOptionsMenu
+
+
+
 :_ResetGraphicKeyMenu
 call :_cdc
 cls
@@ -4983,7 +5330,7 @@ rem StartRusTextBlock
 @echo.
 @echo   %_fBYellow%Ваш паттерн будет другим%_fReset%. Определите его, как написано выше.
 @echo   Затем введите получившийся набор цифр в строку ниже и нажмите %_fBYellow%Enter%_fReset%. 
-@echo   Графический ключ должен быть очмщен. Для выхода в меню введите %_fBYellow%0%_fReset%.
+@echo   Графический ключ должен быть очищен. Для выхода в меню введите %_fBYellow%0%_fReset%.
 @echo.
 @echo.
 Set /p textpattern="  Введите ваш текстовый паттерн или 0 нажмите Enter: "
@@ -5032,7 +5379,7 @@ rem @echo.
 rem @echo.
 rem Set /p textpattern="  Enter your text pattern or 0 and press Enter: "
 rem EndEngTextBlock
-if not defined textpattern goto _ResetGraphicKey
+if not defined textpattern goto _ResetGraphicKeyMenu
 if /i "%textpattern%"=="0" (goto _AdditionalOptionsMenu)
 
 :_ResetGraphicKeyProcess
@@ -5153,6 +5500,7 @@ if not defined choice goto _SignCheckControlMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="a" (GOTO _SignCheckControlOff)
 if /i "%choice%"=="b" (GOTO _SignCheckControlOn)
 if /i "%choice%"=="c" (GOTO _RebootPCRecoveryMode)
@@ -5391,6 +5739,7 @@ if not defined choice goto _DeleteOldQuasFilesMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="a" (GOTO _DeleteOldQuasFiles)
 @cls
 goto _DeleteOldQuasFilesMenu
@@ -5506,6 +5855,7 @@ if not defined choice goto _fbafixmenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="f" (GOTO _fbafix)
 if /i "%choice%"=="s" (GOTO _fbasearching)
 if /i "%choice%"=="p" (GOTO _fbarightaccess)
@@ -5711,6 +6061,7 @@ if not defined choice goto _socialpcontrol
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="d" (GOTO _socpdisable)
 if /i "%choice%"=="e" (GOTO _socpenable)
 @cls
@@ -5789,6 +6140,7 @@ if not defined choice goto _ODTDefaultResetMenu
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="1" (GOTO _ODTDefaultReset)
 goto _ODTDefaultResetMenu
 
@@ -5842,7 +6194,8 @@ rem StartRusTextBlock
 @echo    T. Проверить наличие ключей в реестре
 @echo    S. Описание ключей
 @echo.
-@echo    X. Удалить ветвь реестра Quas со всеми ключами (старыми и новыми)
+@echo    V. Экспортировать ветвь HKEY_CURRENT_USER\Software\Quas в файл
+@echo    X. Удалить все эти ключи из реестра
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    A. Set the "Bypass Info Table" key in the registry
@@ -5860,6 +6213,7 @@ rem @echo.
 rem @echo    T. Check for the presence of keys in the registry
 rem @echo    S. Keys description
 rem @echo.
+rem @echo    V. Export the HKEY_CURRENT_USER\Software\Quas registry branch to a file
 rem @echo    X. Remove the Quas registry branch with all keys (old and new)
 rem EndEngTextBlock
 @echo.
@@ -5872,13 +6226,12 @@ if not defined choice goto _RegistryKeysSettings
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="a" (GOTO _setbypassinfokey)
 if /i "%choice%"=="b" (GOTO _setbypasswfattkey)
 if /i "%choice%"=="c" (GOTO _setbypassinistatuskey)
 if /i "%choice%"=="d" (GOTO _setiperfdirkey)
 if /i "%choice%"=="e" (GOTO _setbackupsdirkey)
-
-
 if /i "%choice%"=="g" (GOTO _delbypassinfokey)
 if /i "%choice%"=="h" (GOTO _delbypasswfattkey)
 if /i "%choice%"=="i" (GOTO _delbypassinistatuskey)
@@ -5886,7 +6239,10 @@ if /i "%choice%"=="j" (GOTO _deliperfdirkey)
 if /i "%choice%"=="k" (GOTO _delbackupsdirkey)
 if /i "%choice%"=="t" (GOTO _checkbypasskey)
 if /i "%choice%"=="s" (call :_KeysExplain)
+if /i "%choice%"=="v" (GOTO :_QuasRegKeysExport)
 if /i "%choice%"=="x" (GOTO _deletehivequas)
+
+
 goto _RegistryKeysSettings
 
 
@@ -6140,15 +6496,42 @@ rem EndEngTextBlock
 call :_prevmenu
 goto _RegistryKeysSettings
 
-:_deletehivequas
-@reg delete "HKEY_CURRENT_USER\Software\Quas" /f 1>nul 2>nul
+
+:_QuasRegKeysExport
+@reg export "HKCU\Software\Quas" "QuasBackup.reg" /y  1>nul 2>nul
 @echo ---------------------------------------------
 @echo.
 rem StartRusTextBlock
-@echo Ветвь HKEY_CURRENT_USER\Software\Quas удалена из реестра
+@echo Ветвь %_fCyan%HKEY_CURRENT_USER\Software\Quas %_fReset%экспортирована в файл %_fBCyan%QuasBackup.reg%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo The branch HKEY_CURRENT_USER\Software\Quas has been removed from the registry.
+rem @echo The branch %_fCyan%HKEY_CURRENT_USER\Software\Quas %_fReset%exported to file %_fBCyan%QuasBackup.reg%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto _RegistryKeysSettings
+
+:_deletehivequas
+rem StartRusTextBlock
+@echo   -----------------------------------------------------------------------
+@echo.
+@echo   %_fBYellow%Для подтверждения удаления нажмите %_fYellow%Enter%_fBYellow%, для возврата в меню - %_fYellow%Esc%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%For delete confirmation press %_fYellow%Enter%_fBYellow%, to return to the menu - %_fYellow%Esc%_fReset%
+rem EndEngTextBlock
+for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "keycode=%%K"
+if "%keycode%"=="27" goto _RegistryKeysSettings
+if "%keycode%"=="13" goto :_QuasRegKeysDeleteConfirmed
+
+:_QuasRegKeysDeleteConfirmed
+@reg delete "HKEY_CURRENT_USER\Software\Quas" /va /f 1>nul 2>nul
+@echo ---------------------------------------------
+@echo.
+rem StartRusTextBlock
+@echo Ветвь %_fBYellow%HKEY_CURRENT_USER\Software\Quas %_fRed%удалена из реестра%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo The branch %_fBYellow%HKEY_CURRENT_USER\Software\Quas %_fRed%has been removed from the registry.%_fReset%
 rem EndEngTextBlock
 call :_prevmenu
 goto _RegistryKeysSettings
@@ -6233,6 +6616,7 @@ if not defined choice goto _OculusWirelessADBcomplex
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="a" (GOTO _OculusWirelessADBpackage)
 if /i "%choice%"=="b" (GOTO _bugjinstaller)
 if /i "%choice%"=="c" (GOTO _ConnectStdPort)
@@ -6506,6 +6890,7 @@ if not defined choice goto _displaydiagmain
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="1" (GOTO _displaydiag1)
 if /i "%choice%"=="2" (GOTO _displaydiag2)
 rem if /i "%choice%"=="z" (GOTO _helplinksmenu)
@@ -6668,6 +7053,7 @@ call :_MenuChoiceEnter
 if not defined choice goto _updateservice
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _AdditionalOptionsMenu)
 if /i "%choice%"=="a" (call :_AllUpdatesCheck)
 
 if /i "%choice%"=="b" (call :_updservoff)
@@ -6722,7 +7108,7 @@ exit /b
 :_UpdateStatusCheck
 call :_cdc
 set updstatus=
-%MYFILES%\adb shell pm list packages -d 1>nul 2>nul | findstr /i /c:"com.oculus.updater" 1>nul 2>nul
+%MYFILES%\adb shell pm list packages -d 2>nul | findstr /i /c:"com.oculus.updater" >nul
 @echo   ----------------------------------------
 rem @echo   ========================================
 if not errorlevel 1 (
@@ -7149,33 +7535,42 @@ call :_hat
 @echo.
 @%verbecho%
 rem StartRusTextBlock
-@echo  Установите курсор в шлеме на поле, в которое хотите вставить текст
-@echo  [ например, в адресной строке браузера или в поле ввода ключа/пароля ]
-@echo  [ для отмены и возврата в меню введите три двоеточия подряд :::]
+@echo   %_fBYellow%Для отправки текста на шлем установите в нем курсор на поле ввода (например, в строке браузера),
+@echo   затем в открывшемся окошке введите текст в поле для ввода и нажмите кнопку %_bGreen%%_fBWhite% SEND %_fReset%%_fBYellow%
+@echo   Для вставки текста из буфера используйте кнопку %_fBWhite%%_bCyan% PASTE %_fReset%%_fBYellow%
 @echo.
-set /p txt="Введите или вставьте текст для отправки на шлем и нажмите Enter: "
+@echo   Программа поддерживает мультистрочный ввод. Поставьте галку в чекбокс %_fYellow%Multi Mode%_fBYellow%, появятся
+@echo   еще две нопки. 
+@echo.
+@echo   Кнопка %_fBWhite%%_bDGray% NEXT %_fReset%%_fBYellow% при каждом нажатии отправит на шлем строки последовательно,
+@echo   по одной, начиная с той, на которой стоит курсор. Готовая к передаче строка подсвечивается,
+@echo   для того чтобы было видно, какая строка пойдет в шлем следующей.
+@echo.
+@echo   Кнопка %_fBWhite%%_bDGray% SEND ALL %_fReset%%_fBYellow% автоматически отправит весь текст в окне по одной строке с небольшим
+@echo   интервалом перед каждой отправкой. Отправляемая строка также подсвечивается.
+@echo.
+@echo   После отправки просто закройте это окошко.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  Place the cursor in the field on the headset where you want to insert text
-rem @echo  [ For example, in the browser address bar or in the key/password input field ]
-rem @echo  [ To cancel and return to the menu, enter three colons in a row ::: ]
+rem @echo    %_fBYellow%To send text to the headset, place the cursor in an input field (e.g., in the browser bar),
+rem @echo    then type your text in the window that opens and press the %_bGreen%%_fBWhite% SEND %_fReset%%_fBYellow% button. 
+rem @echo    To insert text from the clipboard, use the %_fBWhite%%_bCyan% PASTE %_fReset%%_fBYellow% button.
 rem @echo.
-rem set /p txt="Enter the text to send to the headset and press Enter: "
+rem @echo    The program supports multi-line input. Check the %_fYellow%Multi Mode%_fBYellow% box to reveal 
+rem @echo    two additional buttons.
+rem @echo.
+rem @echo    The %_fBWhite%%_bDGray% NEXT %_fReset%%_fBYellow% button sends lines sequentially, one by one, starting from the cursor position.
+rem @echo    The line ready for transmission is highlighted so you can see which line will be sent next.
+rem @echo.
+rem @echo    The %_fBWhite%%_bDGray% SEND ALL %_fReset%%_fBYellow% button automatically sends all text in the window line by line,
+rem @echo    with short pauses between each transmission. The line being sent is also highlighted.
+rem @echo.
+rem @echo    Once sent, simply close this window.%_fReset%
 rem EndEngTextBlock
-if /i "%txt%"==":::" (GOTO _beginn)
-if /i "%txt%"=="(((" (GOTO _beginn)
-if /i "%txt%"==")))" (GOTO _beginn)
-@%MYFILES%\adb shell input text '"%txt%"'
-rem 1>nul 2>nul
-call :_erlvl
+start " " /min powershell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File "%myfiles%\adbsender.v3.1.ps1" -ToolsPath %myfiles%
 @echo ========================================
-rem StartRusTextBlock
-@echo  Можете надеть шлем, текст должен быть вставлен в поле
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  You can put on the headset; the text should be inserted into the field.
-rem EndEngTextBlock
-@goto _returnmenu
+@echo.
+goto _returnmenu
 
 :_startsettings
 :::::::::::::::::
@@ -7530,6 +7925,7 @@ call :_hatmenu
 rem StartRusTextBlock
 @echo    F.  Загрузить прошивку в шлем
 @echo    R.  Перезагрузить шлем
+@echo    G.  Меню прошивки
 @echo.
 @echo.
 @echo	ВАЖНО:
@@ -7543,6 +7939,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    F.  Load firmware into headset
 rem @echo    R.  Reboot headset
+rem @echo    G.  Flash menu
 rem @echo.
 rem @echo.
 rem @echo    IMPORTANT:
@@ -7562,6 +7959,7 @@ if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="f" (call :_CheckFWfileExist && goto _FirmwareUpload)
 if /i "%choice%"=="r" (GOTO _menurestart)
+if /i "%choice%"=="g" (GOTO :_fwmenuskip)
 cls
 goto _sideloadmode
 
@@ -7791,6 +8189,9 @@ rem StartRusTextBlock
 @echo.
 @echo    A.  Подключиться по Wi-Fi стандартно
 @echo    B.  Подключиться к Wi-Fi по TLS
+@echo    C.  Подключение по mDNS
+@echo    D.  Переподключение шлема "ADB по кабелю"
+@echo    E.  Подключение шлема как съемного диска
 @echo.
 @echo.
 @echo   ВНИМАНИЕ:
@@ -7818,6 +8219,9 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    A.  Connect via standard Wi-Fi
 rem @echo    B.  Connect via Wi-Fi using a random port
+rem @echo    C.  mDNS connection
+rem @echo    D.  Reconnecting the headset via "ADB over cable"
+rem @echo    E.  Connecting the headset as a removable disk
 rem @echo.
 rem @echo.
 rem @echo   ATTENTION:
@@ -7850,7 +8254,9 @@ if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (GOTO _adbwifi)
 if /i "%choice%"=="b" (GOTO _ConnectRandomPort)
-rem if /i "%choice%"=="f" (GOTO _wifirestart)
+if /i "%choice%"=="c" (GOTO _mDNSConnectorMenu)
+if /i "%choice%"=="d" (GOTO _reconnect)
+if /i "%choice%"=="e" (GOTO _usbflash)
 @cls
 goto _adbwifimenu
 
@@ -8024,57 +8430,79 @@ rem @echo  OVRservice not found! Nothing to restart.
 rem EndEngTextBlock
 @goto _returnmenu
 
-:_shellrestart
-rem call :_cdc
-rem StartRusTextBlock
-@echo  Перезапускаем оболочку, ждите...
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  Restarting the shell, please wait...
-rem EndEngTextBlock
-@%MYFILES%\adb shell am kill com.oculus.vrshell 1>nul 2>nul
+:_shellrestart1
+if %choice:~-1% == w call :_shellrestartingdisablewf
+call :_shellrestarting
+%MYFILES%\adb shell am kill com.oculus.vrshell 1>nul 2>nul
 call :_erlvl
-@%MYFILES%\adb shell am force-stop com.oculus.vrshel 1>nul 2>nul
-@%MYFILES%\adb shell pm disable-user --user 0 com.oculus.shellenv 1>nul 2>nul
-@%MYFILES%\adb shell pm enable com.oculus.shellenv 1>nul 2>nul
+%MYFILES%\adb shell am force-stop com.oculus.vrshel 1>nul 2>nul
+%MYFILES%\adb shell pm disable-user --user 0 com.oculus.shellenv 1>nul 2>nul
+%MYFILES%\adb shell pm enable com.oculus.shellenv 1>nul 2>nul
 @ping localhost >nul
-@echo.
-@echo ========================================
-rem StartRusTextBlock
-@echo  Оболочка перезапущена
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  Shell restarted
-rem EndEngTextBlock
-call :_prevmenu
-@goto _shellmenu
+goto :_shellrestarted
 
 :_shellrestart2
-:: --- Альтернативный вариант ---
-rem StartRusTextBlock
-@echo  Перезапускаем оболочку, ждите...
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  Restarting the shell, please wait...
-rem EndEngTextBlock
-@%MYFILES%\adb shell am kill com.oculus.shellenv 1>nul 2>nul
+if %choice:~-1% == w call :_shellrestartingdisablewf
+call :_shellrestarting
+%MYFILES%\adb shell am kill com.oculus.shellenv 1>nul 2>nul
 call :_erlvl
-@%MYFILES%\adb shell am force-stop com.oculus.shellenv 1>nul 2>nul
-@%MYFILES%\adb shell am start com.oculus.shellenv 1>nul 2>nul
-:: --- Старый вариант ---
-::@%MYFILES%\adb shell pm disable-user --user 0 com.oculus.shellenv >nul
-::@%MYFILES%\adb shell pm enable com.oculus.shellenv >nul
+%MYFILES%\adb shell am force-stop com.oculus.shellenv 1>nul 2>nul
+%MYFILES%\adb shell am start com.oculus.shellenv 1>nul 2>nul
 @ping localhost >nul
+goto :_shellrestarted
+
+:_shellrestart3
+if %choice:~-1% == w call :_shellrestartingdisablewf
+call :_shellrestarting
+%MYFILES%\adb shell am force-stop com.oculus.vrshell 1>nul 2>nul
+call :_erlvl
+%MYFILES%\adb shell am force-stop com.oculus.shellenv 1>nul 2>nul
+%MYFILES%\adb shell am force-stop com.oculus.systemux 1>nul 2>nul
+%MYFILES%\adb shell am start -n com.oculus.vrshell/.HomeActivity 1>nul 2>nul
+@ping localhost >nul
+goto :_shellrestarted
+
+:_shellrestart4
+if /i %choice:~-1% == w call :_shellrestartingdisablewf
+call :_shellrestarting
+%MYFILES%\adb shell am force-stop com.oculus.vrshell 1>nul 2>nul
+call :_erlvl
+%MYFILES%\adb shell am force-stop com.oculus.shellenv 1>nul 2>nul
+%MYFILES%\adb shell am force-stop com.oculus.systemux 1>nul 2>nul
+%MYFILES%\adb shell am start -n com.oculus.vrshell/.MainActivity 1>nul 2>nul
+@ping localhost >nul
+
+:_shellrestarted
 @echo.
 @echo ========================================
 rem StartRusTextBlock
-@echo  Оболочка перезапущена
+@echo   %_fBGreen%= Оболочка перезапущена%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo  Shell restarted
+rem @echo   %_fBGreen%= Shell restarted%_fReset%
 rem EndEngTextBlock
 call :_prevmenu
-@goto _shellmenu
+@goto :_ShellRestartMenu
+
+
+:_shellrestarting
+rem StartRusTextBlock
+@echo   %_fBYellow%= Перезапускаем оболочку, ждите...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%= Restarting the shell, please wait...%_fReset%
+rem EndEngTextBlock
+exit /b
+
+:_shellrestartingdisablewf
+%MYFILES%\adb shell svc wifi disable
+rem StartRusTextBlock
+@echo   %_fBYellow%= Wi-Fi отключен%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%= Wi-Fi disabled%_fReset%
+rem EndEngTextBlock
+exit /b
 
 :_openvpn
 call :_cdc
@@ -8125,9 +8553,6 @@ if /i "%choice%"=="f" (GOTO _wifirestart)
 if /i "%choice%"=="g" (GOTO _wifisettingsopen)
 @cls
 goto _wificontrol
-
-
-
 
 :_wifidisable
 :::::::::::::::::
@@ -8248,7 +8673,6 @@ rem @echo ║   %_fBRed%The program author is not responsible for the risk of br
 rem @echo ║                                                                                               ║
 rem @echo ╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
 rem EndEngTextBlock
-
 exit /b
 )
 )
@@ -8322,6 +8746,7 @@ rem StartRusTextBlock
 @echo    F.  Анализатор прошивок: проверка файла %FirmwareFileName% на корректность и совместимость
 @echo    G.  Скачать таблицы соответствия версий среды версиям прошивок шлемов
 @echo    I.  Дополнительные пояснения про инкрементальные прошивки
+@echo    R.  Режим аварийной прошивки
 @echo.
 @echo    %_fBYellow%H. Помощью по опциям%_fReset%
 rem EndRusTextBlock
@@ -8335,6 +8760,7 @@ rem @echo    E.  Show the current firmware version of the headset and check for 
 rem @echo    F.  Firmware analyzer: check the FW file for correctness and compatibility
 rem @echo    G.  Download compatibility tables for environment versions and headset firmware versions
 rem @echo    I.  Additional explanations about incremental firmware updates
+rem @echo    R.  Rescue flashing Mode
 rem @echo.  
 rem @echo    %_fBYellow%H. Help%_fReset%
 rem EndEngTextBlock
@@ -8357,11 +8783,466 @@ if /i "%choice%"=="e" (GOTO _fwtxtcompare)
 if /i "%choice%"=="f" (GOTO _CheckFirmwareUpdate)
 if /i "%choice%"=="g" (GOTO _DownloadAllFWfiles)
 if /i "%choice%"=="i" (GOTO _DopHelp)
+if /i "%choice%"=="r" (GOTO _RescueModeMenu)
 if /i "%choice%"=="h" (call :_fwhelp)
 if /i "%choice%"=="ftp" (GOTO _ftpmenu)
-
 @cls
 goto _fwmenu
+
+
+:_RescueModeMenu
+cls
+rem @echo.
+@echo     =====================================================================
+rem StartRusTextBlock
+@echo     ^|                     %_fBCyan%Режим аварийной прошивки%_fReset%                      ^|
+@echo     ^|  %_fBRed%+++  Только для экспертов и специалистов по ремонту шлемов  +++%_fReset%  ^|
+@echo     =====================================================================
+@echo.
+@echo   %_fYellow%Если вам непонятна инструкция ниже, обратитесь в соответствующий сервис.
+@echo   %_fBYellow%Этот метод предназначен только для случаев, когда шлем не загружается в режим %_fYellow%sideload.
+@echo    %_fBRed%---------------------------------------------------------------
+@echo      %_fBRed%ОН НЕ ГАРАНТИРУЕТ ВОССТАНОВЛЕНИЕ ИЛИ РАСКИРПИЧИВАНИЕ ШЛЕМА
+@echo    ---------------------------------------------------------------%_fBYellow%
+@echo   Он всего лишь позволяет альтернативным способом загрузить прошивку в шлем, когда штатные
+@echo   способы загрузки в %_fYellow%sideload%_fBYellow% недоступны. %_fYellow%Аварийная прошивка работает только из Bootloader^^!%_fBYellow%
+@echo.
+@echo   %_fYellow%В шлем может быть загружена только более новая прошивка, чем установлена на нем%_fBYellow%.
+@echo   Для того чтобы узнать текущую версию прошивки шлема, выберите в меню пункт %_fYellow%K %_fBYellow% инажмите %_fYellow%Enter%_fBYellow%.
+@echo.
+@echo   %_fBRed%ВАЖНО:%_fReset% - Способ будет работать только на новых версиях прошивок - с v81 и выше.
+@echo          - Не кладите программу на Рабочий стол или в каталог с кириллицей в путях.
+@echo          - Все сообщения будут на английском. Если вы его не знаете, выйдите из этого режима.
+@echo          - Вы должны знать, как выйти из режима sideload.
+@echo          - Вы должны уметь подобрать новую прошивку для шлема.
+@echo.
+@echo   %_fBYellow%Инструкция по прошивке:%_fReset%
+@echo.
+@echo      %_fBCyan%1. Подготовьте файл с прошивкой в формате %_fCyan%zip%_fBCyan%, положите его рядом с программой.
+@echo      2. Загрузите шлем в %_fCyan%Bootloader%_fBCyan%.
+@echo      3. Отключите беспровдное соединение шлема, если он установлено. 
+@echo      4. Подключите шлем %_fCyan%кабелем%_fBCyan% к ПК.
+@echo      5. Нажмите %_fCyan%Enter %_fBCyan%на этом экране для начала процесса прошивки.
+@echo      6. Еще раз подтвердите намерения нажатием %_fCyan%Enter%_fReset%.
+@echo.
+@echo   Начнется загрузка аварийного образа в шлем с выводом сообщений, это займет около минуты.
+@echo   Если вы не знаете что означают сообщения или какие-то из них будут %_fBRed%красного цвета%_fReset% - отключите
+@echo   шлем от ПК, перезагрузите его долгим нажатием кнопки Питание и не используйте этот режим.
+@echo.
+@echo   После того как аварийный образ успешно загрузится, на экране появится сообщение:
+@echo.
+@echo      %_fBGreen%==========================================%_fReset%
+@echo      %_fBGreen%      RESCUE SIDELOAD IS READY           %_fReset%
+@echo      %_fBGreen%==========================================%_fReset%
+@echo.
+@echo      %_fBYellow%Drag and drop the firmware file into this window, then press ENTER.%_fReset%
+@echo.
+@echo   Перетащите файл с прошивкой на окно программы и нажмите Enter, начнется заливка прошивки в шлем.
+@echo   %_fBYellow%Для выхода из режима %_fYellow%sideload %_fBRed%без прошивки%_fBYellow%, перезапустите Quas и выберите пункты %_fYellow%R-C%_fBYellow% или %_fYellow%R-B%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo     ^|                      %_fBCyan%Emergency Flashing Mode%_fReset%                      ^|
+rem @echo     ^|     %_fBRed%+++  For experts and headset repair specialists only  +++%_fReset%     ^|
+rem @echo     =====================================================================
+rem @echo.
+rem @echo    %_fYellow%If the instructions below are unclear to you, please contact an appropriate repair service.
+rem @echo    %_fBYellow%This method is intended only for cases when the headset does not boot into %_fYellow%sideload%_fBYellow% mode.
+rem @echo     %_fBRed%---------------------------------------------------------------
+rem @echo       %_fBRed%IT DOES NOT GUARANTEE RECOVERY OR UNBRICKING OF THE HEADSET
+rem @echo     ---------------------------------------------------------------%_fBYellow%
+rem @echo    It merely provides an alternative way to load firmware into the headset when standard methods
+rem @echo    of booting into %_fYellow%sideload%_fBYellow% are unavailable. %_fYellow%Emergency flashing only works from Bootloader^^!%_fBYellow%
+rem @echo.
+rem @echo    %_fYellow%Only a firmware version newer than the one currently installed can be flashed%_fBYellow%. To check
+rem @echo    the current firmware version of the headset, select option %_fYellow%K %_fBYellow%in the menu and press %_fYellow%Enter%_fBYellow%.
+rem @echo.
+rem @echo    %_fBRed%IMPORTANT:%_fReset% - This method will only work on newer firmware versions — v81 and above.
+rem @echo               - Do not place the program on the Desktop.
+rem @echo               - You must know how to exit sideload mode.
+rem @echo               - You must be able to select the correct new firmware for the headset.
+rem @echo.
+rem @echo    %_fBYellow%Flashing Instructions:%_fReset%
+rem @echo.
+rem @echo       %_fBCyan%1. Prepare the firmware file in %_fCyan%zip%_fBCyan% format and place it next to the program.
+rem @echo       2. Boot the headset into %_fCyan%Bootloader%_fBCyan%.
+rem @echo       3. Disconnect the headset's wireless connection if it is active.
+rem @echo       4. Connect the headset to the PC using a %_fCyan%cable%_fBCyan%.
+rem @echo       5. Press %_fCyan%Enter %_fBCyan%on this screen to start the flashing process.
+rem @echo       6. Confirm your intention again by pressing %_fCyan%Enter%_fReset%.
+rem @echo.
+rem @echo  The emergency image download to the headset will begin with message output, taking about
+rem @echo  a minute. If you do not know what the messages mean or if any of them appear in %_fBRed%red%_fReset% — disconnect
+rem @echo  the headset from the PC, reboot it by holding the Power button, and do not use this mode.
+rem @echo.
+rem @echo  Once the emergency image has successfully loaded, the following message will appear on the screen:
+rem @echo.
+rem @echo       %_fBGreen%==========================================%_fReset%
+rem @echo       %_fBGreen%      RESCUE SIDELOAD IS READY           %_fReset%
+rem @echo       %_fBGreen%==========================================%_fReset%
+rem @echo.
+rem @echo       %_fBYellow%Drag and drop the firmware file into this window, then press ENTER.%_fReset%
+rem @echo.
+rem @echo   Drag and drop firmware file into program window and press Enter; the firmware upload to headset 
+rem @echo   will begin. %_fBYellow%To exit %_fYellow%sideload %_fBYellow%mode %_fBRed%without flashing%_fBYellow%, restart Quas and select options %_fYellow%R-C%_fBYellow% or %_fYellow%R-B%_fReset%
+rem EndEngTextBlock
+@echo.
+call :_CheckBootloaderModeRescue
+@echo  -------------------------------------------------------------------
+rem StartRusTextBlock
+@echo      %_fBYellow%Для продолжения нажмите %_fYellow%Enter%_fBYellow% или %_fYellow%Esc %_fBYellow%для возврата в меню%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo      %_fBYellow%Press %_fYellow%Enter%_fBYellow% to continue or %_fYellow%Esc %_fBYellow%to return to the menu%_fReset%
+rem EndEngTextBlock
+@echo  -------------------------------------------------------------------
+
+:_WaitKeyRescueMode1
+rem :WaitKey1
+for /f %%K in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "while($true){$k=$host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown').VirtualKeyCode; if($k -eq 13 -or $k -eq 27){Write-Output $k; break}}"') do set "KEY=%%K"
+if "%KEY%"=="27" goto :_beginn
+if "%KEY%"=="13" goto :_RescueConfirmation
+goto :_WaitKeyRescueMode1
+
+:_RescueConfirmation
+rem StartRusTextBlock
+@echo   %_fBYellow%Для подтверждения еще раз нажмите %_fYellow%Enter%_fBYellow% или %_fYellow%Esc %_fBYellow%для возврата в меню%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo      %_fBYellow%Press %_fYellow%Enter%_fBYellow% to continue or %_fYellow%Esc %_fBYellow%to return to the menu%_fReset%
+rem EndEngTextBlock
+@echo  -------------------------------------------------------------------
+
+:_WaitKeyRescueMode2
+for /f %%K in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "while($true){$k=$host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown').VirtualKeyCode; if($k -eq 13 -or $k -eq 27){Write-Output $k; break}}"') do set "KEY=%%K"
+if "%KEY%"=="27" goto :_beginn
+if "%KEY%"=="13" goto :_RescueModeStart
+goto :_WaitKeyRescueMode2
+
+:_RescueModeStart
+cls
+:: -------------------------------------------------
+:: Configuration
+:: -------------------------------------------------
+set "FASTBOOT=%myfiles%\fastboot.exe"
+set "ADB=%myfiles%\adb.exe"
+set "SIG=%cd%\rescue\rescue.sig"
+set "IMG=%cd%\rescue\rescue.img"
+@echo.
+@echo        %_fBCyan%==========================================%_fReset%
+@echo        %_fBCyan%        META QUEST RESCUE FLASHER         %_fReset%
+@echo        %_fBCyan%==========================================%_fReset%
+@echo.
+call :_CheckBootloaderModeRescue
+
+:: -------------------------------------------------
+:: Downloading files
+:: -------------------------------------------------
+call :_CheckCurlExist
+@echo   %_fBYellow%Downloading rescue package...%_fReset%
+@echo.
+set dlappl=rescue.zip
+set curllink=https://www.dropbox.com/scl/fi/rvs3j1169fj4wmtxq353d/rescue.zip?rlkey=k57njpxoor4uagxaz99xk0xy5
+@curl -LJkO %curllink%  -# 1>nul
+rem 2>nul
+rem @echo.
+@echo   %_fBYellow%Unpacking...%_fReset%
+@%myfiles%\7z.exe x "%dlappl%" -o"%cd%"  -y 1>NUL 2>&1
+@del %dlappl% /Q 1>nul 2>nul
+rem rd /S /Q "%QuasWorkPath%\rescue"  1>nul 2>nul
+@echo.
+:: -------------------------------------------------
+:: Check files
+:: -------------------------------------------------
+if not exist "%SIG%" (
+@echo   %_fBRed%[ERROR]%_fReset% File "%SIG%" not found.
+goto :_opfailed
+)
+
+if not exist "%IMG%" (
+@echo   %_fBRed%[ERROR]%_fReset% File "%IMG%" not found.
+goto :_opfailed
+)
+
+@echo   %_fBYellow%[CHECK]%_fReset% Checking Fastboot device...
+set "DEV="
+for /f "tokens=1,2" %%A in ('%FASTBOOT% devices') do (
+if /I "%%B"=="fastboot" (
+set "DEV=1"
+set "SERIAL=%%A"
+)
+)
+
+if not defined DEV (
+@echo   %_fBRed%[ERROR]%_fReset% No device detected in Fastboot mode.
+goto :_opfailed
+)
+
+@echo   %_fBGreen%[OK]%_fReset% Device detected%_fReset%
+rem : %_fBCyan%!SERIAL!%_fReset%
+@echo.
+
+:: -------------------------------------------------
+:: 1. Stage rescue signature
+:: -------------------------------------------------
+@echo %_fBCyan%[1/5] Stage rescue signature%_fReset%
+"%FASTBOOT%" stage "%SIG%"
+if errorlevel 1 (
+@echo   %_fBRed%[FAILED]%_fReset% stage rescue.sig
+goto :_opfailed
+)
+
+@echo   %_fBGreen%[OK]%_fReset% Rescue signature staged.
+@echo.
+
+:: -------------------------------------------------
+:: 2. Apply rescue signature
+:: -------------------------------------------------
+@echo   %_fBCyan%[2/5] Apply rescue signature%_fReset%
+"%FASTBOOT%" oem rescue-signature
+if errorlevel 1 (
+@echo   %_fBRed%[FAILED]%_fReset% rescue-signature
+goto :_opfailed
+)
+
+@echo   %_fBGreen%[OK]%_fReset% Rescue signature accepted.
+@echo.
+
+:: -------------------------------------------------
+:: 3. Stage rescue image
+:: -------------------------------------------------
+@echo   %_fBCyan%[3/5] Stage rescue image%_fReset%
+"%FASTBOOT%" stage "%IMG%"
+if errorlevel 1 (
+@echo   %_fBRed%[FAILED]%_fReset% stage rescue.img
+goto :_opfailed
+)
+@echo   %_fBGreen%[OK]%_fReset% Rescue image staged.
+@echo.
+
+:: -------------------------------------------------
+:: 4. Flash rescue image
+:: -------------------------------------------------
+@echo   %_fBCyan%[4/5] Flash rescue image%_fReset%
+"%FASTBOOT%" oem flash-rescue-image firmware
+if errorlevel 1 (
+@echo   %_fBRed%[FAILED]%_fReset% flash-rescue-image
+goto :_opfailed
+)
+@echo   %_fBGreen%[OK]%_fReset% Rescue image flashed.
+@echo.
+
+:: -------------------------------------------------
+:: 5. Reboot to sideload
+:: -------------------------------------------------
+@echo   %_fBCyan%[5/5] Reboot to Rescue Sideload%_fReset%
+"%FASTBOOT%" oem reboot-sideload
+if errorlevel 1 (
+@echo   %_fBRed%[FAILED]%_fReset% reboot-sideload
+goto :_opfailed
+)
+@echo   %_fBGreen%[OK]%_fReset% Device reboot command accepted.
+@echo.
+
+:: -------------------------------------------------
+:: Wait for sideload
+:: -------------------------------------------------
+@echo   %_fBYellow%[WAIT]%_fReset% Waiting for ADB Sideload mode...
+set /a TIME=0
+
+:_SideloadWait
+timeout /t 2 >nul
+set /a TIME+=2
+"%ADB%" devices | findstr /R /C:"sideload$" >nul
+if not errorlevel 1 goto :_RerscueReady
+if %TIME% GEQ 60 (
+@echo.
+@echo   %_fBRed%[TIMEOUT]%_fReset% Rescue Sideload mode was not detected within 60 seconds.
+goto :_opfailed
+)
+goto :_SideloadWait
+
+
+:: -------------------------------------------------
+:: Success
+:: -------------------------------------------------
+:_RerscueReady
+@echo.
+@echo        %_fBGreen%==========================================%_fReset%
+@echo        %_fBGreen%      RESCUE SIDELOAD IS READY           %_fReset%
+@echo        %_fBGreen%==========================================%_fReset%
+@echo.
+@echo   %_fBYellow%Drag and drop the firmware file into this window, then press ENTER.%_fReset%
+@echo.
+
+set "FIRMWARE="
+set /p "FIRMWARE=Firmware: "
+
+if not defined FIRMWARE (
+    @echo.
+    @echo   %_fBRed%[ERROR]%_fReset% No file selected.
+    call :_AnyKeyRescueModeInstantExit
+goto _RestartQUAS
+)
+
+set "FIRMWARE=%FIRMWARE:"=%"
+
+if not exist "%FIRMWARE%" (
+    @echo.
+    @echo   %_fBRed%[ERROR]%_fReset% File not found.
+    call :_AnyKeyRescueModeInstantExit
+goto _RestartQUAS
+)
+
+
+rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+:: Вместо выхода заменить на процедуру перезагрузки из режима Sideload или посмотреть как шьется из меню Sideload
+:: Или написать что шлем в режиме Sideload
+rem >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+:: Check extension
+:: ================
+for %%F in ("%FIRMWARE%") do set "EXT=%%~xF"
+if /I not "%EXT%"==".zip" (
+@echo.
+@echo   %_fBRed%[ERROR]%_fReset% The selected file is not a ZIP firmware package.
+call :_AnyKeyRescueModeInstantExit
+goto _RestartQUAS
+)
+@echo.
+@echo   %_fBCyan%Firmware:%_fReset% %FIRMWARE%
+@echo.
+@echo     %_fBBlue%====================================================================
+@echo      %_fBYellow%Press %_fYellow%Enter%_fBYellow% to upload firmware to headset or %_fYellow%Esc %_fBYellow%to return to menu%_fReset%
+@echo     %_fBBlue%====================================================================
+@echo.
+
+:_WaitKeyRescueMode3
+for /f %%K in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "while($true){$k=$host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown').VirtualKeyCode; if($k -eq 13 -or $k -eq 27){Write-Output $k; break}}"') do set "KEY=%%K"
+if "%KEY%"=="27" goto :_beginn
+if "%KEY%"=="13" goto :_ADBSideloadContinue
+goto :_WaitKeyRescueMode3
+
+:_ADBSideloadContinue
+
+:: -------------------------------------------------
+:: ADB Sideload
+:: -------------------------------------------------
+set "SIDELOAD_LOG=%cd%\QuestSideload_%RANDOM%.log"
+@echo   %_fBYellow%[SIDELOAD]%_fReset% Installing firmware...
+@echo.
+powershell -ExecutionPolicy Bypass -NoProfile -Command ^
+    "& '%ADB%' sideload '%FIRMWARE%' 2>&1 | Tee-Object -FilePath '%SIDELOAD_LOG%'"
+
+set "ADB_RESULT=%ERRORLEVEL%"
+@echo.
+@echo   %_fDGray%Sideload process finished. Exit code: %ADB_RESULT%%_fReset%
+@echo.
+
+:: -------------------------------------------------
+:: Analyze result
+:: -------------------------------------------------
+findstr /I /C:"Total xfer: 1.00x" "%SIDELOAD_LOG%" >nul
+if errorlevel 1 (
+@echo   %_fBRed%[FAILED]%_fReset% No successful transfer result was reported.
+@echo.
+@echo   %_fBYellow%Sideload log:%_fReset%
+@echo %SIDELOAD_LOG%
+@echo.
+goto :_SideloadFailed
+)
+
+:: Look for explicit errors
+findstr /I /C:"failed" /C:"error:" /C:"error " "%SIDELOAD_LOG%" >nul
+if not errorlevel 1 (
+@echo   %_fBRed%[FAILED]%_fReset% ADB reported an error during sideload.
+@echo.
+@echo   %_fBYellow%Sideload log:%_fReset%
+@echo   %SIDELOAD_LOG%
+@echo.
+goto :_SideloadFailed
+)
+
+@echo   %_fBGreen%[SUCCESS]%_fReset% Firmware sideload completed.
+@echo   %_fBYellow%You can try to start the headset into environment%_fReset%
+@echo.
+del "%SIDELOAD_LOG%" >nul 2>&1
+@echo        %_fBGreen%==========================================%_fReset%
+@echo        %_fBGreen%        FIRMWARE INSTALL COMPLETE        %_fReset%
+@echo        %_fBGreen%==========================================%_fReset%
+@echo.
+call :_AnyKeyRescueMode
+exit /b 0
+
+
+:_CheckBootloaderModeRescue
+rem @echo   %_fBYellow%[CHECK]%_fReset% Checking Bootloader mode...
+set "DEV="
+for /f "tokens=1,2" %%A in ('%myfiles%\fastboot.exe devices') do (
+if /I "%%B"=="fastboot" (
+set "DEV=1"
+rem set "SERIAL=%%A"
+)
+)
+
+if not defined DEV (
+@echo  ==================================================
+rem StartRusTextBlock
+@echo   %_fBRed%Шлем не в режиме Bootloader, прошивка невозможна^^!%_fReset%
+@echo    === %_fBYellow%Нажмите что-нибудь для возврата в меню%_fReset% ===
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Headset is not in Bootloader mode, flashing is impossible^^!%_fReset%
+rem @echo    === %_fBYellow%Press any key to return to the menu%_fReset% ===
+rem EndEngTextBlock
+pause >nul
+goto :_fwmenuskip
+)
+exit /b
+
+:_SideloadFailed
+@echo   %_fDGray%The log file has been preserved for troubleshooting.%_fReset%
+call :_AnyKeyRescueMode
+exit /b 1
+
+:: -------------------------------------------------
+:: Failure
+:: -------------------------------------------------
+
+:_opfailed
+@echo.
+@echo        %_fBRed%==========================================%_fReset%
+@echo        %_fBRed%          OPERATION FAILED               %_fReset%
+@echo        %_fBRed%==========================================%_fReset%
+@echo.
+
+
+:_AnyKeyRescueMode
+@del %dlappl% /Q 1>nul 2>nul
+rd /S /Q "%cd%\rescue"  1>nul 2>nul
+@echo   =====================================
+@echo   === Press any key for return menu ===
+pause >nul
+@echo.
+
+rem StartRusTextBlock
+@echo   %_fBYellow%Ждите 15 секунд пока шлем перезагружается...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Waiting 15 seconds for restart the headset...%_fReset%
+rem EndEngTextBlock
+timeout 15 >nul
+goto :_RestartQUAS
+
+
+:_AnyKeyRescueModeInstantExit
+@del %dlappl% /Q 1>nul 2>nul
+rd /S /Q "%cd%\rescue"  1>nul 2>nul
+@echo   =====================================
+@echo   === Press any key for return menu ===
+pause >nul
+exit /b 1
+
 
 :_fwsitelink
 @start " " "https://cocaine.trade/"
@@ -8590,8 +9471,11 @@ for %%f in (fw2.txt fw3.txt fwp.txt fws.txt) do (
 set "ftpfile=%%f"
 call :_DownloadCTrade
 )
-@echo Готово, CT на Кофре, нужно их обновить и переименовать.
-pause >nul
+call :_CTKoofrUpload
+@echo  ---
+@echo  %_fBGreen%Готово, CT на Кофре.%_fReset%
+call :_prevmenu
+rem goto :_ftpmenu
 exit /b
 
 :_DownloadCTrade
@@ -8600,9 +9484,82 @@ if %ftpfile%==fw3.txt set ctlink=Quest_3_firmware&&set CTSourceFile=ct3.txt
 if %ftpfile%==fwp.txt set ctlink=Quest_Pro_firmware&&set CTSourceFile=ctp.txt
 if %ftpfile%==fws.txt set ctlink=Quest_3S_firmware&&set CTSourceFile=cts.txt
 curl -4 -LJko %CTSourceFile% --resolve cocaine.trade:443:45.150.123.10 "https://cocaine.trade/%ctlink%" -Ss 1>nul 2>nul
-curl "https://app.koofr.net/content/receivers/408b405f-adf8-41da-a1c1-05d45ddc9c7d/files/put" -X POST -F "file=@%CTSourceFile%"  -Ss 1>nul 2>nul
 exit /b
 
+:_CTKoofrUpload
+rem setlocal enabledelayedexpansion
+set "payload=IyAAlhDdjsv5xLEuKeYZu9ODY3fSxwdW+hl2qE5OzzV94+J/y3OIFKguQgM+4kEGgB7hDdW5D4H4Y5z7U9zzFhJXC84Zu1rTVI6d+a3ybZxkzUftXbc4+n3IJDPSj1cjZrYLKn/2UDVql15dvxkhiaBvl5PrM5+XYK1f/iDR1KgJ4KHRdOvf8X80xJh1GTZvoy4vMhqhuYfm0ogrJx+DHzzZoi20LCSGlbfFMDobLQj1S90wTGSQIf3X0tQG3UwSUFVBJxtq7Tm1ag4/ZMz9p2azDOBSvYw9Q8arE0FslOM="
+call :_Decryption
+rem call set_creds.bat
+@echo   %_fBYellow%= Upload...%_fReset%
+@echo   ------------
+set ctmodel=2
+call :_KoofrCTUpload
+@echo.  %_fBCyan%CT2%_fReset%
+set ctmodel=3
+call :_KoofrCTUpload
+@echo.  %_fBCyan%CT3%_fReset%
+set ctmodel=p
+call :_KoofrCTUpload
+@echo.  %_fBCyan%CTP%_fReset%
+set ctmodel=s
+call :_KoofrCTUpload
+@echo.  %_fBCyan%CTS%_fReset%
+exit /b
+
+:_Decryption
+rem call :_ExtractKeyFromRegistry
+rem call :_ExtractDecryptedFile
+rem StartRusTextBlock
+set langscript=RU
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set langscript=EN
+rem EndEngTextBlock
+powershell -NoProfile -ExecutionPolicy Bypass -File "%myfiles%\QuasSafe.v5.03.ps1" -Decrypt -payload "%payload%" -outfile "set_creds.bat"
+if %errorlevel% neq 0 (
+rem StartRusTextBlock
+@echo %_fBRed%[Ошибка] Неверный пароль или вход отменен.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo %_fBRed%[Error] Invalid password or login canceled.%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_ftpmenu
+)
+if exist set_creds.bat (
+rem StartRusTextBlock
+@echo   %_fBGreen%= Расшифровано успешно%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%= Decrypted successfully%_fReset%
+rem EndEngTextBlock
+call set_creds.bat
+del /f /q set_creds.bat
+) else (
+rem StartRusTextBlock
+@echo %_fBRed%[Ошибка] Файл с учетными данными не найден.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo %_fBRed%[Error] Credentials file not found.%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_ftpmenu
+)
+exit /b
+
+:_KoofrCTUpload
+rem echo !ctmodel!
+rem echo !curllink!
+rem echo %curllink%
+rem pause
+rem exit /b
+curl -u %curllogin%:%curlpass% -T ct%ctmodel%.txt %curllink% -#
+del /q ct%ctmodel%.txt 1>nul 2>nul
+exit /b
+
+rem curl "https://app.koofr.net/content/receivers/408b405f-adf8-41da-a1c1-05d45ddc9c7d/files/put" -X POST -F "file=@%CTSourceFile%"  -Ss 1>nul 2>nul
+rem exit /b
 
 
 :_DownloadAllFWfiles
@@ -8859,9 +9816,15 @@ rem )
 ::!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 @if %fwpreb%==----------- (set incfull=-Full) else (set incfull=-inc-for-%fwpreb%)
+@ren update.zip %fmfilename%-%fwpostn%%incfull%.zip 2>nul 1>nul
+
+rem @if %fwpreb%==----------- (set incfull=-Full) else (set incfull=-inc-for-%fwprebrename%)
+rem @ren update.zip %fmfilename%-%fwpostnrename%%incfull%.zip 2>nul 1>nul
+
 rem @ren update.zip %fmfilename%-%fwnfilename%%incfull%.zip 2>nul 1>nul
 rem @ren update.zip %fmfilename%-!fwpostn!%incfull%.zip 2>nul 1>nul
-@ren update.zip %fmfilename%-%fwpostn%%incfull%.zip 2>nul 1>nul
+
+
 call :_hat
 @echo.
 rem StartRusTextBlock
@@ -8949,39 +9912,29 @@ if [%fwver%]==[] set fwver=------------
 call :_SetFWtxtFileName
 set ftpfile=%fwtxt%
 call :_GetFTP
-
 :_fw
-echo on
+rem echo on
+rem echo %fwtxt%
 @%verbecho%
-@For /F "tokens=1,2 delims= " %%a In (%fwtxt%) Do (
-@set fwpostbuildfile=%%a
-@set fwpostn=%%b
-if !postbuild! == !fwpostbuildfile! (
-exit /b
-) else (
-rem @echo %fwtxt%
-rem @echo fwpbf !fwpostbuildfile!
-rem @echo fwp !fwpostn!
-rem @echo !prebuild!
-rem @echo !postbuild!
-rem pause
+
+rem echo on
+if not exist "%fwtxt%" goto :_UnknownFW
+for /f "usebackq tokens=1,2 delims= " %%a in ("%fwtxt%") do (
+set fwpostbuildfile=%%a
+set fwpostn=%%b
+if !postbuild!==!fwpostbuildfile! exit /b
+rem if !postbuild!==!fwpostbuildfile! exit /b
+)
+
+
+:_UnknownFW
+set fwpostnrename=!postbuild!
 rem StartRusTextBlock
-@set "fwpostn=Неизвестно"
+set "fwpostn=Неизвестно"
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem set fwpostn=Unknown
 rem EndEngTextBlock
-)
-)
-exit /b
-
-@For /F "tokens=1,2 delims= " %%a In (%fwtxt%) Do (
-@set fwheadbuildfile=%%a
-@set fwheadn=%%b
-@if !headbuild! == !fwheadbuildfile! (
-exit /b
-)
-)
 exit /b
 
 :_ExtractPreBuildNumber
@@ -8992,6 +9945,7 @@ if %prebuild%==----------------- set fwpreb=----------- && exit /b
 if !prebuild! == !fwprebuildfile! (
 exit /b
 ) else (
+set fwprebrename=!prebuild!
 rem StartRusTextBlock
 @set "fwpreb=Неизвестно"
 rem EndRusTextBlock
@@ -9443,6 +10397,8 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo %_fBYellow%...One moment, checking the flash conditions...%_fReset%
 rem EndEngTextBlock
+set "menuname=:_fwmenuskip"
+call :_CheckHeadsetConnectionType
 call :_SetFirmwareFileName
 call :_BatteryStatsCheck
 rem set batlevel=49
@@ -9458,23 +10414,20 @@ set "colorbat=%_fBGreen%%batlevel%%%%_fReset%"
 )
 )
 )
-@for /f %%a in ('@%myfiles%\adb shell getprop ro.product.name') do set ProductModelName=%%a
+@for /f %%a in ('@%myfiles%\adb shell getprop ro.product.name 2^>nul') do set ProductModelName=%%a
 rem set ProductModelName=panther
 set "oculussystem=com.oculus.systemux"
 if /I "%ProductModelName%"=="panther" set "oculussystem=com.oculus.systemutilities"
 if /I "%ProductModelName%"=="xse_panther" set "oculussystem=com.oculus.systemutilities"
-@FOR /F "tokens=1,2 delims==" %%a IN ('@%MYFILES%\adb shell dumpsys package %oculussystem% 2^>nul ^| findstr /i /c:"VersionName"') DO (
+@FOR /F "tokens=1,2 delims==" %%a IN ('@%MYFILES%\adb shell dumpsys package %oculussystem% 2^>nul ^| findstr /i /c:"VersionName" 2^>nul ') DO (
 
 rem @FOR /F "tokens=1,2 delims==" %%a IN ('@%MYFILES%\adb shell dumpsys package com.oculus.systemutilities 2^>nul ^| findstr /i /c:"VersionName"') DO (
 rem @FOR /F "tokens=1,2 delims==" %%a IN ('@%MYFILES%\adb shell dumpsys package com.oculus.systemux 2^>nul ^| findstr /i /c:"VersionName"') DO (
 @FOR /F "tokens=1,2,3,4 delims=." %%a IN ("%%b") DO set "fwnewhsversion=%%a.%%b.%%c.%%d"
 
-
 set "hsversion=!fwnewhsversion!"
-rem echo %hsversion%
 call :_SetFWtxtFileName
-set ftpfile=%fwtxt%
-rem echo %ftpfile%
+set ftpfile=!fwtxt!
 call :_GetFTP
 @timeout 1 >nul
 call :_ExtractBuildVersionsNumbers
@@ -9541,7 +10494,7 @@ rem @echo.
 @echo       -----------------------------------------
 rem StartRusTextBlock
 @echo        %_fCyan%Заряд батареи%_fReset%		: %colorbat%
-@echo        %model1%
+@echo.       %model1%
 @echo        %_fCyan%Версия прошивки шлема%_fReset%	: %_fBCyan%%hsversion%%_fReset%
 @echo        %_fCyan%Версия файла прошивки%_fReset%	: %fwtscol%!fwpostn! %needanalyze%%_fReset%
 @echo       -----------------------------------------
@@ -9560,7 +10513,9 @@ rem StartRusTextBlock
 @echo	    %_fYellow%Enter. %_fBYellow%Начать прошивку%_fReset%
 @echo.
 @echo.
-@echo   %_fBWhite%ВАЖНО: Путь к файлу с прошивкой не должен содержать пробелов и кириллицы%_fReset%
+@echo   %_fCyan%ВАЖНО: %_fBCyan%Путь к файлу с прошивкой не должен содержать пробелов и кириллицы
+@echo          а также проверьте, чтобы на этой странице не было красного цвета.
+@echo          Если он есть - читайте подсказки справа.%_fReset%
 @echo.
 @echo.
 @echo -----------------------------------------------------
@@ -9773,6 +10728,11 @@ if /i "%choice%"=="t" (GOTO _CheckFirmwareUpdate)
 goto _fwmenu2
 
 :_contfw2
+rem @%MYFILES%\fastboot devices | findstr /i /c:"" 1>nul 2>nul
+@%MYFILES%\adb devices | findstr /i /c:"sideload" 1>nul 2>nul
+if not errorlevel 1 goto _UploadFirmwareSideload
+rem @%MYFILES%\fastboot devices | findstr /i /c:"fastboot" 1>nul 2>nul
+rem @If %ERRORLEVEL%==1 goto _nobootloader
 @echo.
 @echo  ----------
 rem StartRusTextBlock
@@ -9787,6 +10747,7 @@ rem EndEngTextBlock
 @%MYFILES%\fastboot.exe oem reboot-sideload 1>NUL 2>&1
 @@ping localhost -n 14 >nul
 @echo.
+:_UploadFirmwareSideload
 @echo  ----------
 rem StartRusTextBlock
 @echo  %_fBYellow%= Загружаем прошивку в шлем..%_fReset%
@@ -9855,27 +10816,27 @@ call :_hat
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo     +++ Шлем НЕ в режиме Bootloader! +++
+@echo        %_fBRed%+++ Шлем НЕ в режиме Bootloader! +++
 @echo.
 @echo.
 @echo.
-@echo   Для того, чтобы загрузить ся в Bootloader,
-@echo   одновременно удерживайте кнопки Питание
-@echo   и Громкость-минус (ближняя к носу)
-@echo   до появления бело-синего меню.
+@echo   %_fBYellow%Этот режим предназначен только для прошивки из режима Bootloader
+@echo.
+@echo   %_fBYellow%Чтобы загрузить ся в %_fYellow%Bootloader%_fBYellow%, одновременно удерживайте кнопки %_fYellow%Питание
+@echo   %_fBYellow%и %_fYellow%Громкость-минус%_fBYellow% (ближняя к носу) до появления %_fBWhite%бело%_fReset%-%_fCyan%синего %_fBYellow%меню%_fReset%.
 @echo --------------------------------------------
 @echo.
 @echo   Затем перезапустите эту программу.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo     +++ Headset NOT in Bootloader mode! +++
+rem @echo     %_fBRed%+++ Headset NOT in Bootloader mode! +++
 rem @echo.
 rem @echo.
 rem @echo.
-rem @echo   To enter Bootloader mode,
-rem @echo   hold down the Power and Volume Down buttons
-rem @echo   simultaneously (the one closest to the nose)
-rem @echo   until the white-blue menu appears.
+rem @echo   %_fBYellow%This mode is intended only for flashing from Bootloader mode
+rem @echo.
+rem @echo   %_fBYellow%To boot into %_fYellow%Bootloader%_fBYellow%, simultaneously hold the %_fYellow%Power
+rem @echo   %_fBYellow%and %_fYellow%Volume Down%_fBYellow% (closest to your nose) buttons until the %_fBWhite%white%_fReset%-%_fCyan%blue %_fBYellow%menu appears%_fReset%.
 rem @echo --------------------------------------------
 rem @echo.
 rem @echo   Then restart this program.
@@ -9916,11 +10877,12 @@ rem StartRusTextBlock
 @echo      K. Информация о прошивке шлема, слотах загрузки, ревизии и батарее
 @echo      S. Отключить сенсоры шлема (Only Meta Quest 3)
 @echo      Q. Включить сенсоры шлема (Only Meta Quest 3)
+@echo      P. Режим аварийной прошивки
 @echo.
 @echo  %_fBYellow%Enter. Перейти непосредственно к меню прошивки (Кнопочный режим)%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo     +++ Headset in Bootloader mode! +++
+rem @echo     %_fBlack%%_bDGray%+++ Headset in Bootloader mode! +++%_fReset%
 rem @echo.
 rem @echo.
 rem @echo.
@@ -9941,6 +10903,7 @@ rem @echo      F. Exit to Firmware Menu
 rem @echo      K. Headset Firmware and Boot Slot Information
 rem @echo      S. Disable headset sensors (Only Meta Quest 3)
 rem @echo      Q. Enable headset sensors (Only Meta Quest 3)
+rem @echo      P. Rescue flashing Mode
 rem @echo.
 rem @echo  Enter. Switch to button flashing mode
 rem EndEngTextBlock
@@ -9967,6 +10930,7 @@ if /i "%choice%"=="k" (set "fastbotcommand=:_FastbootFirmwareExtractCont"&&call 
 if /i "%choice%"=="s" (set "fastbotcommand=:_DisableHeadsetSensorsConfirm"&&call :_FastbootCheckDevice)
 if /i "%choice%"=="q" (set "fastbotcommand=:_EnableHeadsetSensors"&&call :_FastbootCheckDevice)
 if /i "%choice%"=="t" (goto _HeadsetSensorsCompatCheck)
+if /i "%choice%"=="p" (GOTO _RescueModeMenu)
 goto _bootloadermode
 
 :_RebootFromBootLoader
@@ -9995,14 +10959,15 @@ exit /b
 @echo Загрузите его в bootloader, fastboot или recovery режимы.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBYellow%Device found: %_fReset% %_fBCyan%%serial%%_fReset%
+rem @echo   %_fBYellow%Device found:	%_fReset% %_fBCyan%!serial!%_fReset%
 rem for /f %%a in ('powershell -ExecutionPolicy Bypass -File "%myfiles%\pcode.ps1" -serial "%SERIAL%"') do set pairingcode=%%a
-rem @echo   %_fBYellow%Pairing code:%_fReset% %_fBCyan%%pairingcode%%_fReset%
+rem @echo   %_fBYellow%Pairing code:	%_fReset% %_fBCyan%!pairingcode!%_fReset%
 rem call %fastbotcommand%
 rem @exit /b
 rem )
 rem @echo ===============================================
 rem @echo %_fBRed%+++ Headset is not responding to fastboot commands +++%_fReset%
+rem @echo Boot it into bootloader, fastboot, or recovery mode.
 rem EndEngTextBlock
 call :_prevmenu
 exit /b 
@@ -10012,12 +10977,8 @@ rem goto _returnmenu
 setlocal enabledelayedexpansion
 call :_ViewCodenameBL
 if not !codename:~1!==eurekaa (
-echo NOk
-pause
 goto _bootloadermode
 ) else (
-echo Ok
-pause
 goto _bootloadermode
 )
 goto _bootloadermode
@@ -10082,7 +11043,7 @@ rem StartRusTextBlock
 @echo     Теперь попробуйте загрузить шлем, выбрав пункт R.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   = Sensors disabled
+rem @echo   %_fBYellow%= Sensors disabled%_fReset%
 rem @echo     Try to reboot the headset with R option
 rem EndEngTextBlock
 call :_prevmenu
@@ -10183,7 +11144,7 @@ rem EndEngTextBlock
 @echo   -----------------------------------------------
 rem StartRusTextBlock
 @echo   %_fBYellow%= Извлекаем информацию о прошивке..%_fReset%
-@echo     Еще немного терпения, осталоь совсем чуть-чуть..
+@echo     Еще немного терпения..
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   %_fBYellow%= Retrieving firmware information...%_fReset%
@@ -10214,9 +11175,9 @@ rem StartRusTextBlock
 @echo   %_fBYellow%= Возвращаемся в bootloader..%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBYellow%Headset Model%_fReset%          	: %_fBCyan%Meta %DevModelNm%%_fReset%
-rem @echo   %_fBYellow%Headset Environment Ver%_fReset%	: %_fBCyan%!fbenv!%_fReset%
-rem @echo   %_fBYellow%Headset Firmware Ver%_fReset%   	: %_fBCyan%!fbfwr!%_fReset%
+rem @echo   %_fBYellow%Headset Model%_fReset%		: %_fBCyan%Meta %DevModelNm%%_fReset%
+rem @echo   %_fBYellow%Headset Environment%_fReset%	: %_fBCyan%!fbenv!%_fReset%
+rem @echo   %_fBYellow%Headset Firmware%_fReset%	: %_fBCyan%!fbfwr!%_fReset%
 rem @echo   -----------------------------------------------
 rem @echo   %_fBYellow%= Return to bootloader mode
 rem EndEngTextBlock
@@ -10250,12 +11211,13 @@ set "fbenv="
 call :_GetFTP
 if not exist %ftpfile% set fbenv=%number%&& exit /b
 @for /F "tokens=1,2,3 delims= " %%a in (%ftpfile%) do (
-    @echo %%c | findstr /i "%number%" >nul
-    if not errorlevel 1 (
-         set "fbenv=%%c"
-        set "fbfwr=%%b"
-        exit /b
-    )
+@echo %%c | findstr /i "%number%" >nul
+if not errorlevel 1 (
+set "fbenv=%%a"
+rem set "fbenv=%%c"
+set "fbfwr=%%b"
+exit /b
+)
 )
 set fbenv=%number%
 @del /q /f %ftpfile% 1>nul 2>nul
@@ -10274,35 +11236,35 @@ call :_hatqut
 @echo.
 @echo           ======================================
 rem StartRusTextBlock
-@echo          %_fBRed%++++ Файл прошивки НЕ найден ++++%_fReset%
+@echo             %_fBRed%++++ Файл прошивки НЕ найден ++++%_fReset%
 @echo           ======================================
 @echo.
 @echo.
 @echo         0.  Выход из программы
 @echo         M.  Выход в Главное меню
 @echo.
-@echo     %_fYellow%Enter. %_fReset%Проверить актуальность и скачать прошивку
+@echo     %_fBYellow%Enter. %_fBGreen%Проверить актуальность и скачать прошивку%_fReset%
 @echo.
 @echo.
 @echo     %_fBYellow%ВАЖНО:%_fReset%
 @echo.
-@echo       Поместите файл прошивки (%_fBYellow%архив zip%_fReset%) рядом с этой программой.
+@echo       Поместите файл прошивки (%_fBYellow%архив update.zip%_fReset%) рядом с этой программой.
 @echo       Затем перезапустите программу.
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo     %_fBRed%+++ Firmware file NOT found ++++%_fReset%
+rem @echo             %_fBRed%+++ Firmware file NOT found ++++%_fReset%
 rem @echo           ======================================
 rem @echo.
 rem @echo.
 rem @echo         0.  Exit the program
 rem @echo         M.  Return to Main Menu
 rem @echo.
-rem @echo     %_fYellow%Enter.%_fReset% Check firmware version and download
+rem @echo     %_fBYellow%Enter.%_fBGreen%Check firmware version and download%_fReset%
 rem @echo.
 rem @echo.
 rem @echo     %_fBYellow%IMPORTANT:%_fReset%
 rem @echo.
-rem @echo       Place the firmware file (%_fBYellow%zip archive%_fReset%) next to this program.
+rem @echo       Place the firmware file (%_fBYellow%update.zip archive%_fReset%) next to this program.
 rem @echo       Then restart the program.
 rem EndEngTextBlock
 @set "choice="
@@ -10414,16 +11376,24 @@ GOTO _returnmenu
 @%verbecho%
 cls
 call :_hat
+@%MYFILES%\adb devices | findstr /i /c:"sideload" 1>nul 2>nul
+rem StartRusTextBlock
+@If %ERRORLEVEL%==0 @echo ======================================== ^ & @echo +++ Шлем в режиме Sideload +++ & timeout 5 & goto :_NormalStart
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @If %ERRORLEVEL%==0 @echo ======================================== ^ & @echo +++ Headset is in Sideload mode +++ & timeout 5 & goto :_NormalStart
+rem EndEngTextBlock
 @echo.
 @echo.
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo   %_fBYellow%Секунду, выдергиваем циферки...%_fReset%
+@echo   %_fBYellow%Секунду, проверяем актуальность...%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBYellow%Just a moment, extracting numbers...%_fReset%
+rem @echo    %_fBYellow%One moment, checking for updates...%_fReset%
 rem EndEngTextBlock
+
 For /F %%a In ('@%MYFILES%\adb shell getprop ro.build.version.incremental') Do set hsenvironment=%%a
 
 call :_hsfwversionextract
@@ -10588,11 +11558,11 @@ rem StartRusTextBlock
 @echo   %_fBYellow%Для скачивания последней версии нажмите %_fYellow%Enter%_fBYellow%, для возврата в меню - %_fYellow%Esc%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo             %_fBCyan%==================================================
-rem @echo     %_fBYellow%+++ New firmware version available:  %_fCyan%!lstxtversion!%_fReset% %_fBCyan% +++
-rem @echo             ==================================================%_fReset%
+rem @echo          %_fBCyan%==========================================================
+rem @echo            %_fBYellow%+++ New firmware version available:  %_fCyan%!lstxtversion! %_fBCyan% %_fBYellow%+++%_fReset%
+rem @echo          %_fBCyan%==========================================================%_fReset%
 rem @echo.
-rem @echo   To download the last version press %_fYellow%Enter%_fBYellow%, to return to the menu - %_fYellow%Esc%_fReset%
+rem @echo   %_fBYellow%To download the last version press %_fYellow%Enter%_fBYellow%, to return to the menu - %_fYellow%Esc%_fReset%
 rem EndEngTextBlock
 for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "KEY=%%K"
 if "!KEY!"=="27" goto _fwmenuskip
@@ -10602,6 +11572,7 @@ goto _fwmenuskip
 
 
 :_NewFirmwareDownload
+call :_CheckCurlExist
 set ms=!model:~6!
 set envnumb=!lsnumb:~1,-1!
 rem set modelnumb=!model:~0,-1!
@@ -10696,6 +11667,7 @@ call :_ftpconnect_old
 exit /b
 
 :_ftpconnect
+call :_CheckCurlExist
 rem https://cocaine.trade/firmwares.yaml
 
 if not defined ftpfile cls&&goto _NoDevice
@@ -10706,6 +11678,7 @@ if %ftpfile%==fw3.txt set ctlink=Quest_3_firmware&&set CTSourceFile=ct3.txt
 if %ftpfile%==fwp.txt set ctlink=Quest_Pro_firmware&&set CTSourceFile=ctp.txt
 if %ftpfile%==fws.txt set ctlink=Quest_3S_firmware&&set CTSourceFile=cts.txt
 
+rem curl -4 -LJko %CTSourceFile% --resolve cocaine.trade:443:45.150.123.10 "https://cocaine.trade/%ctlink%" -Ss 1>nul 2>nul
 curl -4 -LJko %CTSourceFile% --resolve cocaine.trade:443:45.150.123.10 "https://cocaine.trade/%ctlink%" -Ss 1>nul 2>nul
 if errorlevel 1 (
 @echo   =============================================================================
@@ -10716,10 +11689,11 @@ rem StartEngTextBlock
 rem @echo    %_fBRed%The main firmware database is unavailable, using an alternative source%_fReset%
 rem EndEngTextBlock
 set "shared=e687e93c-a563-4659-8b1b-694acec1e595"
+rem curl -LJko %CTSourceFile% https://app.koofr.net/content/links/!shared!/files/get/%CTSourceFile%?path=%%2F%CTSourceFile% -Ss 1>nul 2>nul
 curl -LJko %CTSourceFile% https://app.koofr.net/content/links/!shared!/files/get/%CTSourceFile%?path=%%2F%CTSourceFile% -Ss 1>nul 2>nul
-if defined fastbootmark (exit /b)
+rem if defined fastbootmark exit /b
 if errorlevel 1 (
-timeout 3 >nul
+rem timeout 3 >nul
 @echo   =============================================================================
 rem StartRusTextBlock
 @echo    %_fBRed%Альтернативная база данных прошивок также недоступна%_fReset%
@@ -10738,11 +11712,23 @@ rem @echo    Check the availability of the site %_fYellow%https://cocaine.trade%
 rem @echo    %_fBYellow%or try using a VPN on your PC%_fReset%
 rem EndEngTextBlock
 @del /q /f metadata 1>nul 2>nul
-if defined fastbootmark (exit /b) else (call :_prevmenu && goto _fwmenu)
+rem ) else (
+if defined fastbootmark exit /b
+@echo   -----------------------------------------------------------------------
+@echo.
+rem StartRusTextBlock
+@echo   %_fBYellow%Для продолжения %_fYellow%Enter%_fBYellow%, для возврата в меню - %_fYellow%Esc%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Press %_fYellow%Enter%_fBYellow%for continue, to return to the menu - %_fYellow%Esc%_fReset%
+rem EndEngTextBlock
+for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "keycode=%%K"
+if "!keycode!"=="27" goto _fwmenu
+if "!keycode!"=="13" exit /b
 )
 )
 rem powershell -ExecutionPolicy Bypass -File %myfiles%\ctfwpars.ps1 -InputFile "%CTSourceFile%" -OutputFile "%ftpfile%"
-powershell -ExecutionPolicy Bypass -File %myfiles%\ctpars.ps1 -InputFile "%CTSourceFile%" -OutputFile "%ftpfile%"
+powershell -ExecutionPolicy Bypass -File %myfiles%\ctpars.ps1 -InputFile "%CTSourceFile%" -OutputFile "%ftpfile%" 1>nul 2>nul
 @del /q /f metadata 1>nul 2>nul
 @del /q /f %CTSourceFile% 1>nul 2>nul
 exit /b
@@ -10888,7 +11874,7 @@ rem goto _Sendlink
 
 :_hsfwversionextract
 For /F %%a In ('@%MYFILES%\adb shell getprop ro.build.version.incremental 2^>nul') Do set hsenvironment=%%a
-@for /f %%a in ('@%myfiles%\adb shell getprop ro.product.name') do set ProductModelName=%%a
+@for /f %%a in ('@%myfiles%\adb shell getprop ro.product.name 2^>nul') do set ProductModelName=%%a
 
 set "oculussystem=com.oculus.systemux"
 if /I "%ProductModelName%"=="panther" set "oculussystem=com.oculus.systemutilities"
@@ -11024,6 +12010,7 @@ rem EndEngTextBlock
 goto _returnmenu
 
 :_DownloadFirmware
+call :_CheckCurlExist
 @call :_SetOnlyTime
 set postbuild=
 @curl -LJko fwtempfile_%ti%.zip "%dlink%" -#
@@ -12163,7 +13150,7 @@ rem EndEngTextBlock
 @echo  ^|                                                                    ^|
 @setlocal enableextensions enabledelayedexpansion
 call :_AppsNumbersListCheck
-
+call :_CheckCurlExist
 set linkUpdates=https://securecdn.oculus.com/binaries/download/?id=
 set listtxt=appsnumbers.txt
 for /f "tokens=*" %%a in (%listtxt%) do (
@@ -12788,7 +13775,7 @@ call :_prevmenu
 goto _resolutionfix
 
 :_installmenugen
-call :_checkcurlexists
+call :_checkcurlexist
 :_installmenugenc
 call :_hat
 call :_hatmenu
@@ -12809,8 +13796,9 @@ echo.
 @echo    R.  Установка игровых приложений
 @echo    T.  Установка утилит ADB
 @echo    O.  Очистка лишних приложений
+@echo    N.  Установка приложений из собственного списка
 @echo.
-@echo    %_fCyan%X.  Установка драйверов Meta Quest%_fReset%
+@echo    %_fCyan%X.  Установка драйверов%_fReset%
 @echo.
 @echo.
 @echo    ВАЖНО:
@@ -12839,7 +13827,7 @@ rem @echo    R.  Gaming applications installation
 rem @echo    T.  ADB tools installation
 rem @echo    O.  Cleanup of unnecessary applications
 rem @echo.
-rem @echo    %_fCyan%X.  Install Meta Quest drivers%_fReset%
+rem @echo    %_fCyan%X.  Install drivers%_fReset%
 rem @echo.
 rem @echo.
 rem @echo    IMPORTANT:
@@ -12864,6 +13852,7 @@ if not defined choice goto _installmenugen
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _installqid)
 if /i "%choice%"=="b" (GOTO _StartingApps)
 if /i "%choice%"=="c" (GOTO _CommandLaunchApp)
@@ -12876,9 +13865,433 @@ if /i "%choice%"=="p" (GOTO _InstallSoftwareApps)
 if /i "%choice%"=="r" (GOTO _InstallGamesApps)
 if /i "%choice%"=="t" (GOTO _InstallADBTools)
 if /i "%choice%"=="o" (GOTO _UninstallAndStopAppsStuffMenu)
+if /i "%choice%"=="n" (GOTO _OwnApplicationListInstallMenu)
 if /i "%choice%"=="x" (GOTO _InstallMetaQuestDrivers)
 @cls
 goto _installmenugen
+
+:_OwnApplicationListInstallMenu
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo    A.  Запустить Менеджер управления ключами QuasSafe
+@echo    B.  Вывести список ключей в реестре и извлечь расшифрованный Payload
+@echo    C.  Установить приложения из кастомного списка (файл)
+@echo    D.  Установить приложения из кастомного списка (поток)
+@echo    E.  Установить приложения из кастомного списка (буфер)
+@echo.
+@echo.
+@echo.
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo     A.  Launch Quas Safe Code Manager
+rem @echo     B.  List registry keys and extract decrypted Payload
+rem @echo     C.  Install applications from custom list (file)
+rem @echo     D.  Install applications from custom list (stream)
+rem @echo     E.  Install applications from custom list (buffer)
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+@echo.
+call :_MenuChoiceEnter
+@echo.
+if not defined choice goto :_OwnApplicationListInstallMenu
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="00" (goto _RestartQUAS)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
+if /i "%choice%"=="a" (call :_QuasSafeStart)
+if /i "%choice%"=="b" (call :_QuasSafeKeySelectorAndCredReader)
+if /i "%choice%"=="c" (GOTO :_InstallCustomAppsFile)
+if /i "%choice%"=="d" (GOTO :_InstallCustomAppsStream)
+if /i "%choice%"=="e" (GOTO :_InstallCustomAppsBuffer)
+
+
+goto :_OwnApplicationListInstallMenu
+
+:_QuasSafeStart
+rem StartRusTextBlock
+set langscript=RU
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set langscript=EN
+rem EndEngTextBlock
+start "" powershell -WindowStyle Hidden -NoProfile -NoLogo -ExecutionPolicy Bypass -File "%MYFILES%\QuasSafe.v5.03.ps1" -lang %langscript%
+exit /b
+
+:_InstallCustomAppsFile
+set decmode=file
+rem set "delmarfile=1"
+call :_QuasSafeKeySelectorAndCredReader
+set "transfer=-Lko"
+set "customapp=CustomAppList.txt"
+call :_CustomAppDownUpload
+@echo   -----
+rem StartRusTextBlock
+@echo  %_fBGreen%= Загружено успешно%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Downloaded succesfully%_fReset%
+rem EndEngTextBlock
+@echo   -----
+call :_RunCustomAppSelector
+call :_CustomAppListParsing
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+
+:_InstallCustomAppsStream
+set "KEY_NAME=KCAStream"
+set decmode=stream
+call :_QuasSafeKeySelectorAndCredReader
+set "transfer=-Lko"
+set "customapp=CustomAppList.txt"
+set curllogin=%data_1%
+set curlpass=%data_2%
+set curllink=%data_3%
+call :_CustomAppDownUpload
+@echo   -----
+rem StartRusTextBlock
+@echo  %_fBGreen%= Загружено успешно%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Downloaded succesfully%_fReset%
+rem EndEngTextBlock
+@echo   -----
+call :_RunCustomAppSelector
+call :_CustomAppListParsing
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+
+:_InstallCustomAppsBuffer
+@echo.
+@echo.
+@echo   WIP
+@echo.
+@echo.
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+
+:_InstallCustomAppsMain
+rem  set decmode=file
+rem set "delmarfile=1"
+call :_QuasSafeKeySelectorAndCredReader
+set "transfer=-Lko"
+set "customapp=CustomAppList.txt"
+
+set curllogin=%data_1%
+set curlpass=%data_2%
+set curllink=%data_3%
+
+
+
+call :_CustomAppDownUpload
+@echo   -----
+rem StartRusTextBlock
+@echo  %_fBGreen%= Загружено успешно%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Downloaded succesfully%_fReset%
+rem EndEngTextBlock
+@echo   -----
+call :_RunCustomAppSelector
+call :_CustomAppListParsing
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+
+
+
+
+:_QuasSafeKeySelectorAndCredReader
+cls
+@echo.
+@echo.
+@echo.
+@echo  ======================================
+@echo       %_fBCyan%QuasSafe Key Selector%_fReset%
+@echo  ======================================
+call :_hatmenu
+@echo.
+set "regPath=HKCU\Software\Quas\Credentials"
+set "ncount=0"
+for /f "tokens=1" %%a in ('reg query "%regPath%" 2^>nul ^| findstr /v "HKEY_CURRENT_USER"') do (
+set /a ncount+=1
+set "key[!ncount!]=%%a"
+@echo    %_fCyan%!ncount!.  %_fBCyan%%%a%_fReset%
+)
+if "%ncount%"=="0" (
+@echo  -----
+rem StartRusTextBlock
+@echo  %_fYellow%= Ключи не найдены в реестре
+@echo    %_fBYellow%Создайте или импортируйте ключи в Quas Safe в пункте %_fYellow%A%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fYellow%= No keys found in Registry.
+rem @echo    %_fBYellow%Create or import keys to Quas Safe app in %_fYellow%A %_fBYellow%option%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+exit /b
+)
+
+@echo.
+@echo  ==========================================
+rem StartRusTextBlock
+
+rem EndRusTextBlock
+rem StartEngTextBlock
+set /p choice="Select key number ('m' to exit menu, '0' - exit): "
+rem EndEngTextBlock
+if /i "%choice%"=="0" exit /b
+if /i "%choice%"=="m" goto :_OwnApplicationListInstallMenu
+
+if not defined key[%choice%] (
+@echo -----
+rem StartRusTextBlock
+@echo %_fBRed%= Ошибка: %_fBYellow%Ключа %_fYellow%%choice% %_fBYellow%нет в списке%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBRed%= Error: %_fBYellow%Key %_fYellow%%choice% %_fBYellow%is not in the list%_fReset%
+rem EndEngTextBlock
+rem timeout /t 2 >nul
+call :_prevmenu
+goto :_QuasSafeKeySelectorAndCredReader
+rem exit /b
+rem goto :_OwnApplicationListInstallMenu
+)
+set "selectedKey=!key[%choice%]!"
+@echo.
+@echo   -----
+rem StartRusTextBlock
+@echo   %_fBYellow%= Загрузка: %_fBCyan%!selectedKey!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%= Loading: %_fBCyan%!selectedKey!%_fReset%
+rem EndEngTextBlock
+call :_ExtractKeyFromRegistry
+if "%decmode%"=="stream" (
+call :_ExtractDecryptedStream
+exit /b
+)
+call :_ExtractDecryptedFile
+rem call :_prevmenu
+rem pause
+exit /b
+
+:_ActionDecryptFile
+
+:_ExtractKeyFromRegistry
+for /f "tokens=2*" %%a in ('reg query "HKCU\Software\Quas\Credentials" /v "!selectedKey!" 2^>nul ^| findstr /i "!selectedKey!"') do (
+set "fullValue=%%b"
+)
+rem Теперь парсим саму строку (токен 5 — это OutFile)
+if defined fullValue (
+rem Заменяем ";" на " "~" (двойная кавычка + тильда + кавычка)
+rem Это превращает строку в набор закавыченных сегментов
+set "tempValue="!fullValue:;=";"!"
+for /f "tokens=5 delims=;" %%f in ("!tempValue!") do (
+set "decryptedFile=%%~f"
+)
+)
+rem if defined fullValue (
+rem for /f "tokens=5 delims=;" %%f in ("!fullValue!") do (
+rem set "decryptedFile=%%f"
+rem )
+rem )
+exit /b
+
+:_ExtractKeyBuffer
+@echo.
+@echo.
+@echo   WIP
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+
+
+:_ExtractDecryptedStream
+set "FCOUNT=0"
+rem StartRusTextBlock
+set langscript=RU
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set langscript=EN
+rem EndEngTextBlock
+for /f "delims=" %%i in ('powershell -ExecutionPolicy Bypass -Command "& {%myfiles%\QuasSafe.v5.03.ps1 -Decrypt -keyName '%KEY_NAME%' -Stream}"') do (
+set /a FCOUNT+=1
+set "DATA_!FCOUNT!=%%i"
+)
+
+exit /b
+
+:_ExtractDecryptedFile
+powershell -NoProfile -ExecutionPolicy Bypass -File "%MYFILES%\QuasSafe.v5.03.ps1" -Decrypt -keyName "!selectedKey!"
+if defined decryptedFile if exist "!decryptedFile!" (
+@echo   -----
+rem StartRusTextBlock
+@echo   %_fBGreen%= Файл успешно создан: %_fBCyan%!decryptedFile!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBGreen%= File created successfully: %_fBCyan%!decryptedFile!%_fReset%
+rem EndEngTextBlock
+set "ext=!decryptedFile:~-4!"
+if /i "!ext!"==".bat" (
+call "!decryptedFile!"
+) else if /i "!ext!"==".cmd" (
+call "!decryptedFile!"
+) else if /i "!ext!"==".ps1" (
+powershell -NoProfile -ExecutionPolicy Bypass -File "!decryptedFile!"
+) else (
+start "" /b "!decryptedFile!"
+)
+
+if defined delmarfile (
+rem call :_DelMarkFileCheck
+@echo   -----
+rem StartRusTextBlock
+@echo   %_fBYellow%= Маркер удаления найден. Очистка...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBYellow%= Deletion marker found. Cleaning up...%_fReset%
+rem EndEngTextBlock
+if exist "!decryptedFile!" del /q /f "!decryptedFile!" >nul 2>&1
+) else (
+@echo   -----
+rem StartRusTextBlock
+@echo   %_fBGreen%= Данные загружены. Файл сохранен: %_fBCyan%!decryptedFile!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBGreen%= Data loaded. File saved: %_fBCyan%!decryptedFile!%_fReset%
+rem EndEngTextBlock
+)
+rem call :_prevmenu
+exit /b
+rem goto :_OwnApplicationListInstallMenu
+
+) else (
+@echo   -----
+rem StartRusTextBlock
+@echo   %_fBRed%= Ошибка: %_fBYellow%Дешифровка не удалась или отменена.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBRed%= Error: Decryption failed or cancelled.%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+exit /b
+rem goto :_OwnApplicationListInstallMenu
+)
+call :_prevmenu
+exit /b
+rem goto :_OwnApplicationListInstallMenu
+
+:_CustomAppDownUpload
+for %%V in (curllogin curlpass customapp curllink) do (
+if not defined %%V (
+set "nodata=%%V"
+goto :_NotEnoughDataMessage
+)
+)
+curl -u "%curllogin%:%curlpass%" %transfer% "%customapp%" "%curllink%" -# 1>nul 2>nul
+exit /b
+
+
+:_NotEnoughDataMessage
+rem StartRusTextBlock
+@echo  %_fBRed%= Недостаточно данных: %nodata%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBRed%= Not enough data: %nodata%%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+
+
+
+:_RunCustomAppSelector
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "CustomAppList.txt" "packages-list.txt" %fullpathviewkey% -m -c1 -c2 -f
+exit /b
+
+
+:_CustomAppListParsing
+if not exist packages-list.txt (
+@echo.
+rem StartRusTextBlock
+@echo   %_fYellow%+++  Файлы не выбраны  +++%_fReset%%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fYellow%+++  No files selected  +++%_fReset%
+rem EndEngTextBlock
+del /q CustomAppList.txt 1>nul 2>nul
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+)
+for /f "tokens=1,2,3 delims=;" %%A in (packages-list.txt) do (
+set "appname=%%A"
+set "dlappl=%%B"
+set "curllink=%%C"
+call :_CustomAppListAction
+)
+rd /q /s %dlcat% 1>nul 2>nul
+del /q packages-list.txt 1>nul 2>nul
+del /q %dlappl% 1>nul 2>nul
+del /q CustomAppList.txt 1>nul 2>nul
+rem StartRusTextBlock
+@echo  %_fBGreen%= Все задачи выполнены%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= All tasks Completed%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_OwnApplicationListInstallMenu
+
+
+:_CustomAppListAction
+@echo  -----
+rem StartRusTextBlock
+@echo  %_fBYellow%= Загрузка приложения %_fBCyan%%appname%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBYellow%= App %_fBCyan%%appname% %_fBYellow%Downloading..%_fReset%
+rem EndEngTextBlock
+curl -Lko %dlappl% "%curllink%"  -# 1>nul
+
+if exist install.flag (
+@echo  -----
+rem StartRusTextBlock
+@echo  %_fBYellow%= Установка приложения %_fBCyan%%appname%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBYellow%= App %_fBCyan%%appname% %_fBYellow%Installing..%_fReset%
+rem EndEngTextBlock
+%MYFILES%\ADB install -r -g -d --no-streaming "%dlappl%" 1>NUL 2>&1
+@del %dlappl% /Q 1>nul 2>nul
+)
+
+if exist extra.flag (
+set dlcat=%dlappl:~0,-4%
+@echo  -----
+rem StartRusTextBlock
+@echo  %_fBYellow%= Распаковка архива %_fBCyan%%appname%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBYellow%= App %_fBCyan%%appname% %_fBYellow%Unpacking..%_fReset%
+rem EndEngTextBlock
+%myfiles%\7z.exe x "%dlappl%" -o"%dlcat%\" -y 1>NUL 2>&1
+@del %dlappl% /Q 1>nul 2>nul
+)
+
+del /q install.flag 1>nul 2>nul
+del /q extra.flag 1>nul 2>nul
+set dlcat=
+set dlappl=
+set curllink=
+rd /q /s %dlcat% 1>nul 2>nul
+del /q packages-list.txt 1>nul 2>nul
+del /q %dlappl% 1>nul 2>nul
+del /q CustomAppList.txt 1>nul 2>nul
+exit /b
+
 
 
 :_UninstallAndStopAppsStuffMenu
@@ -12939,6 +14352,7 @@ if not defined choice goto _UninstallAndStopAppsStuffMenu
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (call :_DisableAppsStuff)
 if /i "%choice%"=="b" (call :_UninstallAppsStuff)
 if /i "%choice%"=="e" (goto _ExportDUListsFromRegistry)
@@ -12977,6 +14391,10 @@ rem StartRusTextBlock
 @echo    остановки приложений - %_fYellow%disabled_list.txt%_fReset%. Имя приложения может быть любым, какое вам удобно.
 @echo    Название пакета как у соответствующего приложения. Списки сохраните рядом с программой %_fBYellow%Quas%_fReset%.
 @echo.
+@echo    Приоритет работы со списками: сначала проверяются файлы %_fYellow%disabled_list.txt%_fReset% и %_fYellow%uninst_list.txt%_fReset%
+@echo    и списки берутся из этих Файлов. Если файлы отсутствуют, проверяются соответствующие
+@echo    разделы в реестре, и если их нет, файлы создаются из интегрированных в Quas списков.
+@echo.
 @echo    Для включения отключенных приложений пройдите в программе %_fBYellow%Quas%_fReset% в пункты %_fBYellow%J-E-E-4%_fReset%
 @echo    затем выберите приложения, которые хотите включить. Установить удаленные приложения можно
 @echo    на %_fBYellow%Главной панели%_fReset% шлема, нажав на плитку приложения, и затем - %_fBYellow%Скачать%_fReset%.
@@ -13007,12 +14425,16 @@ rem @echo    The list format is the same. The uninstall list should be named %_f
 rem @echo    disable list - %_fYellow%disabled_list.txt%_fReset%. The app name can be anything you like, and the package
 rem @echo    name should match the corresponding app. Save the lists next to the %_fBYellow%Quas%_fReset% program.
 rem @echo.
+rem @echo    List processing priority: First, %_fYellow%disabled_list.txt%_fReset% and %_fYellow%uninst_list.txt%_fReset% are checked, and lists
+rem @echo    are pulled from these files. If the files are missing, the corresponding registry keys are
+rem @echo    checked. If those are also missing, the files are created from lists integrated into Quas.
+rem @echo.
 rem @echo    To enable disabled apps, go to %_fBYellow%Quas%_fReset% in options %_fBYellow%J-E-E-4%_fReset%, 
 rem @echo    then select the apps you want to enable. To install removed apps, use the %_fBYellow%Main Panel%_fReset% 
 rem @echo    on the headset, click the app tile, and then select %_fBYellow%Download%_fReset%.
 rem @echo.
-rem @echo   Options %_fBYellow%PD %_fReset%and %_fBYellow%PU %_fReset%allow you to display the list of all applications on the headset and select those
-rem @echo   that you want to add to the disable or uninstall list, according to the selected option.rem EndEngTextBlock
+rem @echo   Options %_fBYellow%PD %_fReset%and %_fBYellow%PU %_fReset%allow you to display the list of all applications on the headset and select
+rem @echo   those that you want to add to the disable or uninstall list, according to the selected option.
 rem EndEngTextBlock
 call :_prevmenu
 exit /b
@@ -13028,8 +14450,9 @@ rem set "action1=to uninstall"
 rem set "action2=uninstalling"
 rem EndEngTextBlock
 call :_ActionMessage
-if not exist uninst_list.txt call :_UninstListCreate
-powershell -ExecutionPolicy Bypass -File "%myfiles%\selector5.ps1" "uninst_list.txt" "packages-list.txt"
+call :_ExportUninstallListsFromRegistryPrep
+rem if not exist uninst_list.txt call :_UninstListCreate
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "uninst_list.txt" "packages-list.txt"
 if not exist packages-list.txt (
 @echo.
 @echo   --------------------------------------------
@@ -13061,10 +14484,10 @@ rem EndEngTextBlock
 %MYFILES%\adb shell pm list packages | findstr /I "!packagename!" 1>nul 2>nul
 if "!errorlevel!"=="1" (
 rem StartRusTextBlock
-@echo    %_fBYellow%= Приложение уже удалено%_fReset%
+@echo    %_fBYellow%= Приложение уже удалено или не найдено%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBYellow%= The application already deleted%_fReset%
+rem @echo   %_fBYellow%= The application already deleted or deleted%_fReset%
 rem EndEngTextBlock
 ) else (
 %MYFILES%\adb shell pm uninstall -k --user 0 !packagename! | findstr /I "DELETE_FAILED_INTERNAL_ERROR"  1>nul 2>nul
@@ -13091,7 +14514,7 @@ rem EndEngTextBlock
 )
 @echo   -------------------------------------------------------------------
 @del /q /f packages-list.txt 1>nul 2>nul
-@del /q /f uninst_list.txt 1>nul 2>nul
+rem @del /q /f uninst_list.txt 1>nul 2>nul
 rem StartRusTextBlock
 @echo   %_fBGreen%= Приложения удалены%_fReset%
 @echo     %_fBYellow%Список не удаленных приложений в файле %_fYellow%NotUninstalledApps.txt%_fReset%
@@ -13116,8 +14539,8 @@ rem set "action1=to disable"
 rem set "action2=disabling"
 rem EndEngTextBlock
 call :_ActionMessage
-if not exist disabled_list.txt call :_DisabledListCreate
-powershell -ExecutionPolicy Bypass -File "%myfiles%\selector5.ps1" "disabled_list.txt" "packages-list.txt"
+call :_ExportDisabledListsFromRegistryPrep
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "disabled_list.txt" "packages-list.txt"
 if not exist packages-list.txt (
 @echo.
 @echo   --------------------------------------------
@@ -13143,6 +14566,15 @@ rem StartEngTextBlock
 rem @echo   = Archive name	: %_fBCyan%!abname!%_fReset%
 rem @echo   = Package name	: %_fCyan%!packagename!%_fReset%
 rem EndEngTextBlock
+%MYFILES%\adb shell pm list packages | findstr /I "!packagename!" 1>nul 2>nul
+if errorlevel 1 (
+rem StartRusTextBlock
+@echo   %_fBYellow%= Приложение не найдено%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%= The application not found%_fReset%
+rem EndEngTextBlock
+) else (
 %MYFILES%\adb shell am force-stop !packagename! 1>nul 2>nul
 %MYFILES%\adb shell pm disable-user --user 0 !packagename! 1>nul 2>nul
 %MYFILES%\adb shell pm list packages -d | findstr /I "!packagename!" 1>nul 2>nul
@@ -13162,10 +14594,11 @@ rem @echo   %_fBRed%= Failed to disable the application%_fReset%
 rem EndEngTextBlock
 @echo !packagename! >>NotDisabled.txt
 )
+)
 @echo   -------------------------------------------------------------------
 )
 @del /q /f packages-list.txt 1>nul 2>nul
-@del /q /f disabled_list.txt 1>nul 2>nul
+rem @del /q /f disabled_list.txt 1>nul 2>nul
 rem StartRusTextBlock
 @echo   %_fBGreen%= Приложения отключены%_fReset%
 @echo     %_fBYellow%Список не отключенных приложений в файле %_fYellow%NotDisabled.txt%_fReset%
@@ -13198,8 +14631,8 @@ goto :_UninstallAndStopAppsStuffMenu
 
 :_UninstDisableAllAppsListCreate
 @del /q /f packages-list.txt 1>nul 2>nul
-@del /q /f uninst.txt 1>nul 2>nul
-@del /q /f disabled_list.txt 1>nul 2>nul
+rem @del /q /f uninst.txt 1>nul 2>nul
+rem @del /q /f disabled_list.txt 1>nul 2>nul
 @del /q /f o.txt 1>nul 2>nul
 @del /q /f aaptname.sh 1>nul 2>nul
 @echo   ---------------------------------------------------
@@ -13228,7 +14661,7 @@ rem set "action2=uninstalling"
 rem EndEngTextBlock
 call :_ActionMessage
 if not exist uninst_list.txt call :_UninstListCreate
-powershell -ExecutionPolicy Bypass -File "%myfiles%\selector5.ps1" "%inputlist%" "packages-list.txt"
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "%inputlist%" "packages-list.txt"
 if not exist packages-list.txt (
 @echo.
 @echo   --------------------------------------------
@@ -13240,11 +14673,11 @@ rem StartEngTextBlock
 rem @echo   %_fYellow%+++  No apps selected  +++%_fReset%
 rem EndEngTextBlock
 @del /q /f packages-list.txt 1>nul 2>nul
-@del /q /f uninst.txt 1>nul 2>nul
-@del /q /f disabled_list.txt 1>nul 2>nul
+rem @del /q /f uninst.txt 1>nul 2>nul
+rem @del /q /f disabled_list.txt 1>nul 2>nul
 @del /q /f o.txt 1>nul 2>nul
 @del /q /f aaptname.sh 1>nul 2>nul
-@del /q /f %inputlist% 1>nul 2>nul
+rem @del /q /f %inputlist% 1>nul 2>nul
 call :_prevmenu
 exit /b
 )
@@ -13259,8 +14692,8 @@ rem StartEngTextBlock
 rem @echo   %_fBGreen%Apps added to the registry to uninstall list%_fReset%
 rem EndEngTextBlock
 @del /q /f packages-list.txt 1>nul 2>nul
-@del /q /f uninst.txt 1>nul 2>nul
-@del /q /f disabled_list.txt 1>nul 2>nul
+rem @del /q /f uninst.txt 1>nul 2>nul
+rem @del /q /f disabled_list.txt 1>nul 2>nul
 @del /q /f o.txt 1>nul 2>nul
 @del /q /f aaptname.sh 1>nul 2>nul
 call :_prevmenu
@@ -13280,7 +14713,7 @@ rem set "action2=uninstalling"
 rem EndEngTextBlock
 call :_ActionMessage
 if not exist disabled_list.txt call :_UninstListCreate
-powershell -ExecutionPolicy Bypass -File "%myfiles%\selector5.ps1" "%inputlist%" "packages-list.txt"
+powershell -ExecutionPolicy Bypass -File "%myfiles%\selector7.7.ps1" "%inputlist%" "packages-list.txt"
 if not exist packages-list.txt (
 @echo.
 @echo   --------------------------------------------
@@ -13292,11 +14725,11 @@ rem StartEngTextBlock
 rem @echo   %_fYellow%+++  No apps selected  +++%_fReset%
 rem EndEngTextBlock
 @del /q /f packages-list.txt 1>nul 2>nul
-@del /q /f uninst.txt 1>nul 2>nul
-@del /q /f disabled_list.txt 1>nul 2>nul
+rem @del /q /f uninst.txt 1>nul 2>nul
+rem @del /q /f disabled_list.txt 1>nul 2>nul
 @del /q /f o.txt 1>nul 2>nul
 @del /q /f aaptname.sh 1>nul 2>nul
-@del /q /f %inputlist% 1>nul 2>nul
+rem @del /q /f %inputlist% 1>nul 2>nul
 call :_prevmenu
 exit /b
 )
@@ -13312,8 +14745,8 @@ rem StartEngTextBlock
 rem @echo   %_fBGreen%Apps added to the registry to disable list%_fReset%
 rem EndEngTextBlock
 @del /q /f packages-list.txt 1>nul 2>nul
-@del /q /f uninst.txt 1>nul 2>nul
-@del /q /f disabled_list.txt 1>nul 2>nul
+rem @del /q /f uninst.txt 1>nul 2>nul
+rem @del /q /f disabled_list.txt 1>nul 2>nul
 @del /q /f o.txt 1>nul 2>nul
 @del /q /f aaptname.sh 1>nul 2>nul
 call :_prevmenu
@@ -13387,6 +14820,42 @@ rem @echo  Use the field at the top of the window to search for applications by 
 rem EndEngTextBlock
 exit /b
 
+:_ExportDisabledListsFromRegistryPrep
+set DISABLED=disabled_list.txt
+set REGTMP=quas_export.reg
+
+if not exist disabled_list.txt (
+reg query "HKCU\Software\Quas\CustomAppList" >nul 2>&1
+if errorlevel 1 (
+call :_DisabledListCreate
+) else (
+call :_ExportDUListsFromRegistryProcess DisabledApps "%DISABLED%"
+del "%REGTMP%" >nul 2>&1
+exit /b
+)
+)
+exit /b
+
+
+:_ExportUninstallListsFromRegistryPrep
+set UNINST=uninst_list.txt
+set REGTMP=quas_export.reg
+
+if not exist uninst_list.txt (
+reg query "HKCU\Software\Quas\CustomAppList" >nul 2>&1
+if errorlevel 1 (
+call :_UninstListCreate
+) else (
+call :_ExportDUListsFromRegistryProcess UninstalledApps "%UNINST%"
+del "%REGTMP%" >nul 2>&1
+exit /b
+)
+)
+exit /b
+
+
+
+
 :_ExportDUListsFromRegistry
 rem Ok
 set DISABLED=disabled_list.txt
@@ -13411,28 +14880,22 @@ rem Ok
 set SECTION=%~1
 set OUTFILE=%~2
 set KEY=HKEY_CURRENT_USER\SOFTWARE\Quas\%SECTION%
-
 > "%OUTFILE%" rem.
-
 del "%REGTMP%" >nul 2>&1
 reg export "%KEY%" "%REGTMP%" /y 1>nul 2>nul || exit /b
-
 for /f "delims=" %%L in ('
-    type "%REGTMP%" ^| findstr /R "^\""
+type "%REGTMP%" ^| findstr /R "^\""
 ') do (
-    for /f "tokens=1,2 delims==" %%A in ("%%L") do (
-        >>"%OUTFILE%" echo %%~A;%%~B
-    )
+for /f "tokens=1,2 delims==" %%A in ("%%L") do (
+>>"%OUTFILE%" echo %%~A;%%~B
 )
-
+)
 :: проверяем, пустые ли файлы, и удаляем если пустые
-
 for %%F in ("%DISABLED%" "%UNINST%") do (
-    if exist "%%F" (
-        if %%~zF==0 del "%%F"
-    )
+if exist "%%F" (
+if %%~zF==0 del "%%F"
 )
-
+)
 exit /b
 
 :_ImportDUListsToRegistry
@@ -13567,27 +15030,30 @@ goto _UninstallAndStopAppsStuffMenu
 
 
 :_InstallMetaQuestDrivers
+call :_CheckCurlExist
 call :_hat
 call :_hatmenu
 @echo.
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo      %_fBYellow%=== Установка драйверов Meta Horizon (Quest) на ПК ===%_fReset%
+@echo      %_fBYellow%=== Установка драйверов Meta Horizon (Quest) и SteamLink Audio на ПК ===%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo      %_fBYellow%=== Installation Meta Horizon (Quest) Drivers to PC ===%_fReset%
+rem @echo      %_fBYellow%=== Installation Meta Horizon (Quest) and SteamLink Audio Drivers to PC ===%_fReset%
 rem EndEngTextBlock
 @echo.
 @echo.
 rem StartRusTextBlock
-@echo    A.  Установить версию %_fCyan%1.71  %_fBYellow%(Старые драйверы Oculus)%_fReset%
-@echo    B.  Установить версию %_fCyan%1.72  %_fBYellow%(Новые драйверы Reality Labs)%_fReset%
-@echo    C.  Установить версию %_fCyan%1.77  %_fBYellow%(Переработанные драйверы Reality Labs)%_fReset%
+@echo    A.  Установить версию Meta Horizon %_fCyan%1.71  %_fBYellow%(Старые драйверы Oculus)%_fReset%
+@echo    B.  Установить версию Meta Horizon %_fCyan%1.72  %_fBYellow%(Новые драйверы Reality Labs)%_fReset%
+@echo    C.  Установить версию Meta Horizon %_fCyan%1.77  %_fBYellow%(Переработанные драйверы Reality Labs)%_fReset%
+@echo    D.  Установить SteamLink Audio Drivers
 @echo.
-@echo    F.  Скачать версию %_fCyan%1.71%_fReset%
-@echo    G.  Скачать версию %_fCyan%1.72%_fReset%
-@echo    I.  Скачать версию %_fCyan%1.77%_fReset%
+@echo    F.  Скачать версию Meta Horizon %_fCyan%1.71%_fReset%
+@echo    G.  Скачать версию Meta Horizon %_fCyan%1.72%_fReset%
+@echo    I.  Скачать версию Meta Horizon %_fCyan%1.77%_fReset%
+@echo    J.  Скачать SteamLink Audio Drivers
 @echo.
 @echo.
 @echo.
@@ -13613,10 +15079,12 @@ rem StartEngTextBlock
 rem @echo    A.  Install version %_fCyan%1.71  %_fBYellow%(Old Oculus drivers)%_fReset%
 rem @echo    B.  Install version %_fCyan%1.72  %_fBYellow%(New Reality Labs drivers)%_fReset%
 rem @echo    C.  Install version %_fCyan%1.77  %_fBYellow%(Reworked Reality Labs drivers)%_fReset%
+rem @echo    D.  Install SteamLink Audio Drivers
 rem @echo.
 rem @echo    F.  Download version %_fCyan%1.71%_fReset%
 rem @echo    G.  Download version %_fCyan%1.72%_fReset%
 rem @echo    I.  Download version %_fCyan%1.77%_fReset%
+rem @echo    J.  Download SteamLink Audio Drivers
 rem @echo.
 rem @echo.
 rem @echo.
@@ -13648,12 +15116,15 @@ if not defined choice goto _InstallMetaQuestDrivers
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _setdrivers)
 if /i "%choice%"=="b" (GOTO _setdriversmh172)
 if /i "%choice%"=="c" (GOTO _setdriversmh177)
+if /i "%choice%"=="d" (GOTO :_SetSteamLinkAudioDrivers)
 if /i "%choice%"=="f" (GOTO _driversdownload171)
 if /i "%choice%"=="g" (GOTO _driversdownload172)
 if /i "%choice%"=="i" (GOTO _driversdownload177)
+if /i "%choice%"=="j" (GOTO :_driversdownloadSteamLinkAudio)
 
 @cls
 goto _InstallMetaQuestDrivers
@@ -13715,6 +15186,7 @@ if not defined choice goto _AppsManagementMenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (goto _UninstallAppsPS)
 if /i "%choice%"=="b" (goto _SoftUninstallAppsPS)
 if /i "%choice%"=="c" (goto _ClearCacheDataAppsPS)
@@ -13730,6 +15202,7 @@ rem if /i "%choice%"=="k" (goto _ViewRunningAppsPS)
 if /i "%choice%"=="k" (set appsrunninglist=1&&goto :_ListRunningAppsPS)
 if /i "%choice%"=="l" (Set "SelectorParameters=-txt"&&goto _ViewApplicatrionList)
 if /i "%choice%"=="lc" (Set "SelectorParameters=-csv"&&goto _ViewApplicatrionList)
+rem if /i "%choice%"=="lf" (set "fullappspath=-f"&Set "SelectorParameters=-csv"&&goto _ViewApplicatrionList)
 
 if /i "%choice%"=="h" (call :_AppsManagementHelp)
 
@@ -13805,32 +15278,54 @@ rem EndEngTextBlock
 call :_exitwindow
 exit /b
 
-:_checkcurlexists
+:_CheckCurlExist
+rem cls
 @%verbecho%
-@curl.exe 1>nul 2>nul
-if %errorlevel%==2 exit /b
+rem curl 1>nul 2>nul
+curl --help 1>nul 2>nul
+if errorlevel 1 (
 rem StartRusTextBlock
-rem @echo   =======================================================================================
-@echo     %_fBRed%+++ Curl отсутствует в операционной системе, установка приложений невозможна +++%_FReset%
-rem @echo   =======================================================================================
-@echo   %_fBYellow%Скачайте curl по этой ссылке:   %_fCyan%https://curl.se/windows/latest.cgi?p=win64-mingw.zip
-@echo   %_fBYellow%и распакуйте его в каталог Windows. Затем перезапустите эту программу.%_fReset%
+@echo   ===================================================================================
+@echo   ^| %_fBRed%+++ Curl отстутствует в системе, скачивание  файлов и баз данных невозможно +++ %_fReset%^|
+@echo   ===================================================================================
+@echo.
+@echo   %_fBYellow%Нажмите %_fYellow%Пробел %_fBYellow%для скачивания пакета автоустановки Curl. Файл %_fYellow%Curl.sfx.exe %_fBYellow%будет скачан
+@echo   браузером. Если браузер сообщит "%_fYellow%Скачивание непроверенного файла заблокировано%_fBYellow%",
+@echo   нажмите на его сообщение и затем на кнопку "%_fYellow%Скачать непроверенный файл%_fBYellow%".
+@echo   После скачивания запустите %_fYellow%Curl.sfx.exe%_fBYellow% для распаковки Curl в каталог Windows.%_fReset%
+@echo.
+@echo.
+@echo  --------------------------------------------------------------------------------
+@echo      %_fBYellow%Нажмите %_fYellow%Enter%_fBYellow% для продолжения или %_fYellow%Пробел%_fBYellow% для скачивани Curl
+@echo      Любая другая клавиша - возврат в Главное меню%_fReset%
+@echo  --------------------------------------------------------------------------------
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   =================================================================================================
-rem @echo   ^|  +++ Curl is missing from the operating system, application installation is impossible  +++  ^|
-rem @echo   =================================================================================================
+rem @echo    ==========================================================================================
+rem @echo    ^| %_fBRed%+++ Curl is missing from the system; downloading files and databases is impossible +++ %_fReset%^|
+rem @echo    ==========================================================================================
+rem @echo.
+rem @echo    %_fBYellow%Press %_fYellow%Spacebar %_fBYellow%to download the Curl auto-installation package. The %_fYellow%Curl.sfx.exe %_fBYellow%file
+rem @echo    will be downloaded by your browser. If the browser displays "%_fYellow%Downloading of unverified
+rem @echo    file blocked%_fBYellow%", click on the message and then select the "%_fYellow%Download unverified file%_fBYellow%" button.
+rem @echo    After downloading, run %_fYellow%Curl.sfx.exe%_fBYellow% to unpack Curl into the Windows directory.%_fReset%
 rem @echo.
 rem @echo.
-rem @echo   Download the curl this link:   https://curl.se/windows/latest.cgi?p=win64-mingw.zip
-rem @echo   and extract it to Windows directory. After then restart the program.
+rem @echo  --------------------------------------------------------------------------------
+rem @echo      %_fBYellow%Press %_fYellow%Enter%_fBYellow% to continue or %_fYellow%Spacebar%_fBYellow% to download Curl
+rem @echo      Any other key - return to the Main Menu%_fReset%
+rem @echo  --------------------------------------------------------------------------------
 rem EndEngTextBlock
-call :_prevmenu
-goto _installmenugenc
-
-
+@echo.
+for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "KEY=%%K"
+if "!KEY!"=="32" start "" "https://www.dropbox.com/scl/fi/s1fpp3u89fhsa23n1qlag/Curl.sfx.exe?rlkey=4660dxzs8j788sxf8t06uwlxd&st=7ud5osjw&dl=1"&goto _returnmenu
+if "!KEY!"=="13" cls&exit /b
+goto _beginn
+)
+exit /b
 
 :_InstallGamesApps
+call :_CheckCurlExist
 call :_hat
 call :_hatmenu
 @echo.
@@ -13844,9 +15339,8 @@ rem EndEngTextBlock
 @echo.
 @echo.
 @echo    A.  = qLoader
-@echo    B.  = Rookie Sideloader
+@echo    B.  = Quest Games Informer
 @echo    C.  = ARMGDDN Browser
-@echo    E.  = VRP Essentials
 @echo    F.  = YAAS
 
 @echo.
@@ -13855,6 +15349,7 @@ rem EndEngTextBlock
 @echo    K.  = Steam Auto Crack GUI
 @echo    L.  = Quest Patcher for Beat Saber
 @echo    N.  = APPID
+@echo    O.  = PCVR Mods Hub
 @echo.
 rem StartRusTextBlock
 @echo    H.  = Описание каждого приложения и небольшая инструкция
@@ -13862,6 +15357,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    H.  = Description of each application and brief instructions
 rem EndEngTextBlock
+set appdlmarker=
 @echo.
 call :_MenuChoiceEnter
 @echo.
@@ -13869,16 +15365,20 @@ if not defined choice goto _InstallGamesApps
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _InstallqLoader)
-if /i "%choice%"=="b" (GOTO _InstallRookie)
+if /i "%choice%"=="b" (GOTO _oginformer)
+rem if /i "%choice%"=="b" (GOTO _InstallRookie)
 if /i "%choice%"=="c" (GOTO _InstallArmggdnz)
-if /i "%choice%"=="e" (GOTO _InstalllVrpe)
+rem if /i "%choice%"=="e" (GOTO _InstalllVrpe)
 if /i "%choice%"=="f" (GOTO _InstallYaas)
 if /i "%choice%"=="i" (GOTO _InstallAAC)
 if /i "%choice%"=="j" (GOTO _InstallSAC)
 if /i "%choice%"=="k" (GOTO _InstallSACGUI)
 if /i "%choice%"=="l" (GOTO _InstallQuestPatcher)
 if /i "%choice%"=="n" (GOTO _InstallAppid)
+if /i "%choice%"=="o" (GOTO _InstallPCVRModsHub)
+
 if /i "%choice%"=="h" (GOTO _GameAppsAdditionalInfo)
 @cls
 goto _InstallGamesApps
@@ -13901,14 +15401,6 @@ rem StartRusTextBlock
 @echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика
 @echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://github.com/KaladinDMP/AGBrowser%_fReset%
 @echo   ---
-@echo   %_fBGreen%= Rookie Sideloader%_fReset%: %_fBYellow%Для скачивания и установки нативных пиратских игр и приложений%_fReset%
-@echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика
-@echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://wiki.vrpirates.club/Howto/Rookie-Sideloader
-@echo   ---
-@echo   %_fBGreen%= VRP Essentials%_fReset%: %_fBYellow%Комплекс программ для  скачивания и установки нативных пиратских игр%_fReset%
-@echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика
-@echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://wiki.vrpirates.club/Howto/VRP-Essentials%_fReset%
-@echo   ---
 @echo   %_fBGreen%= ARMGDDN Autocracker:%_fReset% %_fBYellow%Для отлома PC и PCVR игр от Steam%_fReset%
 @echo     %_fBCyan%Инструкция:%_fReset% на сайте разработчика или в файле readme.md в архиве
 @echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://github.com/KaladinDMP/ARMGDDN-Autocracker-OG-GSE/releases%_fReset%
@@ -13925,20 +15417,16 @@ rem StartRusTextBlock
 @echo     %_fBCyan%Инструкция:%_fReset% %_fCyan%https://www.briandorey.com/post/quest-3-beat-saber-mod-questpatcher%_fReset%
 @echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://github.com/Lauriethefish/QuestPatcher/releases/%_fReset%
 @echo   ---
+@echo   %_fBGreen%= PCVR Mods Hub:%_fReset% %_fBYellow%Для установки VR модов на плоские игры%_fReset%
+@echo     %_fBCyan%Инструкция:%_fReset% %_fCyan%https://github.com/Mr-Nlce/PCVR-Mods-Installer-Hub%_fReset%
+@echo     %_fBCyan%Источник:%_fReset% %_fCyan%https://github.com/Mr-Nlce/PCVR-Mods-Installer-Hub/releases%_fReset%
+@echo   ---
 @echo   %_fBGreen%= APPID:%_fReset% %_fBYellow%Для поиска идентификаторов игр Application Steam ID%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo   = %_fBGreen%ARMGDDN Browser%_fReset%: %_fBYellow%For downloading PC and PCVR games and applications%_fReset%
 rem @echo     %_fBCyan%Instructions:%_fReset% Check the developer's website
 rem @echo     %_fBCyan%Source:%_fReset% %_fCyan%https://github.com/KaladinDMP/AGBrowser%_fReset%
-rem @echo   ---
-rem @echo   %_fBGreen%= Rookie Sideloader%_fReset%: %_fBYellow%For downloading and installing native pirate games and applications%_fReset%
-rem @echo     %_fBCyan%Instructions:%_fReset% Check the developer's website
-rem @echo     %_fBCyan%Source:%_fReset% %_fCyan%https://wiki.vrpirates.club/Howto/Rookie-Sideloader%_fReset%
-rem @echo   ---
-rem @echo   %_fBGreen%= VRP Essentials%_fReset%: %_fBYellow%Package of programs for downloading and installing native pirate games%_fReset%
-rem @echo     %_fBCyan%Instructions:%_fReset% Check the developer's website
-rem @echo     %_fBCyan%Source:%_fReset% %_fCyan%https://wiki.vrpirates.club/Howto/VRP-Essentials%_fReset%
 rem @echo   ---
 rem @echo   %_fBGreen%= qLoader:%_fReset% %_fBYellow%For downloading and installing pirate games and applications%_fReset%
 rem @echo     %_fBCyan%Instructions:%_fReset% Follow the installation prompts
@@ -13960,6 +15448,10 @@ rem @echo   %_fBGreen%= QuestPatcher for Beat Saber:%_fReset% %_fBYellow%For pat
 rem @echo     %_fBCyan%Instructions:%_fReset% %_fCyan%https://www.briandorey.com/post/quest-3-beat-saber-mod-questpatcher%_fReset%
 rem @echo     %_fBCyan%Source:%_fReset% %_fCyan%https://github.com/Lauriethefish/QuestPatcher/releases/%_fReset%
 rem @echo   ---
+rem @echo    %_fBGreen%= PCVR Mods Hub:%_fReset% %_fBYellow%For installing VR mods on flat games%_fReset%
+rem @echo     %_fBCyan%Instructions:%_fReset% %_fCyan%https://github.com/Mr-Nlce/PCVR-Mods-Installer-Hub%_fReset%
+rem @echo     %_fBCyan%Source:%_fReset% %_fCyan%https://github.com/Mr-Nlce/PCVR-Mods-Installer-Hub/releases%_fReset%
+rem @echo   ---
 rem @echo   %_fBGreen%= APPID:%_fReset% %_fBYellow%For finding Steam game Application IDs%_fReset%
 rem EndEngTextBlock
 @echo   ---
@@ -13969,8 +15461,18 @@ rem EndEngTextBlock
 call :_prevmenu 
 goto _InstallGamesApps
 
+:_oginformer
+rem StartRusTextBlock
+set scriptlang=RU
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set scriptlang=EN
+rem EndEngTextBlock
+start " " /min powershell.exe -NoProfile -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%myfiles%\qgi_v5.3.ps1" -WorkDir %cd% -lang %scriptlang%
+goto _InstallGamesApps
 
 :_InstallSoftwareApps
+call :_CheckCurlExist
 call :_hat
 call :_hatmenu
 @echo.
@@ -13985,18 +15487,19 @@ rem EndEngTextBlock
 @echo.
 @echo    A.  = VRComm mobile client
 @echo    B.  = LightningLauncher
+@echo   BS.  = LightningLauncher  (from Meta Store)
 @echo    C.  = File Manager+
 @echo    D.  = XR File Manager  (with Data folder access)
-rem @echo    E.  = Bugjaeger Premium
-rem @echo    F.  = Termux
-rem @echo    G.  = Oculus Wireless ADB
+@echo    E.  = Shizuku
+@echo    F.  = Telegram
+@echo    G.  = MT Manager
 @echo    H.  = RCX
 @echo    I.  = TotalCommander
 rem @echo    J.  = SH Script Runner
-@echo    K.  = ADB GUI Tool
+rem @echo    K.  = ADB GUI Tool
 @echo    L.  = OVR Metrics Tool
 @echo    N.  = Internet Speed Meter
-rem @echo    O.  = Script Manager
+@echo    O.  = Notivisor
 @echo    P.  = Passthrough cam tool
 @echo    Q.  = App Cloner
 @echo    R.  = Apk Tool M
@@ -14013,20 +15516,22 @@ if not defined choice goto _InstallSoftwareApps
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _vrcomm)
 if /i "%choice%"=="b" (GOTO _llauncher)
+if /i "%choice%"=="bs" (GOTO _llauncherms)
 if /i "%choice%"=="c" (GOTO _fmplus)
 if /i "%choice%"=="d" (GOTO _xrfm)
-rem if /i "%choice%"=="e" (GOTO _bujaegerinst)
-rem if /i "%choice%"=="f" (GOTO _termuxinst)
-rem if /i "%choice%"=="g" (GOTO _ocwirelessadbinst)
+if /i "%choice%"=="e" (GOTO _shizukuinst)
+if /i "%choice%"=="f" (GOTO _telegraminst)
+if /i "%choice%"=="g" (GOTO _mtmanager)
 if /i "%choice%"=="h" (GOTO _rcxinst)
 if /i "%choice%"=="i" (GOTO _totalcomminst)
 rem if /i "%choice%"=="j" (GOTO _shscriptinst)
 rem if /i "%choice%"=="k" (GOTO _addguiinst)
 if /i "%choice%"=="l" (GOTO _OVRMetricsTool)
 if /i "%choice%"=="n" (GOTO _ismeterinst)
-rem if /i "%choice%"=="o" (GOTO _scriptmanager)
+if /i "%choice%"=="o" (GOTO _notivisor)
 if /i "%choice%"=="p" (GOTO _passthrough)
 if /i "%choice%"=="q" (GOTO _apktoolm)
 if /i "%choice%"=="r" (GOTO _appcloner)
@@ -14039,7 +15544,26 @@ rem if /i "%choice%"=="x" (GOTO _mqdhinstall)
 @cls
 goto _InstallSoftwareApps
 
+
+:_llauncherms
+start "" "https://www.meta.com/experiences/lightning-launcher/8715195505254856"
+@echo   ======================================================================================
+rem StartRusTextBlock
+@echo   %_fBYellow%После того как в браузере откроется ссылка %_fYellow%Meta Store %_fBYellow%с приложение %_fYellow%Lightning Launcher%_fBYellow%,
+@echo   нажмите кнопку %_fYellow%Get %_fBYellow%или %_fYellow%Получить%_fBYellow%. Приложение установится на шлем в вашу %_fYellow%Библиотеку%_fBYellow%.
+@echo   Если страница не открывается, используйте VPN.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    %_fBYellow%After the %_fYellow%Meta Store %_fBYellow%link opens in your browser with the %_fYellow%Lightning Launcher%_fBYellow% app,
+rem @echo    press the %_fYellow%Get %_fBYellow%button. The app will be installed on the headset in your %_fYellow%Library%_fBYellow%.
+rem @echo    If the page does not open, use a VPN.%_fReset%
+rem EndEngTextBlock
+call :_prevmenu 
+goto _InstallSoftwareApps
+
+
 :_InstallADBTools
+call :_CheckCurlExist
 call :_hat
 call :_hatmenu
 @echo.
@@ -14056,7 +15580,7 @@ rem StartRusTextBlock
 @echo    A.  = Встроить пакет ADB в систему а также удалить весь этот хлам из нее
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo    A.  = Embed the ADB package into the system and also remove all this junk from it
+rem @echo    A.  = Embed ADB package into system and remove all this junk from it
 rem EndEngTextBlock
 @echo    B.  = Bugjaeger Premium
 @echo    C.  = Termux
@@ -14074,6 +15598,7 @@ if not defined choice goto _InstallADBTools
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _adbintegr)
 if /i "%choice%"=="b" (GOTO _bujaegerinst)
 if /i "%choice%"=="c" (GOTO _termuxinst)
@@ -14088,6 +15613,7 @@ goto _InstallADBTools
 
 
 :_InstallMediaApps
+call :_CheckCurlExist
 call :_hat
 call :_hatmenu
 @echo.
@@ -14110,8 +15636,8 @@ rem EndEngTextBlock
 rem StartRusTextBlock
 @echo    H.  = Filmix UHD (Онлайн кинотеатр)
 @echo    I.  = Cinema HD  (Онлайн кинотеатр)
-@echo    J.  = Cast Reciever High (подходит для большинства устройств)
-@echo    K.  = Cast Reciever Low (устройства нижнего ценового сегмента - DNS, Yandex, Smart TV)
+@echo    J.  = Cast Receiver High (подходит для большинства устройств)
+@echo    K.  = Cast Receiver Low (устройства нижнего ценового сегмента - DNS, Yandex, Smart TV)
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    H.  = Filmix UHD (Online Cinema)
@@ -14127,6 +15653,7 @@ if not defined choice goto _InstallMediaApps
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _skyboxinst)
 if /i "%choice%"=="b" (GOTO _moonplayerinst)
 if /i "%choice%"=="c" (GOTO _4xplayerinst)
@@ -14142,6 +15669,7 @@ if /i "%choice%"=="k" (GOTO _CastRecieverLow)
 goto _InstallMediaApps
 
 :_InstallVPNClientsAnd
+call :_CheckCurlExist
 call :_hat
 call :_hatmenu
 @echo.
@@ -14168,13 +15696,14 @@ rem EndEngTextBlock
 @echo    N.  = Wireguard			[ALV]
 @echo    O.  = Kakadu VPN			
 @echo    P.  = Happ Proxy			[ALV]
-@echo    Q.  = Samsung MAX		
+@echo    X.  = Karing				[ALV]
 @echo    R.  = Amnesia			[ALV]
 @echo    S.  = X-vpn				[ALV]
 @echo    T.  = Mullvad VPN			[ALV]
 @echo    U.  = Hidemyname VPN			[ALV]
 @echo    V.  = VPNLY				[ALV]
 @echo    W.  = SurfShark			[ALV]
+
 @echo.
 rem StartRusTextBlock
 @echo    %_fBYellow%Y.  = Допматериалы и помощь%_fReset%
@@ -14212,6 +15741,7 @@ if not defined choice goto _InstallVPNClientsAnd
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _ultrasurf)
 if /i "%choice%"=="ad" (set appdlmarker=1&& GOTO _ultrasurf)
 if /i "%choice%"=="b" (GOTO _winscribeand)
@@ -14242,8 +15772,8 @@ if /i "%choice%"=="o" (GOTO _kakaduand)
 if /i "%choice%"=="od" (set appdlmarker=1&& GOTO _kakaduand)
 if /i "%choice%"=="p" (GOTO _happproxyand)
 if /i "%choice%"=="pd" (set appdlmarker=1&& GOTO _happproxyand)
-if /i "%choice%"=="q" (GOTO _SamsungMax)
-if /i "%choice%"=="qd" (set appdlmarker=1&& GOTO _SamsungMax)
+if /i "%choice%"=="q" (GOTO _karingand)
+if /i "%choice%"=="qd" (set appdlmarker=1&& GOTO _karingand)
 if /i "%choice%"=="r" (GOTO _amnesiavpnand)
 if /i "%choice%"=="rd" (set appdlmarker=1&& GOTO _amnesiavpnand)
 if /i "%choice%"=="s" (GOTO _xvpnand)
@@ -14262,6 +15792,7 @@ goto _InstallVPNClientsAnd
 
 
 :_InstallVPNClientsPC
+call :_CheckCurlExist
 call :_hat
 call :_hatmenu
 @echo.
@@ -14284,13 +15815,15 @@ rem EndEngTextBlock
 @echo    J.  = Kakadu VPN				
 @echo    K.  = Happ Proxy				[ALV]
 @echo    L.  = Amnesia				[ALV]
+@echo    N.  = Karing					[ALV]
 @echo    O.  = X-vpn					[ALV]
 @echo    P.  = Mullvad VPN				[ALV]
 @echo    Q.  = IVPN					
 @echo    R.  = Hidemyname VPN				[ALV]
 @echo    S.  = VPNLY					[ALV]
 @echo    T.  = ClearVPN				[ALV]
-@echo    U.  = SurfSharl				[ALV]
+@echo    U.  = SurfShark
+@echo    W.  = Throne					[ALV]
 @echo.
 rem StartRusTextBlock
 @echo    %_fBYellow%Y.  = Допматериалы и помощь%_fReset%
@@ -14320,6 +15853,7 @@ if not defined choice goto _InstallVPNClientsPC
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (GOTO _winscribepc)
 if /i "%choice%"=="b" (GOTO _outlinepc)
 if /i "%choice%"=="c" (GOTO _adguardpc)
@@ -14332,12 +15866,14 @@ if /i "%choice%"=="j" (GOTO _kakadupc)
 if /i "%choice%"=="k" (GOTO _happproxypc)
 if /i "%choice%"=="l" (GOTO _amnesiavpnpc)
 if /i "%choice%"=="o" (GOTO _xvpnpc)
+if /i "%choice%"=="n" (GOTO _karingpc)
 if /i "%choice%"=="p" (GOTO _mullvadpc)
 if /i "%choice%"=="q" (GOTO _ivpnpc)
 if /i "%choice%"=="r" (GOTO _hidemynamepc)
 if /i "%choice%"=="s" (GOTO _vpnlypc)
 if /i "%choice%"=="t" (GOTO _ClearVPNpc)
 if /i "%choice%"=="u" (GOTO _surfsharkpc)
+if /i "%choice%"=="w" (GOTO _thronepc)
 if /i "%choice%"=="Y" (GOTO _additionsvpn)
 @cls
 goto _InstallVPNClientsPC
@@ -14374,6 +15910,7 @@ if not defined choice goto _additionsvpn
 if /i "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _installmenugen)
 if /i "%choice%"=="a" (start " " "https://vrcomm.ru/forums/topic/219-первичная-настройка-шлема-и-установка-обновлений-c-помощью-хот-спота")
 if /i "%choice%"=="b" (start " " "https://www.vpngate.net/en/")
 if /i "%choice%"=="c" (start " " "https://www.vpngate.net/en/download.aspx")
@@ -14471,8 +16008,9 @@ if not defined choice goto _applicationactionmenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
-rem if "%choice%"=="1" (goto _packageslist)
-rem if "%choice%"=="2" (goto _StartAppsInstalledScript)
+if /i "%choice%"=="`" (GOTO _installmenugen)
+if "%choice%"=="11" (goto _packageslist)
+if "%choice%"=="22" (goto _StartAppsInstalledScript)
 if "%choice%"=="1" (call :_AppsInstallMenu && goto _packageslistselmenu)
 if "%choice%"=="2" (call :_AppsInstallMenu && goto _StartAppsInstalledScript)
 goto _applicationactionmenu
@@ -14815,7 +16353,9 @@ if "%pkgsearch%"=="{" (goto _AppsInstallMenu)
 if "%pkgsearch%"=="}" (goto _AppsInstallMenu)
 rem if "%pkgsearch%"=="" (goto _AppsInstallMenu)
 rem set "listpackages=%pkgsearch%" && set pkgchoice=filtered && goto _StartAppsInstalledScript
-set "listpackages=%pkgsearch%" && set pkgchoice=filtered&& exit /b
+set "listpackages=%pkgsearch%" 
+set pkgchoice=filtered
+exit /b
 
 
 :_StartAppsInstalledScript
@@ -15049,6 +16589,7 @@ rem @Set /p installname="Drop the apk , apks, xapk here, directory, or enter a p
 rem EndEngTextBlock
 @echo.
 if /i %installname%==0 (exit)
+if /i "%installname%"=="`" (GOTO _installmenugen)
 if /i %installname%==x (goto _installmenugen)
 if /i %installname%==a (goto _adminright)
 if /i %installname%==u (goto _userright)
@@ -15542,7 +17083,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @Set /p savedata="Press Enter to start saving data or 0 to return to the menu >>> "
 rem EndEngTextBlock
-if %savedata%==0 (goto _InstallMenu)
+if %savedata%==0 (goto _InstallMenugen)
 @echo -----------------------
 rem @echo  ..Сохраняем данные..
 @echo  ..Saving data..
@@ -15985,19 +17526,6 @@ call :_dlwingamesapps
 call :_prevmenu
 goto _InstallGamesApps
 
-
-:_InstallRookie
-set curllink=https://wiki.vrpirates.club/downloads/rookie/rookie_2.29.2_portable.zip
-rem StartRusTextBlock
-set "instmess=  Распакуйте архив rookie_2.29.2_portable.zip, запустите файл AndroidSideloader v2.29.2.exe ^ & @echo   и следуйте дальнейшим инструкциям по установке"
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem set "instmess=  Unpack the archive rookie_2.29.2_portable.zip, run the file AndroidSideloader v2.29.2.exe ^ & @echo   and follow the further installation instructions"
-rem EndEngTextBlock
-call :_dlwingamesapps
-call :_prevmenu
-goto _InstallGamesApps
-
 :_InstallArmggdnz
 set curllink=https://github.com/KaladinDMP/AGBrowser/releases/download/v6.0.0-AGB/SETUP.7z
 rem StartRusTextBlock
@@ -16005,18 +17533,6 @@ set "instmess=  Распакуйте архив SETUP.7z, запустите ф�
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem set "instmess=  Unpack the archive SETUP.7z, run the file install.bat ^ & @echo   and follow the further installation prompts"
-rem EndEngTextBlock
-call :_dlwingamesapps
-call :_prevmenu
-goto _InstallGamesApps
-
-:_InstalllVrpe
-set curllink=https://github.com/VRPirates/VRPE/releases/latest/download/VRPE-Installer.exe
-rem StartRusTextBlock
-set "instmess=  Запустите файл VRPE-Installer.exe и следуйте дальнейшим подсказкам по установке"
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem set "instmess=  Run the file VRPE-Installer.exe and follow the further installation prompts"
 rem EndEngTextBlock
 call :_dlwingamesapps
 call :_prevmenu
@@ -16096,6 +17612,24 @@ call :_dlwingamesapps
 call :_prevmenu
 goto _InstallGamesApps
 
+:_InstallPCVRModsHub
+set "applabel=PCVR Mods Hub"
+set "verch=PCVR-Mods-Hub.zip"
+set appdlmarker=1
+set curllink=https://api.github.com/repos/Mr-Nlce/PCVR-Mods-Installer-Hub/releases/latest
+call :_CurlLatestGitHubSortDownloadPC
+@echo   --------------------------------------------------------------------
+rem StartRusTextBlock
+@echo   %_fBYellow%Распакуйте архив %_fYellow%PCVR-Mods-Hub.zip
+@echo   %_fBYellow%и запустите файл %_fYellow%Start PCVR Mods Hub.bat %_fBYellow%для использования приложения%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Extract the archive %_fYellow%PCVR-Mods-Hub.zip
+rem @echo   %_fBYellow%and run the file %_fYellow%Start PCVR Mods Hub.bat %_fBYellow%to use the application%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto _installmenugen
+
 :: Секция установки прикладных приложений
 :: Section for installing application software
 
@@ -16121,55 +17655,6 @@ rd %cd%\%dlcat%\ /q /s 1>NUL 2>&1
 rem call :_prevmenu
 rem goto _InstallSoftwareApps
 exit /b
-
-:_checksystemcurl
-@%verbecho%
-@curl.exe 1>nul 2>nul
-if %errorlevel%==2 goto _setdrivers
-rem StartRusTextBlock
-@echo  ================================================================================
-@echo  ^|  %_fBRed%+++ Curl отсутствует в операционной системе, автоскачивание невозможно +++%_fReset%  ^|
-@echo  ================================================================================
-@echo.
-@echo    %_fBYellow%Сначала требуется скачать и установить %_fYellow%Curl %_fBYellow%вручную.
-@echo    Нажмите %_fYellow%Enter %_fBYellow%чтобы скачать с помощью браузера, 
-@echo    затем распакуйте содержимое каталога %_fYellow%bin %_fBYellow%в каталог Windows.%_fReset% 
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  =================================================================================================
-rem @echo  ^|  +++ Curl is missing from the operating system, application installation is impossible  +++  ^|
-rem @echo  =================================================================================================
-rem @echo.
-rem @echo  Press Enter to download, then extract the contents of the bin directory to your Windows directory
-rem EndEngTextBlock
-set dlcurl=
-set dlcurl=1
-@echo  ----------------
-@echo.
-rem StartRusTextBlock
-@Set /p dlcurl="Нажмите Enter для скачивания или 0 для возврата >>> "
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @Set /p dlcurl="Press Enter to download or 0 to return >>> "
-rem EndEngTextBlock
-if %dlcurl%==0 (goto :_NormalStart)
-if %dlcurl%==1 (goto :_curldownloadbrowser)
-goto :_checksystemcurl
-
-:_curldownloadbrowser
-start " " "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
-@echo  ----------------
-rem StartRusTextBlock
-@echo  %_fBCyan% Распакуйте архив %_fCyan%win64-mingw.zip %_fBCyan%и содержимое каталога %_fCyan%bin %_fBCyan%скопируйте в каталог %_fCyan%Windows%_fBCyan%
-@echo   Затем нажмите любую кнопку для выхода в начальное окно программы%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  %_fBCyan% Unpack the archive %_fCyan%win64-mingw.zip %_fBCyan%and copy the contents of the %_fCyan%bin %_fBCyan%folder into the %_fCyan%Windows%_fBCyan% directory
-rem @echo   Then press any key to return to the main window of the program%_fReset%
-rem EndEngTextBlock
-pause >nul
-goto _NormalStart
-
 
 :_mqdhinstall
 call :_cdc
@@ -16370,6 +17855,64 @@ call :_dlinstall
 call :_prevmenu
 goto _InstallSoftwareApps
 
+:_telegraminst
+call :_cdc
+set dlappl=Telegram.apk
+set curllink=https://telegram.org/dl/android/apk
+call :_dlinstall
+call :_prevmenu
+goto _InstallSoftwareApps
+
+:_mtmanager
+call :_cdc
+set dlappl=MTmanager.apk
+set curllink=https://www.dropbox.com/scl/fi/ncarzreuwrn6o9y5mtqm4/MT-Manager_2.26.7.apk?rlkey=6ykglwguurvyav1i9pwzspv3t
+call :_dlinstall
+call :_prevmenu
+goto _InstallSoftwareApps
+
+:_notivisor
+call :_cdc
+set dlappl=Notivisor.apk
+set "verch=release"
+set curllink=https://api.github.com/repos/vasmarfas/Notivisor/releases/latest 
+call :_CurlLatestGitHubSortDownload
+call :_prevmenu
+goto _InstallSoftwareApps
+
+
+:_shizukuinst
+call :_cdc
+rem set curlparam=-C -
+set dlappl=Shizuku.apk
+rem set "verch=release.apk"
+set curllink=https://www.dropbox.com/scl/fi/am3yfl637r6nikple07ly/shizuku-v13.5.4.r1049.0e53409-release.apk?rlkey=42a2fue6q1pyn3pae9azetbny
+call :_dlinstall
+rem set curllink=https://api.github.com/repos/RikkaApps/Shizuku/releases/latest 
+rem call :_CurlLatestGitHubSortDownload
+rem StartRusTextBlock
+@echo   %_fBYellow%Подождите несколько секунд для установки прав доступа%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Please wait a few seconds while permissions are set%_fReset%
+rem EndEngTextBlock
+timeout 1 >nul
+%myfiles%\adb shell monkey -p "moe.shizuku.privileged.api"  -c android.intent.category.LAUNCHER 1 1>nul 2>nul
+timeout 1 >nul
+%myfiles%\adb shell am force-stop "moe.shizuku.privileged.api" 1>nul 2>nul
+%myfiles%\adb shell am kill moe.shizuku.privileged.api 1>nul 2>nul
+timeout 1 >nul
+%myfiles%\adb shell monkey -p "moe.shizuku.privileged.api"  -c android.intent.category.LAUNCHER 1 1>nul 2>nul
+timeout 1 >nul
+%myfiles%\adb shell sh sdcard/android/data/moe.shizuku.privileged.api/start.sh 1>nul 2>nul
+rem StartRusTextBlock
+@echo   %_fBYellow%Наденьтьте шлем, приложение должно быть запущено%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Put on the headset; the application must be running%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto _InstallSoftwareApps
 
 :: Установка медиа приложений
 :_skyboxinst
@@ -16725,8 +18268,23 @@ call :_cdc
 set "verch=universal"
 set dlappl=ByeByeDPI.apk
 set curllink=https://api.github.com/repos/romanvht/ByeByeDPI/releases/latest
-rem set curllink=https://www.dropbox.com/scl/fi/a8p7gi1m91wnjnmsuho8d/byedpi-1.2.0.apk?rlkey=b35bmnu7jo6xc050krgp6ubij
 call :_CurlLatestGitHubSortDownload
+call :_prevmenu
+goto _installmenugen
+
+:_karingand
+call :_cdc
+set "verch=arm64-v8a.apk"
+set dlappl=Karing.apk
+set curllink=https://api.github.com/repos/KaringX/karing/releases/latest
+call :_CurlLatestGitHubSortDownload
+call :_prevmenu
+goto _installmenugen
+
+:_karingpc
+set "verch=windows_x64.exe"
+set curllink=https://api.github.com/repos/KaringX/karing/releases/latest
+call :_CurlLatestGitHubSortDownloadPC
 call :_prevmenu
 goto _installmenugen
 
@@ -16800,15 +18358,6 @@ call :_dlinstall
 call :_prevmenu
 goto _installmenugen
 
-:_kakadupc
-set dlappl=kakaduvpnpc.exe
-set "oparam=-o"
-set "curlparam=-#"
-set "curllink=https://storage.kakadu-vpn.com/windows/Kakadu%%20Setup%%20v1.2.3.exe"
-call :_PCSoftwareInstall
-call :_prevmenu
-goto _installmenugen
-
 :_amnesiavpnand
 call :_cdc
 rem set curlparam=-C -
@@ -16823,6 +18372,15 @@ goto _installmenugen
 rem set dlappl=amnezia.msi
 set "verch=amneziawg-amd64"
 set curllink=https://api.github.com/repos/amnezia-vpn/amneziawg-windows-client/releases/latest
+call :_CurlLatestGitHubSortDownloadPC
+call :_prevmenu
+goto _installmenugen
+
+:_thronepc
+set appdlmarker=1
+set "verch=windows-arm64.zip"
+set applabel=Throne
+set curllink=https://api.github.com/repos/throneproj/Throne/releases/latest 
 call :_CurlLatestGitHubSortDownloadPC
 call :_prevmenu
 goto _installmenugen
@@ -16970,7 +18528,7 @@ call :_prevmenu
 goto _installmenugen
 
 :_setdrivers
-rem call :_checkcurlexists
+rem call :_checkcurlexist
 call :_CheckAdminRights
 call :_CheckOSVersion
 if defined adminmsg  echo %adminmsg% && goto _returnmenu
@@ -17014,7 +18572,6 @@ goto _setdriversmhMainProcess
 set mhdrvinstver=77
 set curllink=https://www.dropbox.com/scl/fi/1ofmj5z5vdjyu1vrvuqkg/MetaHorizonDriversInst_v1.77.zip?rlkey=h09s65llwijiiu4ppa9zgxis4
 
-
 :_setdriversmhMainProcess
 @echo ----------------------------------------
 rem StartRusTextBlock
@@ -17045,6 +18602,47 @@ rem @rd %cd%\%dlcat% /Q /S 1>nul 2>nul
 @del %dlappl% /Q 1>nul 2>nul
 @echo ----------------------------------------
 goto _DriverInstalledMessage
+
+
+:_SetSteamLinkAudioDrivers
+@echo ----------------------------------------
+rem StartRusTextBlock
+@echo   %_fBYellow%= Скачивание...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo Downloading...
+rem EndEngTextBlock
+set dlappl=SteamLinkAudioDrivers.zip
+set dlcat=%dlappl:~0,-4%
+@rd %cd%\%dlcat% /Q /S 1>nul 2>nul
+@del %dlappl% /Q 1>nul 2>nul
+set curllink=https://www.dropbox.com/scl/fi/73scp4da41dobhr71mh5p/SteamLinkAudioDrivers.zip?rlkey=4psojswo9zwoq25597kdl70v1
+@curl -LJkO %curllink% -# 1>nul
+@%myfiles%\7z.exe x "%cd%\%dlappl%" -o"%cd%\%dlcat%\" 1>NUL 2>&1
+set "startfile=_installdrv.cmd"
+@echo ----------------------------------------
+rem StartRusTextBlock
+@echo   %_fBYellow%= Установка...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   Installing...
+rem EndEngTextBlock
+@ping localhost -n 3 1>nul 2>&1
+@start " " "%cd%\%dlcat%\%startfile%"
+@ping localhost -n 3 1>nul 2>&1
+rem @rd %cd%\%dlcat% /Q /S 1>nul 2>nul
+@del %dlappl% /Q 1>nul 2>nul
+rem StartRusTextBlock
+@echo   %_fBGreen%= Готово. Драйверы должны быть установлены.%_fReset%
+@echo ----------------------------------------
+@echo.
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   = Done. Drivers must be installed.
+rem @echo ----------------------------------------
+rem EndEngTextBlock
+call :_prevmenu
+goto _installmenugen
 
 
 :_DriverInstalledMessage
@@ -17092,6 +18690,13 @@ goto _driversdownload
 set dlappl=MetaHorizonDrivers_v1.77.zip
 set mhdriversver=77
 set curllink=https://www.dropbox.com/scl/fi/qqdefi1gvn3tqln7wf3yy/MetaHorizonDrivers_v1.77.zip?rlkey=tgrmiuqq5uglmi5i54vpqlz3r
+goto _driversdownload
+
+
+:_driversdownloadSteamLinkAudio
+set dlappl=SteamLinkAudioDrivers.zip
+set curllink=https://www.dropbox.com/scl/fi/73scp4da41dobhr71mh5p/SteamLinkAudioDrivers.zip?rlkey=4psojswo9zwoq25597kdl70v1
+goto _driversdownload
 
 
 :_driversdownload
@@ -17189,14 +18794,15 @@ set "urlres=%urlres: =%"
 @curl -LJkO "%urlres%" -# 1>nul
 for %%i in ("%urlres%") do set "dlappl=%%~nxi"
 rem @curl -LJko %dlappl% "%bdu%" -# 1>nul
+if defined appdlmarker goto :_CurlLatestGitHubSortDownloadOnlyPC
 @echo   ---
 rem StartRusTextBlock
-@echo   %_fByellow%= Установка ПО %_fBCyan%%pcsoftware%%_fReset%
-@echo   %_fByellow%  Следуйте инструкциям установщика.%_fReset%
+@echo   %_fByellow%= Установка ПО %_fBCyan%%pcsoftware%
+@echo   %_fBGreen% Следуйте инструкциям установщика.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo = Installing Meta Link on drive %disknumber%
-rem @echo   Follow the Oculus installer instructions
+rem @echo   %_fByellow%= Installing Meta Link on drive %disknumber%
+rem @echo   %_fBGreen%Follow the Oculus installer instructions%_fReset%
 rem EndEngTextBlock
 @start " " %dlappl%
 @echo.
@@ -17286,6 +18892,17 @@ rem StartEngTextBlock
 rem @echo Done. Application "%applabel%" downloaded.
 rem EndEngTextBlock
 exit /b
+
+:_CurlLatestGitHubSortDownloadOnlyPC
+@echo --------------------------------------------------------
+rem StartRusTextBlock
+@echo %_fBGreen%Готово. Приложение %_fBCyan%"%applabel%" %_fBGreen%скачано.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo Done. Application "%applabel%" downloaded.
+rem EndEngTextBlock
+exit /b
+
 
 :_DriversInstallProcess
 @echo ----------------------------------------
@@ -17550,10 +19167,10 @@ if /i "%choice%"=="i" (call :_SendToInstallTxt && call :_InstallLnkMessage)
 if /i "%choice%"=="j" (call :_SendToRestoreAB && call :_InstallLnkMessage)
 if /i "%choice%"=="h" (call :_DescriptionContextTool)
 rem StartRusTextBlock
-if /i "%choice%"=="v" (@echo  = Установка ярлыков.. && call :_SendToDownloads && call :_SendToMovies && call :_SendToOBB && call :_SendToSDCARD && call :_SendToInstallAPK && call :_SendToInstallTxt && call :_SendToData && call :_InstallLnkMessageAll && call :_SendToRestoreAB)
+if /i "%choice%"=="v" (@echo  = Установка ярлыков.. && call :_SendToDownloads && call :_SendToMovies && call :_SendToOBB && call :_SendToSDCARD && call :_SendToInstallAPK && call :_SendToInstallTxt && call :_SendToData && call :_SendToRestoreAB && call :_InstallLnkMessageAll )
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem if /i "%choice%"=="v" (@@echo = Installing shortcuts... && call :_SendToDownloads && call :_SendToMovies && call :_SendToOBB && call :_SendToSDCARD && call :_SendToInstallAPK && call :_SendToInstallTxt && call :_SendToData && call :_InstallLnkMessageAll)
+rem if /i "%choice%"=="v" (@echo = Installing shortcuts... && call :_SendToDownloads && call :_SendToMovies && call :_SendToOBB && call :_SendToSDCARD && call :_SendToInstallAPK && call :_SendToInstallTxt && call :_SendToData && call :_SendToRestoreAB && call :_InstallLnkMessageAll)
 rem EndEngTextBlock
 if /i "%choice%"=="x" (GOTO _DeleteLnksFolder)
 if /i "%choice%"=="y" (explorer shell:sendto & explorer c:\temp)
@@ -18538,7 +20155,7 @@ rem EndRusTextBlock
 rem StartEngTextBlock
 rem @Set /p choice="For confirmation enter "ok" without quotas and press Enter: "
 rem EndEngTextBlock
-if not defined choice goto _guardian
+if not defined choice goto _oculusclean
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
@@ -18548,6 +20165,7 @@ goto _oculusclean
 :_oculuscleandelete
 @sc delete OculusRemoteDesktopService 1>nul 2>nul
 @rd /s /q "C:\Program Files\Oculus\" 1>nul 2>nul
+@rd /s /q "c:\Program Files\Meta Horizon\" 1>nul 2>nul
 @rd /s /q "%userprofile%\AppData\Local\Oculus\" 1>nul 2>nul
 @rd /s /q "%userprofile%\AppData\LocalLow\Oculus\" 1>nul 2>nul
 @rd /s /q "%userprofile%\AppData\Roaming\Oculus\" 1>nul 2>nul
@@ -18640,6 +20258,7 @@ rem @pause >nul
 goto _returnmenu
 
 :_MetaQuestLinkInstall
+call :_CheckCurlExist
 @echo.
 @echo.
 if exist OculusSetup.exe goto _StartMetaQuestLinkInstall
@@ -18878,14 +20497,17 @@ call :_hatmenu
 @echo    G.  %_fBCyan%Кастомизация кропа трансляции%_fReset%
 @echo.
 @echo.
-@echo   После старта трансляции картинка может пропасть на 3-4 секунды, а шлем скажет "блым".
+@echo   После старта трансляции картинка может пропасть на %_fBYellow%3-4 секунды%_fReset%, а шлем скажет "%_fBYellow%блым%_fReset%".
 @echo   Это связано с всплывающим в шлеме ссобщением, например, о том, что контроллеры не найдены.
 @echo. 
-@echo   При необходимости можно отключить датчик приближения, пункты E -^> F в Главном меню.
+@echo   При необходимости можно отключить датчик приближения, пункты %_fBYellow%F -^> K%_fReset% или %_fBYellow%A -^> D%_fReset% в Главном меню.
 @echo   Для режима ручной трансляции это можно сделать в процессе выбора параметров.
 @echo.
 @echo   Для запуска трансляции с сохранением в файл введите сдвоенный номер  пункта, например 
-@echo   AA, bb и т.д. В противном случае трансляция записана не будет.
+@echo   %_fBYellow%AA, bb%_fReset% и т.д. В противном случае трансляция записана не будет.
+@echo.
+@echo   По умолчанию для пунктов %_fBYellow%A, B, C, D%_fReset% трансляция запускается в беспроводном режиме, подключение
+@echo   по WiFi делается автоматически. Для трансляции по кабелю пункты выбирайте так: %_fBYellow%ak, bk, ck, dk%_fReset%.
 @echo.
 @echo   Для прекрщениятрансляцию, закройте окно с картинкой и нажмите любую кнопку в Qus, это вернет 
 @echo   в Главное меню, а файл с записью (если она велась) будет сохранен в текущем каталоге.
@@ -18916,23 +20538,26 @@ rem @echo.
 rem @echo.
 rem @echo   PLEASE NOTE:
 rem @echo.
-rem @echo   After starting the streaming, the image may disappear for 3-4 seconds,
-rem @echo   and the headset will say "blym". This is due to a popup message in the headset,
-rem @echo   for example, about controllers not being found. Unfortunately, that's how it is.
+rem @echo  After starting the streaming, the image may disappear for %_fBYellow%3-4 second%_fReset%s, and the headset
+rem @echo  will say "%_fBYellow%blym%_fReset%". This is due to a popup message in the headset, for example,
+rem @echo  about controllers not being found. Unfortunately, that's how it is.
 rem @echo. 
-rem @echo   If necessary, you can disable the proximity sensor, points C -^> F in the Main menu.
-rem @echo   For manual streaming mode, this can be done during parameter selection.
+rem @echo  If necessary, you can disable the proximity sensor, points %_fBYellow%F -^> K%_fReset% or %_fBYellow%A -^> D%_fReset% in the Main menu.
+rem @echo  For manual streaming mode, this can be done during parameter selection.
 rem @echo.
-rem @echo   To start streaming with recording to a file
-rem @echo   enter the double number of the item, for example, AA, bb, etc.
-rem @echo   Otherwise, the streaming will not be recorded.
+rem @echo  To start streaming with recording to a file enter the double number of the item, for example,
+rem @echo  %_fBYellow%AA, bb%_fReset%, etc. Otherwise, the streaming will not be recorded.
 rem @echo.
-rem @echo   When you decide to stop streaming, simply close the window with the picture
-rem @echo   and press any key in the main window, this will return you to the Main menu,
-rem @echo   and the recording file (if any) will be saved in the current directory.
+rem @echo  By default, for options %_fBYellow%A, B, C, D%_fReset%, streaming starts in wireless mode, and the WiFi connection
+rem @echo  is established automatically. To stream via cable, select the options as follows: %_fBYellow%ak, bk, ck, dk%_fReset%.
+rem @echo.
+rem @echo  When you decide to stop streaming, simply close the window with the picture
+rem @echo  and press any key in the main window, this will return you to the Main menu,
+rem @echo  and the recording file (if any) will be saved in the current directory.
 rem EndEngTextBlock
 @echo.
 @echo.
+set connectivity=
 call :_MenuChoiceEnter
 @echo.
 if not defined choice goto _streamingmenu
@@ -18940,12 +20565,16 @@ if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
 if /i "%choice%"=="a" (set TransChoiseMode=_streamfast&& GOTO :_CheckOfflineModeTrans)
+if /i "%choice%"=="ak" (call :_SetCableSettings&& goto _streamfast)
 if /i "%choice%"=="aa" (set TransChoiseMode=_streamfastr&& GOTO :_CheckOfflineModeTrans)
 if /i "%choice%"=="b" (set TransChoiseMode=_streamsquare&& GOTO :_CheckOfflineModeTrans)
+if /i "%choice%"=="bk" (call :_SetCableSettings&& goto _streamsquare)
 if /i "%choice%"=="bb" (set TransChoiseMode=_streamsquarer&& GOTO :_CheckOfflineModeTrans)
 if /i "%choice%"=="c" (set TransChoiseMode=_streamcircle&& GOTO :_CheckOfflineModeTrans)
+if /i "%choice%"=="ck" (call :_SetCableSettings&& goto _streamcircle)
 if /i "%choice%"=="cc" (set TransChoiseMode=_streamcircler&& GOTO :_CheckOfflineModeTrans)
 if /i "%choice%"=="d" (set TransChoiseMode=_streamstereo&& GOTO :_CheckOfflineModeTrans)
+if /i "%choice%"=="dk" (call :_SetCableSettings&& goto _streamstereo)
 if /i "%choice%"=="dd" (set TransChoiseMode=_streamstereor&& GOTO :_CheckOfflineModeTrans)
 if /i "%choice%"=="e" (set TransChoiseMode=_ManualTransSettings&& GOTO :_CheckOfflineModeTrans)
 if /i "%choice%"=="f" (GOTO _MQDHCastingMenu)
@@ -18963,6 +20592,9 @@ rem if /i "%choice%"=="6" (set profnumb=6 GOTO _FastLoadIntMultiProfile)
 
 cls
 goto _streamingmenu
+
+
+call :_SetCableSettings
 
 :_CropSettingManual
 cls
@@ -19399,6 +21031,19 @@ pause >nul
 goto :_streamingmenu
 
 
+
+:_CropHeadsetParam
+set "angleset="
+set "cropset=3664:1920:0:0"
+if "%DevModelNm%" EQU "Meta Quest 3" set angleset=--angle=22&set cropset=4128:2208:0:0
+if "%DevModelNm%" EQU "Meta Quest 2" set cropset=3664:1920:0:0
+if "%DevModelNm%" EQU "Meta Quest Pro" set cropset=3600:1920:0:0
+if "%DevModelNm%" EQU "Meta Quest 3S" set cropset=3664:1920:0:0
+exit /b
+
+:: Поправить кроп для полноразмерной стерео трансляции в зависимости от модели шлема к2,к3s 3664х1920, кпро 3600x1920, k3 4128x2208
+
+
 :_CropSetFromFile
 @echo   ------------------------------------------------
 rem StartRusTextBlock
@@ -19416,6 +21061,7 @@ exit /b
 :_streamfast
 rem call :_cdc
 @%MYFILES%\adb shell am broadcast -a com.oculus.vrpowermanager.prox_close 1>nul 2>nul
+
 if "%DevModelNm%" EQU "Meta Quest 3" (
 if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=1920:1200:100:400)
 rem set cropset=1920:1200:100:400
@@ -19427,7 +21073,8 @@ rem set cropset=1600:900:2017:510
 set bitrateset=10M
 set setfps=30
 set recfile=
-call :_CheckWiFiMode
+if not defined connectivity call :_CheckWiFiMode
+rem call :_CheckWiFiMode
 set acodecset=--audio-source=mic
 goto :_createvbs
 
@@ -19443,7 +21090,7 @@ if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=1600:900:20
 set bitrateset=10M
 set setfps=30
 call :_RecordEnableSettings
-call :_CheckWiFiMode
+if not defined connectivity call :_CheckWiFiMode
 set acodecset=--audio-source=mic
 goto :_createvbs
 
@@ -19459,7 +21106,8 @@ if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=1584:1440:1
 set bitrateset=30M
 set setfps=60
 set recfile=
-call :_CheckWiFiMode
+if not defined connectivity call :_CheckWiFiMode
+rem call :_CheckWiFiMode
 goto :_createvbs
 
 :_streamsquarer
@@ -19474,7 +21122,8 @@ if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=1584:1440:1
 set bitrateset=30M
 set setfps=60
 call :_RecordEnableSettings
-call :_CheckWiFiMode
+if not defined connectivity call :_CheckWiFiMode
+rem call :_CheckWiFiMode
 goto :_createvbs
 
 :_streamcircle
@@ -19489,7 +21138,8 @@ if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=1600:900:20
 set bitrateset=30M
 set setfps=60
 set recfile=
-call :_CheckWiFiMode
+if not defined connectivity call :_CheckWiFiMode
+rem call :_CheckWiFiMode
 goto :_createvbs
 
 :_streamcircler
@@ -19504,21 +21154,26 @@ if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=1600:900:20
 set bitrateset=30M
 set setfps=60
 call :_RecordEnableSettings
-call :_CheckWiFiMode
+if not defined connectivity call :_CheckWiFiMode
+rem call :_CheckWiFiMode
 goto :_createvbs
 
 :_streamstereo
 rem call :_cdc
 if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=3664:1920:0:0)
+rem if exist %cd%\cropset.txt (call :_CropSetFromFile) else (call :_CropHeadsetParam)
 set bitrateset=20M
 set setfps=60
 set recfile=
-call :_CheckWiFiMode
+if not defined connectivity call :_CheckWiFiMode
+rem call :_CheckWiFiMode
+rem echo on
 goto :_createvbs
 
 :_streamstereor
 rem call :_cdc
 if exist %cd%\cropset.txt (call :_CropSetFromFile) else (set cropset=3664:1920:0:0)
+rem if exist %cd%\cropset.txt (call :_CropSetFromFile) else (call :_CropHeadsetParam)
 set bitrateset=20M
 set setfps=60
 call :_RecordEnableSettings
@@ -19808,14 +21463,14 @@ rem set angleset=--angle=22
 rem set cropset=2000:1200:100:500
 rem set "connectivity=10.0.0.64:5555"
 rem set "connectivity=--tcpip"
-
+rem echo %connectivity%
 rem Работает
 rem %MYFILES%\scrcpy.exe %connectivity% --no-audio --display-id=0 --video-codec=h264 --crop=%cropset% %angleset% --max-size=4128 --video-bit-rate=10M --video-buffer=50 --max-fps=30 --stay-awake --power-off-on-close
 
 @echo strCommand = "cmd /c %MYFILES%\scrcpy.exe %connectivity% %angleset% --display-id=0 %audiomute% %acodecset% %vcodecset% --crop=%cropset% --max-size=4128 --video-bit-rate=%bitrateset% --video-buffer=50 --max-fps=%setfps% --stay-awake%recformat% --power-off-on-close%recfile%">>startstream.vbs
+rem start "" %MYFILES%\scrcpy.exe %connectivity% %angleset% --display-id=0 %audiomute% %acodecset% %vcodecset% --crop=%cropset% --max-size=4128 --video-bit-rate=%bitrateset% --video-buffer=50 --max-fps=%setfps% --stay-awake%recformat% --power-off-on-close%recfile%"
 
 rem @echo strCommand = "cmd /c %MYFILES%\scrcpy.exe %connectivity% %angleset% --display-id=0 %audiomute% %acodecset% %vcodecset% --crop=%cropset% --max-size=4128 --video-bit-rate=%bitrateset% --video-buffer=50 --render-driver=opengl --max-fps=%setfps% --stay-awake%recformat% --power-off-on-close%recfile%">>startstream.vbs
-
 rem @echo strCommand = "cmd /c %MYFILES%\scrcpy.exe %connectivity% %angleset% %audiomute% %acodecset% %vcodecset% --crop=%cropset% --max-size=4128 --video-bit-rate=%bitrateset% --video-buffer=50 --render-driver=opengl --max-fps=%setfps% --stay-awake%recformat% --power-off-on-close%recfile%">>startstream.vbs
 @echo For Each Arg In WScript.Arguments >>startstream.vbs
 @echo strCommand = strCommand ^& " """ ^& replace^(Arg, """", """""""""") ^& """" >> startstream.vbs
@@ -20777,13 +22432,57 @@ rem start " " /min powershell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hi
 rem goto _beginn
 
 :_openshellgui
+cls
+call :_ScriptLang
 @%verbecho%
 ::@start cmd /c @echo. & @adb shell
 rem @start cmd /c @%MYFILES%\adb shell
 rem powershell -NoProfile -ExecutionPolicy Bypass -File "%myfiles%\guishell.ps1"
-start " " /min powershell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File ""%myfiles%\guishell.ps1"" -ToolsPath %myfiles%
+start " " /min powershell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File "%myfiles%\QCS_v6.07.ps1" -lang %scriptlang% -ToolsPath %myfiles%
 rem start " " /min powershell -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File ""%myfiles%\guishell.ps1"" -AdbPath %myfiles%
+@echo.
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo          %_fBGreen%Quas Command Shell%_fReset%
+@echo         ================
+@echo.
+@echo    Это графическая оболочка для удобного выполнения консольных команд ADB, Fastboot и т.д.
+@echo    Справа список некоторых распространенных команд, разделенных на категории.
+@echo.
+@echo    Команды, отмеченные %_fBYellow%желтым цветом%_fReset% могут изменять параметры и настройки шлема,
+@echo    а также его состояние (например, перезагрузка в разные режимы). Используйте
+@echo    такие команды с осторожностью.
+@echo.
+@echo    Команды, отмеченные %_fBRed%красным цветом%_fReset% - ОПАСНЫ для здоровья вашего шлема.
+@echo    Ни в коем случае не используйте их, если не знаете, для чего они и как работают.
+@echo.
+@echo    Более подробная информация о работе и возхможностях содержится во встроенной справке,
+@echo    там же находится ссылка на Руководство по использованию.
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo          %_fBGreen%Quas Command Shell%_fReset%
+rem @echo          ================
+rem @echo.
+rem @echo    This is a graphical shell for convenient execution of ADB, Fastboot, etc. console commands.
+rem @echo    On the right is a list of some common commands divided into categories.
+rem @echo.
+rem @echo    Commands marked in %_fBYellow%yellow%_fReset% can modify headset parameters and settings,
+rem @echo    as well as its state (for example, rebooting into different modes). Use
+rem @echo    such commands with caution.
+rem @echo.
+rem @echo    Commands marked in %_fBRed%red%_fReset% are DANGEROUS for your headset's health.
+rem @echo    Do not use them under any circumstances unless you know what they do and how they work.
+rem @echo.
+rem @echo    More detailed information about operation and features is contained in the built-in help,
+rem @echo    which also includes a link to the User Manual.
+rem EndEngTextBlock
+call :_prevmenu
 goto _beginn
+
+
+
 
 :_helplinksmenu
 call :_hat
@@ -20936,16 +22635,12 @@ rem StartRusTextBlock
 @echo    E.  Сохранить список установленных пакетов (packages names)
 @echo    F.  Показать серийный номер шлема
 @echo    G.  Сохранить списки системных настроек шлема (system/global/security)
-@echo    H.  Работа с Logcat
 @echo    I.  Информация об аккумуляторе
 @echo    J.  Список запущенных приложений
-@echo    K.  Извлечение багрепорта                 		[EXP]
 @echo    L.  Просмотр CPU-емких приложений         		[EXP]
 @echo    N.  Список файлов/каталогов и их объем    		[EXP]
 @echo    O.  Показать объем занятого места         		[EXP]
-@echo    P.  Журнал подключений и отключений USB устройств
 @echo    Q.  Информация о контроллерах
-@echo.   R.  Сохранение всей системной информации оптом в один архив
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo         SYSTEM INFORMATION MENU
@@ -20958,16 +22653,12 @@ rem @echo    D.  Show headset IP address
 rem @echo    E.  Save a list of installed packages (package names)
 rem @echo    F.  Show headset serial number
 rem @echo    G.  Save a list of system settings (system/global/security)
-rem @echo    H.  Work with Logcat
 rem @echo    I.  Battery information
 rem @echo    J.  Running Apps List
-rem @echo    K.  Bugreport extraction [EXP]
 rem @echo    L.  View CPU-intensive applications [EXP]
 rem @echo    N.  List of files/directories and their size [EXP]
 rem @echo    O.  Show the amount of occupied space [EXP]
-rem @echo    P.  USB device connection and disconnection log
 rem @echo    Q.  Controllers information
-rem @echo.   R.  Save all system information in bulk into one archive
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -20987,22 +22678,63 @@ if /i "%choice%"=="e" (GOTO _packageslist)
 if /i "%choice%"=="ee" (GOTO _packagesfull)
 if /i "%choice%"=="f" (GOTO _showserial)
 if /i "%choice%"=="g" (GOTO _syscomm)
-if /i "%choice%"=="h" (GOTO _adblogcat)
+rem if /i "%choice%"=="h" (GOTO _adblogcat)
 if /i "%choice%"=="i" (GOTO _batinfo)
 if /i "%choice%"=="j" (GOTO _RunningAppsListMenu)
-if /i "%choice%"=="k" (GOTO _bugreportextr)
+rem if /i "%choice%"=="k" (GOTO _bugreportextr)
 if /i "%choice%"=="l" (GOTO _cpuload)
 if /i "%choice%"=="n" (GOTO _sizecheckmenu)
 if /i "%choice%"=="o" (GOTO _sizeinfo)
-if /i "%choice%"=="p" (GOTO _USBConnectionsList)
+rem if /i "%choice%"=="p" (GOTO _USBConnectionsList)
 if /i "%choice%"=="q" (GOTO _ControllersInfo)
-if /i "%choice%"=="r" (GOTO _AllSystemFiles)
+rem if /i "%choice%"=="r" (GOTO _AllSystemFiles)
+rem if /i "%choice%"=="s" (GOTO _ViewAdbLogs)
+rem if /i "%choice%"=="t" (GOTO _ViewUpdateEngineLogs)
 if /i "%choice%"=="u" (GOTO :_UpdatesInfo)
-
-
 cls
 goto _syscommenu
 
+:_ViewUpdateEngineLogs
+rem StartRusTextBlock
+@echo   %_fBYellow%= Скачиваем архив %_fYellow%bugreport%_fBYellow%, это займет 1-2 минуты...%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%= %_fYellow%Bugreport %_fBYellow%archive downloading, it takes 1-2- minutes...%_fReset%
+rem EndEngTextBlock
+@%myfiles%\adb bugreport %cd% 2>nul 1>nul
+if %errorlevel% == -1 goto _errorbugrepdl
+@%myfiles%\7z e "bugreport*.zip" "update_engine.*" -r -o"%cd%\UpdateEngine.logs" -y 1>nul 2>nul
+del bugreport*.zip /q /f 1>nul 2>nul
+@explorer "%cd%\UpdateEngine.logs" >nul
+@echo.
+rem StartRusTextBlock
+@echo   %_fBGreen%= На ПК открыт каталог с логами Update Engine
+@echo     Он расположен рядом с программой и называется %_fBYellow%UpdateEngine.logs%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%= Update Engine log folder opened on PC
+rem @echo     It is located next to the program and named %_fBYellow%UpdateEngine.logs%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto _syscommenu
+
+:_ViewAdbLogs
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo   %_fBYellow%Логи через секунду откроются в редакторе %_fYellow%Notepad.
+@echo   %_fBYellow%Если хотите открыть их в другом редакторе, они находятся здесь:
+@echo   %_fYellow%%TEMP%\adb.log%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Logs will open in %_fYellow%Notepad%_fBYellow% in a second.
+rem @echo   %_fBYellow%If you want to open them in another editor, they are located here:
+rem @echo   %_fYellow%%TEMP%\adb.log%_fReset%
+rem EndEngTextBlock
+start "" notepad %TEMP%\adb.log
+call :_prevmenu
+goto _syscommenu
 
 :_ControllersInfo
 @echo off
@@ -21183,6 +22915,7 @@ if not defined choice goto _MemoryUsageInfoMenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _syscommenu)
 if /i "%choice%"=="a" (call :_MemUsage)
 if /i "%choice%"=="b" (call :_MemInfoList)
 if /i "%choice%"=="bu" (call :_MemInfoList)
@@ -21475,6 +23208,7 @@ if not defined choice goto _RunningAppsListMenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _syscommenu)
 if /i "%choice%"=="a" (GOTO _RunningUserApps)
 if /i "%choice%"=="b" (GOTO _RunningSysApps)
 goto _RunningAppsListMenu
@@ -21737,6 +23471,7 @@ if not defined choice goto _dumpsysmenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _syscommenu)
 if /i "%choice%"=="a" (GOTO _dumpsysfull)
 if /i "%choice%"=="b" (GOTO _dumpsyssrchincl)
 if /i "%choice%"=="c" (GOTO _dumpsyssrchex)
@@ -22033,6 +23768,7 @@ if not defined choice goto _adbintegr
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _InstallADBTools)
 if /i "%choice%"=="a" (GOTO _adbintegration)
 if /i "%choice%"=="b" (GOTO _onlyadbintegration)
 if /i "%choice%"=="c" (GOTO _desadbintegration)
@@ -22099,6 +23835,7 @@ call :_CheckAdminRights
 call :_CheckOSVersion
 if defined adminmsg  echo %adminmsg% && goto _returnmenu
 @taskkill /im adb.exe /f 1>nul 2>nul
+timeout 1 >nul
 @del %windir%\adb.exe /q /f 1>NUL 2>&1
 @del %windir%\AdbWinApi.dll /q /f 1>NUL 2>&1
 @del %windir%\AdbWinUsbApi.dll /q /f 1>NUL 2>&1
@@ -22110,6 +23847,7 @@ if defined adminmsg  echo %adminmsg% && goto _returnmenu
 @echo ================================================================
 rem StartRusTextBlock
 @echo  Как заказывали: Весь интегрированный хлам удален из %windir%
+@echo  Процесс adb.exe завершен. Для продолжения работы перезапустите программу.
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  As ordered: All integrated junk has been removed from %windir%
@@ -22479,6 +24217,7 @@ if not defined choice goto _sizecheckmenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _syscommenu)
 if /i "%choice%"=="s" (GOTO _sizecheck)
 cls
 goto _sizecheckmenu
@@ -22728,7 +24467,7 @@ for /f "tokens=1,2 delims=." %%a in ("%iphs%") do set "iphsshort=%%a.%%b"
 
 if "%ippcshort%"=="%iphsshort%" (
 rem @echo OK
-set ipc=%_fCyan%
+set ipc=%_fBCyan%
 
 goto _iperftestmenu
 ) else (
@@ -22765,25 +24504,23 @@ call :_hatmenu
 @echo.
 rem StartRusTextBlock
 @echo    %_fBGreen%A.  Автотест скорости Wi-Fi со значениями по умолчанию%_fReset% [EXP]
-@echo    B.  Мультитест скорости Wi-Fi со значениями из файла [EXP]
-@echo    S.  Стандартный тест скорости Wi-Fi с выбором значений [EXP]
-@echo    D.  Проанализировать результаты тестирования  [EXP]
+@echo    C.  Продвинутые настройки и параметры тестирования
+@echo.
+@echo    D.  Проанализировать результаты тестирования (Табличный вариант)
+@echo    E.  Проанализировать результаты тестирования (Графический визуализатор)
 @echo    G.  Построить гистограмму или вычислить тренд по результатам тестов  [EXP]
 @echo.
-@echo    %_fBYellow%H.  Дополнительные пояснения по тестам, ошибкам, логам и т.д.%_fReset%
-@echo    F.  Работа с файрволлом при ошибке Bad file descriptor
-@echo    C.  Сервисная проверка соединения (не для тестирования^! см. пункт H)
-@echo    I.  Запустить сервер iperf отдельным процессом
-@echo    V.  Временно установить %SYSTEMDRIVE%\Temp каталогом запуска сервера iperf
-@echo    W.  Записать каталог %SYSTEMDRIVE%\Temp в реестр и сделать его постоянным
 @echo    L.  Назначить метку (префикс) имени архива для результатов тестов
+@echo    P.  Переключить протоколы TCP/UDP
 @echo.
+@echo    %_fBYellow%T.  Решение проблем с подключением и запуском тестов
+@echo    H.  Дополнительные пояснения по тестам, ошибкам, логам и т.д.%_fReset%
 @echo.
-@echo    IP адрес компьютера:	[ %ipc%%ipaddrtxt%%_fReset%	] %_bRed%%_fBWhite%%ipaddressmsg%%_fReset%
-@echo    IP адрес гарнитуры:	[ %_fCyan%%iphs%%_fReset% 	]
-@echo    Каталог iperf:	[ %_fCyan%%iperfdirview%%_fReset% 	]
-@echo    Протокол: 		[ %_fCyan%%protocol%%_fReset% ]
-@echo    Текущая метка:	[ %_fCyan%%WiFitestLabel%%_fReset%	 ]
+@echo        %_fCyan%IP адрес компьютера:	[ %ipc%%ipaddrtxt%%_fCyan% ]%_fReset% %_bRed%%_fBWhite%%ipaddressmsg%%_fReset%
+@echo        %_fCyan%IP адрес гарнитуры:	[ %_fBCyan%%iphs%%_fCyan% ]%_fReset%
+@echo        %_fCyan%Каталог iperf:		[ %_fBCyan%%iperfdirview%%_fCyan% ]%_fReset%
+@echo        %_fCyan%Протокол: 		[ %_fBCyan%!protocol!%_fCyan% ]%_fReset%
+@echo        %_fCyan%Текущая метка:		[ %_fBCyan%%WiFitestLabel%%_fCyan%	 ]%_fReset%
 @echo.
 @echo    IP адрес компьютера определяется автоматически, проверьте его правильность. 
 @echo    Если IP адрес не соответствует вашей сетевой карте, или он в другой подсети,
@@ -22798,29 +24535,28 @@ rem StartRusTextBlock
 @echo    Для тестирования качества WiFi соединения между ПК и шлемом используйте пункты %_fBYellow%A, B%_fReset% или %_fBYellow%S%_fReset%.
 @echo.
 @echo    Каталог iperf отображает текущее местоположение сервера iperf, из которого он будет запущен.
-@echo    %_fBYellow%Если тестирование не начинается или вылетат с ошибкой, попробуйте сменить каталог из пункта V%_fReset%.
+@echo    %_fBYellow%Если тестирование не начинается или вылетат с ошибкой, попробуйте сменить каталог из пункта V,
+@echo    а также дайте полные права доступа на каталог %SYSTEMDRIVE%\Temp в пункте T%_fReset%.
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    %_fBGreen%A.  Auto Wi-Fi speed test with default values%_fReset% [EXP]
-rem @echo    B.  Wi-Fi speed multi-test with values from a file [EXP]
-rem @echo    S.  Run Wi-Fi test with custom values  [EXP]
-rem @echo    D.  Analyze test results  [EXP]
+rem @echo    C.  Advanced test options and settings
+rem @echo.
+rem @echo    D.  Analyze test results (Table) [EXP]
+rem @echo    E.  Analyze test results (Visual Analyzer) [EXP]
 rem @echo    G.  Build a histogram or calculate the trend based on test results  [EXP]
 rem @echo.
-rem @echo    %_fBYellow%H.  Additional explanations about tests, errors, logs, etc.%_fReset%
-rem @echo    F.  Firewall handling for Bad file descriptor error
-rem @echo    C.  Service connection check
-rem @echo    I.  Start the iperf server as a separate process
-rem @echo    V.  Set %SYSTEMDRIVE%\Temp as the iperf server launch directory
-rem @echo    W.  Write the directory %SYSTEMDRIVE%\Temp to the registry and make it permanent
 rem @echo    L.  Assign a label (prefix) to the archive name for results of previous tests
+rem @echo    P.  Switch protocols TCP/UDP
 rem @echo.
+rem @echo    %_fBYellow%T.  Troubleshooting connection issues and running tests
+rem @echo    H.  Additional explanations about tests, errors, logs, etc.%_fReset%
 rem @echo.
-rem @echo    Computer IP address:	[ %ipc%%ipaddrtxt%%_fReset% 	]  %_bRed%%_fBWhite%%ipaddressmsg%%_fReset%
-rem @echo    Headset IP address:	[ %_fCyan%%iphs%%_fReset% 	]
-rem @echo    iperf directory: 	[ %_fCyan%%iperfdirview%%_fReset% 	]
-rem @echo    Protocol: 		[ %_fCyan%%protocol%%_fReset% ]
-rem @echo    Current label:	[ %_fCyan%%WiFitestLabel%%_fReset%	 ]
+rem @echo    %_fCyan%Computer IP address:	[ %ipc%%ipaddrtxt%%_fCyan% ]%_fReset%  %_bRed%%_fBWhite%%ipaddressmsg%%_fReset%
+rem @echo    %_fCyan%Headset IP address:	[ %_fBCyan%%iphs%%_fCyan% ]%_fReset%
+rem @echo    %_fCyan%iperf directory: 	[ %_fBCyan%%iperfdirview%%_fCyan% ]%_fReset%
+rem @echo    %_fCyan%Protocol: 		[ %_fBCyan%!protocol!%_fCyan% ]%_fReset%
+rem @echo    %_fCyan%Current label:	[ %_fBCyan%%WiFitestLabel%%_fCyan% ]%_fReset%
 rem @echo.
 rem @echo    The computer IP address is determined automatically, please check its correctness.
 rem @echo    If the IP address does not match your network card, exit the program
@@ -22834,36 +24570,625 @@ rem @echo    Developer Mode turned on. The testing is conducted via TCP protocol
 rem @echo    %_fBYellow%DON'T SWITCH HEADSET TO WIRELESS CONNECTION. CONNECT HEADSET TO PC WITH A CABLE.%_fReset%.
 rem @echo.
 rem @echo    iperf directory displays current location of the iperf server from which it will be launched.
-rem @echo    %_fBYellow%If testing does not start or crashes with an error, try changing the directory using option V.%_fReset%.
+rem @echo    %_fBYellow%If testing does not start or crashes with an error, try changing the directory using option V.
+rem @echo    and also grant full access permissions to the %SYSTEMDRIVE%\Temp directory in option T%_fReset%.
 rem EndEngTextBlock
 @echo  ---------
 set tabanalize=
 call :_MenuChoiceEnter
 @echo.
+@echo.
 if not defined choice goto _iperftest
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _shellmenu)
 if /i "%choice%"=="a" (GOTO _SetIperfAutoTesParameters)
-if /i "%choice%"=="b" (GOTO :_IperfMutliTesParametersCheck)
-if /i "%choice%"=="be" (GOTO :_CreateExampletultitestTxt)
-if /i "%choice%"=="s" (GOTO _iperftestrun)
+rem if /i "%choice%"=="b" (GOTO :_IperfMutliTestParametersCheck)
+if /i "%choice%"=="c" (GOTO :_IperfTesParametersAdvancedMenu)
+rem if /i "%choice%"=="be" (GOTO :_CreateExampletultitestTxt)
+rem if /i "%choice%"=="e" (GOTO :_iPerfRealTimeTest)
+rem if /i "%choice%"=="f" (GOTO :_AutoFitingBitrateTestStartProcess)
+rem if /i "%choice%"=="s" (GOTO _iperftestrun)
+rem if /i "%choice%"=="s" (GOTO :_IperfMutliTestParametersCheck)
 if /i "%choice%"=="d" (set AnalizeStandalone=1&&call :_WiFiTestCSVAnalyzer)
+if /i "%choice%"=="e" (set returntotest=1&GOTO :_iPerfStartVisualAnalyzer)
 if /i "%choice%"=="g" (GOTO _BuildHistogramMenu)
-if /i "%choice%"=="c" (GOTO _SetIperfAutoTesParametersTest)
-if /i "%choice%"=="i" (GOTO _StartIperfServerStandalone)
 if /i "%choice%"=="h" (call :_GeneralWFTestHelp)
+if /i "%choice%"=="lp" (GOTO _IperfLogsParsing)
+if /i "%choice%"=="l" (GOTO _SetWiFiOladFilesLabel)
+if /i "%choice%"=="la" (set WiFitestLabelBackup=1&& GOTO _SetWiFiOladFilesLabel)
+if /i "%choice%"=="p" (call :_SwitchProtocols)
+if /i "%choice%"=="t" (goto :_iPerfTestTroubleShooting)
+cls
+goto _iperftest
+
+
+:_IperfTesParametersAdvancedMenu
+cls
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo    S.  Стандартный тест скорости Wi-Fi с выбором значений в MultiTest Editor
+@echo    C.  Расширенные графические тесты в реальном времени с iPerf Test Configurator
+@echo.
+@echo    F.  Автоматический подбор максимального битрейта при нулевой потере пакетов [EXPERIMENTAL]
+@echo    V.  Запустить Визуальный анализатор логов iPerf Viasual Analyzer
+@echo.
+@echo    L.  Назначить метку (префикс) имени архива для результатов тестов
+@echo   LB.  Назначить метку (префикс) имени архива для результатов тестов и забэкапить результаты
+@echo    P.  Переключить протоколы TCP/UDP
+@echo.
+@echo    %_fBYellow%H.  Дополнительные пояснения по опциям меню%_fReset%
+
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    S.  Standard Wi-Fi speed test with selectable values in MultiTest Editor
+rem @echo    C.  Advanced real-time graphical tests with iPerf Test Configurator
+rem @echo.
+rem @echo    F.  Auto-fiting maximum bitrate with zero packet lost   [EXPERIMENTAL]
+rem @echo    V.  Launch iPerf Visual Analyzer log visualization tool
+rem @echo.
+rem @echo    L.  Assign a label (prefix) to the archive name for results of previous tests
+rem @echo   LB.  Assign a label to the archive name for results of previous tests and backup it
+rem @echo    P.  Switch protocols TCP/UDP
+rem @echo.
+rem @echo    H.  Additional explanations about menu options%_fReset%
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+@echo.
+call :_MenuChoiceEnter
+if not defined choice goto :_IperfTesParametersAdvancedMenu
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="00" (goto _RestartQUAS)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _iperftest)
+if /i "%choice%"=="c" (GOTO _AnvancediPerfTestsRealTime)
+rem if /i "%choice%"=="f" (GOTO :_AutoFitingBitrateTestStartProcess)
+if /i "%choice%"=="f" (GOTO :_AutoFitingTestsBegin)
+if /i "%choice%"=="l" (GOTO _SetWiFiOladFilesLabel)
+if /i "%choice%"=="lb" (set WiFitestLabelBackup=1&& GOTO _SetWiFiOladFilesLabel)
+if /i "%choice%"=="p" (call :_SwitchProtocols)
+if /i "%choice%"=="s" (GOTO :_IperfMutliTestParametersCheck)
+if /i "%choice%"=="v" (GOTO :_iPerfStartVisualAnalyzer)
+if /i "%choice%"=="h" (call :_AdvancedWFTestHelp)
+goto :_IperfTesParametersAdvancedMenu
+
+
+:_iPerfStartVisualAnalyzer
+cls
+@echo.
+@echo.
+@echo.
+@echo.
+set "WORKDIR=%cd%"
+rem set "workdir=%~dp0"
+start "" powershell -WindowStyle Hidden -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%myfiles%\iPerf3VisualAnalyzer.v3.49.ps1" -WorkDir %workdir% -SavePath %workdir% -AllLogs
+@echo            =======================
+@echo            %_fBGreen%iPerf3 Visual Analyzer%_fReset%
+@echo            =======================
+@echo.
+rem StartRusTextBlock
+@echo   %_fBYellow%Выберите в выпадающих списках файлы логов, которые хотите проанализировать
+@echo   или загрузите файлы логов кнопками с точками рядом с выпадающими списками.
+@echo.
+@echo   %_fYellow%Файлы логов должны содержать только какое-то одно направление тестирования -
+@echo   Direct или Reverse, но не оба одновременно в одном логе, иначе результаты
+@echo   могут быть смешанными или не показаны вовсе.
+@echo.
+@echo   %_fBYellow%Для дополнительной информации нажмите кнопку %_fYellow%Help %_fBYellow%и внизу ссылку, которая
+@echo   откроет руководство по использованию %_fYellow%Анализатора.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%Select the log files you want to analyze from the drop-down lists
+rem @echo   or load log files using the buttons with dots next to the drop-down lists.
+rem @echo.
+rem @echo   %_fYellow%Log files must contain only one testing direction -
+rem @echo   Direct or Reverse, but not both simultaneously in a single log, otherwise results
+rem @echo   may be mixed or not displayed at all.
+rem @echo.
+rem @echo   For additional information, click the %_fYellow%Help %_fBYellow%button and then click the link below,
+rem @echo   which will open the user manual for the %_fYellow%Analyzer.%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+if defined returntotest set returntotest=&goto _iperftest 
+goto :_IperfTesParametersAdvancedMenu
+
+
+
+:_AnvancediPerfTestsRealTime
+rem set "WORKDIR=%cd%"
+
+rem start "" powershell -WindowStyle Hidden -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%myfiles%\iPerf3Configurator_v1.53.ps1" -WorkDir %workdir%
+rem start "" powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%myfiles%\iPerfConfigurator_v1.25.ps1"
+cls
+@echo.
+@echo.
+@echo            ===================
+@echo            %_fBGreen%iPerf3 Configurator%_fReset%
+@echo            ===================
+@echo.
+rem StartRusTextBlock
+@echo     %_fBYellow%Настройка и использование%_fBYellow%
+@echo.
+@echo   Нажмите кнопку со %_fYellow%знаком вопроса %_fBYellow%в правом нижнем углу программы.
+@echo   Нажмите на ссылку слева внизу окна справки.
+@echo   Прочитайте разделы %_fYellow%Интерфейс, Кнопки, Создание профиля%_fBYellow%.
+@echo.
+@echo   Установитежелаемые значения в полях параметров или используйте шаблоны.
+@echo   Сохраните значения кнопками %_fYellow%Save Profile %_fBYellow%и %_fYellow%Save INI%_fBYellow%
+@echo   Запустите тестирование кнопками %_fYellow%Run %_fBYellow%или %_fYellow%Run Live %_fBYellow%или закройте программу.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo     %_fBYellow%Setup and Usage%_fBYellow%
+rem @echo.
+rem @echo   Click the button with the %_fYellow%question mark %_fBYellow%in the lower right corner of the program.
+rem @echo   Click the link in the bottom left of the window.
+rem @echo   Read the sections %_fYellow%Interface, Buttons, Creating a Profile%_fBYellow%.
+rem @echo.
+rem @echo   Set the desired values in the parameter fields or use the templates.
+rem @echo   Save the values using the %_fYellow%Save Profile %_fBYellow%and %_fYellow%Save INI %_fBYellow%buttons.
+rem @echo   Start testing using the %_fYellow%Run/Run Live %_fBYellow%buttons or close the program.%_fReset%
+rem EndEngTextBlock
+@echo.
+
+set viewpack=1
+set viewexit=1
+call :_BackupPrevWiFiTestFiles
+
+set "WORKDIR=%cd%"
+
+powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%myfiles%\iPerf3Configurator_v1.54.ps1" -WorkDir %workdir%
+
+if not defined WORKDIR set "WORKDIR=%cd%"
+
+set "INIFILE=%WORKDIR%\iperf_profiles.ini"
+set "FLAGTEST=%WORKDIR%\runtest.flag"
+set "FLAGLIVE=%WORKDIR%\runlive.flag"
+set "TMPFILE=%WORKDIR%\ipc_profile.tmp"
+
+%MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>nul 2>errorhs.txt
+%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>nul 2>errorch.txt
+
+@echo   =====================================
+
+if exist "%FLAGTEST%" (
+del "%FLAGTEST%" >nul 2>&1
+set "TEST_STARTED=1"
+rem StartRusTextBlock
+@echo   %_fBGreen%Запуск очереди тестов%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%Starting queued tests%_fReset%
+rem EndEngTextBlock
+call :_CountActive
+call :_ParseINI test "%TMPFILE%"
+)
+
+if exist "%FLAGLIVE%" (
+del "%FLAGLIVE%" >nul 2>&1
+set "TEST_STARTED=2"
+rem StartRusTextBlock
+@echo   %_fBGreen%Запуск realtime тестов%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%Starting live tests%_fReset%
+rem EndEngTextBlock
+call :_CountActive
+call :_ParseINI live "%TMPFILE%"
+)
+
+if "%TEST_STARTED%"=="1" goto :_AnalyzerRun
+if "%TEST_STARTED%"=="2" goto :_AnalyzerRunLive
+rem StartRusTextBlock
+@echo   %_fBYellow%Тесты отменены%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%No tests were run%_fReset%
+rem EndEngTextBlock
+goto :_AnalyzerTestCleanUp
+
+:_AnalyzerRun
+@echo   =====================================
+rem StartRusTextBlock
+@echo   %_fBGreen%Все тесты завершены
+@echo.
+@echo   %_fBYellow%Запускаем %_fYellow%iPerf3 Visual Analyzer%_fBYellow%.
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%All tests completed
+rem @echo.
+rem @echo   %_fBYellow%Launching %_fYellow%i{erf3 Visual Analyzer%_fBYellow%.
+rem EndEngTextBlock
+goto :_AnalyzerCommon
+
+:_AnalyzerRunLive
+@echo   =====================================
+rem StartRusTextBlock
+@echo   %_fBGreen%Все тесты завершены
+@echo.
+@echo   %_fBYellow%Для анализа результатов запустите %_fYellow%iPerf3 Visual Analyzer%_fBYellow% кнопкой в окне графиков.
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%All tests completed
+rem @echo.
+rem @echo   %_fBYellow%To analyze the results, launch %_fYellow%iPerf3 Visual Analyzer%_fBYellow% using the button in the graph window.
+rem EndEngTextBlock
+
+:_AnalyzerCommon
+rem StartRusTextBlock
+@echo   Выберите в выпадающих списках %_fYellow%A %_fBYellow%и %_fYellow%B %_fBYellow%желаемые графики для анализа%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   Select desired graphs for analysis in drop-down lists %_fYellow%A %_fBYellow%and %_fYellow%B%_fReset%
+rem EndEngTextBlock
+
+:_AnalyzerTestCleanUp
+for /f "delims=" %%A in ('dir /b /a-d %cd%\error*.txt') do (
+if %%~zA EQU 0 (del %%A)
+)
+%MYFILES%\adb shell rm /data/local/tmp/iperf3.18 1>nul 2>nul
+
+call :_prevmenu
+goto :_IperfTesParametersAdvancedMenu
+rem pause
+rem exit
+
+
+:: ============================================================
+:: Count active profiles into %_totalActive%
+:: ============================================================
+:_CountActive
+setlocal EnableDelayedExpansion
+set "_cnt=0"
+for /f "usebackq delims=" %%L in ("%INIFILE%") do (
+set "line=%%L"
+if "!line:~0,1!"=="=" set /a "_cnt+=1"
+)
+endlocal & set "_totalActive=%_cnt%"
+rem StartRusTextBlock
+@echo   -------------------------------------
+@echo   %_fCyan%Активных профилей	: %_fBCyan%%_totalActive%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%Active profiles	: %_fBCyan%%_totalActive%%_fReset%
+rem EndEngTextBlock
+exit /b
+
+:: ============================================================
+:_ParseINI [mode] [tmpfile]
+:: mode    = test or live
+:: tmpfile = full path to temp file (passed from parent scope)
+:: ============================================================
+:_ParseINI
+setlocal EnableDelayedExpansion
+set "islive=0"
+if /i "%~1"=="live" set "islive=1"
+set "tf="
+set "tmpf=%~2"
+set "_cur=0"
+set "_tot=%_totalActive%"
+
+for /f "usebackq delims=" %%L in ("%INIFILE%") do (
+set "line=%%L"
+set "h1=!line:~0,1!"
+
+if "!h1!"=="=" (
+if "!tf!"=="1" (
+set /a "_cur+=1"
+call :_FlushAndRun "!tmpf!" !islive! !_cur! !_tot!
+)
+> "!tmpf!" echo profile=!line:~3!
+set "tf=1"
+) else if "!h1!"==";" (
+if "!tf!"=="1" call :_FlushAndRun "!tmpf!" !islive! !_cur! !_tot!
+set "tf="
+) else if "!tf!"=="1" (
+>> "!tmpf!" echo !line!
+)
+)
+:: Last profile
+if "!tf!"=="1" (
+set /a "_cur+=1"
+call :_FlushAndRun "!tmpf!" !islive! !_cur! !_tot!
+)
+endlocal
+exit /b
+
+:: ============================================================
+:: :_FlushAndRun [tmpfile] [islive] [curNum] [totalNum]
+:: ============================================================
+:_FlushAndRun
+setlocal EnableDelayedExpansion
+set "tmpf=%~1"
+set "islive=%~2"
+set "_cur=%~3"
+set "_tot=%~4"
+@echo   -------------------------------------
+rem StartRusTextBlock
+@echo   %_fCyan%Текущий тест		%_fBCyan%: !_cur!
+@echo   %_fCyan%Всего тестов		%_fBCyan%: !_tot!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%Current test	%_fBCyan%: !_cur!
+rem @echo   %_fCyan%Total tests		%_fBCyan%: !_tot!%_fReset%
+rem EndEngTextBlock
+
+set "profile=" & set "host="       & set "port="      & set "protocol="
+set "direction=" & set "bitrate="  & set "duration="  & set "interval="
+set "socketsize=" & set "streams=" & set "buflen="    & set "tcpnodelay="
+set "extra="
+
+for /f "usebackq tokens=1,* delims==" %%A in ("!tmpf!") do (
+    if /i "%%A"=="profile"    set "profile=%%B"
+    if /i "%%A"=="host"       set "host=%%B"
+    if /i "%%A"=="port"       set "port=%%B"
+    if /i "%%A"=="protocol"   set "protocol=%%B"
+    if /i "%%A"=="direction"  set "direction=%%B"
+    if /i "%%A"=="bitrate"    set "bitrate=%%B"
+    if /i "%%A"=="duration"   set "duration=%%B"
+    if /i "%%A"=="interval"   set "interval=%%B"
+    if /i "%%A"=="socketsize" set "socketsize=%%B"
+    if /i "%%A"=="streams"    set "streams=%%B"
+    if /i "%%A"=="buflen"     set "buflen=%%B"
+    if /i "%%A"=="tcpnodelay" set "tcpnodelay=%%B"
+    if /i "%%A"=="extra"      set "extra=%%B"
+)
+del "!tmpf!" >nul 2>&1
+
+:: Last profile = no AutoExit (graph stays open)
+set "_autoexit=1"
+if "!_cur!"=="!_tot!" set "_autoexit="
+
+endlocal & (
+    set "profile=%profile%"    & set "host=%host%"          & set "port=%port%"
+    set "protocol=%protocol%"  & set "direction=%direction%" & set "bitrate=%bitrate%"
+    set "duration=%duration%"  & set "interval=%interval%"   & set "socketsize=%socketsize%"
+    set "streams=%streams%"    & set "buflen=%buflen%"       & set "tcpnodelay=%tcpnodelay%"
+    set "extra=%extra%"        & set "_islive=%islive%"      & set "autoexit=%_autoexit%"
+set "logfile=%WORKDIR%\WiFiConnectTest_%profile%_%dt%.csv"
+)
+
+if not defined host (
+rem StartRusTextBlock
+@echo   %_fBRed%Не назначен IP адрес сервера! Тест будет пропущен.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Server IP address is not assigned^^! The test will be skipped.%_fReset%
+rem EndEngTextBlock
+exit /b
+)
+
+if "%_islive%"=="1" (
+call :_RunLive
+) else (
+call :_RunTest
+)
+exit /b
+
+
+:: ============================================================
+:: :_RunTest  — direct iperf3 via adb, no graph
+:: ============================================================
+:_RunTest
+start "IPERF_TEST" /min cmd /c "mode con:cols=80 lines=50 &%myfiles%\iperf3.exe -s"
+timeout 2 >nul
+set "lenflag="
+set "winflag="
+set "portflag="
+if not "%socketsize%"=="" set "lenflag=-l %socketsize%"
+if not "%buflen%"==""     set "winflag=-w %buflen%M"
+if not "%port%"==""       set "portflag=-p %port%"
+set "logfile=%WORKDIR%\WiFiConnectTest_%profile%_%dt%.txt"
+rem StartRusTextBlock
+@echo   %_fCyan%Выполняется тест	: %_fBCyan%%profile%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%Profile running	: %_fBCyan%%profile%%_fReset%
+rem EndEngTextBlock
+
+%myfiles%\adb shell -t /data/local/tmp/iperf3.18 -c %host% %portflag% -t %duration% -i %interval% -b %bitrate%M -P %streams% %buflen% %socketsize% %direction% %protocol% %tcpnodelay% %extra% -f m >> "%logfile%"
+
+rem StartRusTextBlock
+@echo   %_fCyan%Выполнен тест		: %_fBCyan%%profile%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%Profile done	: %_fBCyan%%profile%%_fReset%
+rem EndEngTextBlock
+
+if not "!_cur!" == "!_tot!" exit /b
+if not defined protocol (set "protocolv=TCP") else (set "protocolv=UDP")
+
+start "" powershell -WindowStyle Hidden -NoProfile -NoLogo -File "%myfiles%\iPerf3VisualAnalyzer.v3.49.ps1" -WorkDir %workdir% -SavePath %workdir% -AView %profile% -AllLogs ^
+-TBitrate %bitrate% ^
+-Label %profile% ^
+-Interval %interval% ^
+-Streams %streams% ^
+-Duration %duration% ^
+-Protocol %protocolv% ^
+-Screenshot -FileName "WiFiConnectTest-%dt%" %ssexitcode%
+
+taskkill /im iperf3.exe /f 1>nul 2>nul
+exit /b
+
+:: ============================================================
+:: :_RunLive  — PowerShell realtime graph
+:: autoexit=1 for all but last, empty for last (graph stays open)
+:: ============================================================
+:_RunLive
+start "IPERF_TEST" /min cmd /c "mode con:cols=80 lines=50 &%myfiles%\iperf3.exe -s"
+timeout 2 >nul
+if not defined protocol (set "protocolv=TCP") else (set "protocolv=UDP")
+set "logfile=%WORKDIR%\WiFiConnectTest_%profile%_%dt%.csv"
+set "AnalyzerScript=%myfiles%\iPerf3VisualAnalyzer.v3.49.ps1"
+set "AnalyzerArgs=-TBitrate %bitrate% -Label %profile% -Interval %interval% -Streams %streams% -Duration %duration% -Protocol %protocolv% -AView %profile% -AllLogs -WorkDir %workdir% -SavePath %workdir%"
+
+set "portflag="
+if not "%port%"=="" set "portflag=-p %port%"
+
+rem StartRusTextBlock
+if not defined direction (set "graphs=Битрейт"&set "direct=Direct") else (set "graphs=Битрейт, Джиттер, Потери пакетов"&set "direct=Reverse")
+@echo   %_fCyan%Выполняется тест	: %_fBCyan%%profile%%_fReset%
+@echo   %_fCyan%Направление		: %_fBCyan%%direct%%_fReset%
+@echo   %_fCyan%Отображаемые графики	: %_fBCyan%%graphs%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem if not defined direction (set "graphs=Bitrate"&set "direct=Direct") else (set "graphs=Bitrate, Jitter, Packet loss"&set "direct=Reverse")
+rem @echo   %_fCyan%Profile running	: %_fBCyan%%profile%%_fReset%
+rem @echo   %_fCyan%Direction		: %_fBCyan%%direct%%_fReset%
+rem @echo   %_fCyan%Live view		: %_fBCyan%%graphs%%_fReset%
+rem EndEngTextBlock
+
+start "" powershell -ExecutionPolicy Bypass -File "%myfiles%\iPerf3RealTime_v2.81.ps1" ^
+        -ProfileName %profile% ^
+        -ServerIP %host% ^
+        -Port %port% ^
+        -Protocol %protocol% ^
+        -Direction %direction% ^
+        -Bitrate %bitrate% ^
+        -Socketsize %socketsize% ^
+        -Duration %duration% ^
+        -Interval %interval% ^
+        -Streams %streams% ^
+        -Buflen %buflen% ^
+        -ToolsPath %toolspath% ^
+        -LogFile "%logfile%" ^
+        -KillServerOnFinish 1 ^
+        -VisualAnalyzerScript "%AnalyzerScript%" ^
+        -VisualAnalyzerArgs "%AnalyzerArgs%" ^
+        -AutoExit %autoexit%
+
+:_WaitLoopIPerfServerWhenKill
+tasklist /fi "imagename eq iperf3.exe" 2>nul | find /i "iperf3.exe" >nul
+if not errorlevel 1 (
+timeout /t 1 >nul
+goto _WaitLoopIPerfServerWhenKill
+)
+rem StartRusTextBlock
+@echo   %_fCyan%Выполнен тест		: %_fBCyan%%profile%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%Profile done	: %_fBCyan%%profile%%_fReset%
+rem EndEngTextBlock
+exit /b
+call :_prevmenu
+goto :_iperftestmenu
+
+
+
+:_iPerfTestTroubleShooting
+cls
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo    F.  Работа с файрволлом при ошибке Bad file descriptor
+@echo    C.  Сервисная проверка соединения (не для тестирования^! см. пункт H)
+@echo    I.  Запустить сервер iperf отдельным процессом
+@echo    V.  Временно установить %SYSTEMDRIVE%\Temp каталогом запуска сервера iperf
+@echo    W.  Записать каталог %SYSTEMDRIVE%\Temp в реестр и сделать его постоянным
+@echo    %_fCyan%R.  Дать полные права доступа к каталогу %SYSTEMDRIVE%\Temp%_fReset%
+@echo    P.  Переключить протоколы TCP/UDP
+@echo.
+@echo    %_fBYellow%H.  Дополнительные пояснения по опциям меню%_fReset%
+@echo.
+@echo    %_fBYellow%S.  Вернуться в меню Wi-Fi тестов%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo    F.  Firewall handling for Bad file descriptor error
+rem @echo    C.  Service connection check
+rem @echo    I.  Start the iperf server as a separate process
+rem @echo    V.  Set %SYSTEMDRIVE%\Temp as the iperf server launch directory
+rem @echo    W.  Write the directory %SYSTEMDRIVE%\Temp to the registry and make it permanent
+rem @echo    R.  Grant full access permissions to the %SYSTEMDRIVE%\Temp directory
+rem @echo    P.  Switch protocols TCP/UDP
+rem @echo.
+rem @echo    H.  Additional explanations about menu options%_fReset%
+rem @echo.
+rem @echo    %_fBYellow%S.  Return to the Wi-Fi test menu%_fReset%
+rem EndEngTextBlock
+@echo.
+@echo.
+set tabanalize=
+call :_MenuChoiceEnter
+if not defined choice goto :_iPerfTestTroubleShooting
+if "%choice%"=="0" (exit)
+if /i "%choice%"=="00" (goto _RestartQUAS)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _iperftest)
+if /i "%choice%"=="c" (GOTO _SetIperfAutoTesParametersTest)
+if /i "%choice%"=="cc" (set AnalizeStandalone=1&& GOTO _SetIperfAutoTesParametersTest)
+if /i "%choice%"=="i" (GOTO _StartIperfServerStandalone)
+if /i "%choice%"=="h" (call :_ServiceWFTestHelp)
 if /i "%choice%"=="f" (call :_FirewallPortSetting)
 if /i "%choice%"=="db" (call :_DebugWiFiTestConnection)
 if /i "%choice%"=="v" (call :_SwithIperfToTempMessage)
 if /i "%choice%"=="w" (goto :_setiperfdirkeywftest)
-if /i "%choice%"=="p" (GOTO _IperfLogsParsing)
-if /i "%choice%"=="l" (GOTO _SetWiFiOladFilesLabel)
-if /i "%choice%"=="la" (set WiFitestLabelBackup=1&& GOTO _SetWiFiOladFilesLabel)
-if /i "%choice%"=="u" (set "udpparam=-u"&&set protocol=UDP)
-if /i "%choice%"=="t" (set "udpparam="&&set protocol=TCP)
+if /i "%choice%"=="p" (call :_SwitchProtocols)
+if /i "%choice%"=="r" (goto :_iPerfTestTempRights)
+if /i "%choice%"=="s" (goto :_iperftest)
 cls
-goto _iperftest
+goto :_iPerfTestTroubleShooting
+
+
+:_iPerfTestTempRights
+call :_CheckAdminRights
+if not exist "%SYSTEMDRIVE%\Temp\" (
+rem StartRusTextBlock
+@echo   %_fBRed%Каталог %SYSTEMDRIVE%\Temp не существует%_fReset%%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fYellow%Directory %SYSTEMDRIVE%\Temp does not exist%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_iPerfTestTroubleShooting
+)
+icacls %SYSTEMDRIVE%\Temp /grant "*S-1-5-11":(OI)(CI)F /T 1>nul
+if not errorlevel 1 (
+@echo   ----------------------------------------------------------
+rem StartRusTextBlock
+@echo   %_fBGreen%Полные права установлены. Можно проверять запуск теста.
+@echo   %_fYellow%Не забудьте выбрать в пункте %_fYellow%V %_fBYellow%каталог %_fYellow%%SYSTEMDRIVE%\Temp %_fBYellow%для использования%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%Full permissions granted. You can check test launch now.
+rem @echo   %_fYellow%Don't forget to select the %_fYellow%%SYSTEMDRIVE%\Temp %_fBYellow%directory in option %_fYellow%V %_fBYellow%for use%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_iPerfTestTroubleShooting
+)
+@echo   --------------------------------------------
+rem StartRusTextBlock
+@echo   %_fBRed%Права НЕ установлены. Текст ошибки на экране.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Permissions NOT granted. Error message on screen.%_fReset%
+rem EndEngTextBlock
+call :_prevmenu
+goto :_iPerfTestTroubleShooting
+
+:_SwitchProtocols
+if /i "%protocol%"=="TCP" (
+set "udpparam=-u"
+set "protocol=UDP"
+) else (
+set "udpparam="
+set "protocol=TCP"
+)
+rem StartRusTextBlock
+@echo   %_fCYan%Установлен протокол: %_fBCYan%%protocol%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCYan%Protocol switched: %_fBCYan%%protocol%%_fReset%
+rem EndEngTextBlock
+timeout 1 >nul
+exit /b
+
 
 :_SetWiFiOladFilesLabel
 cls
@@ -22979,64 +25304,89 @@ rem @reg query "HKU\S-1-5-19" >NUL 2>&1 && (set "adminmsg=") || (set "adminmsg= 
 rem EndEngTextBlock
 exit /b
 
-:_GeneralWFTestHelp
+:_AdvancedWFTestHelp
 cls
+@echo.
 @echo.
 rem StartRusTextBlock
-@echo         %_fBYellow%ОБЩИЕ ПОЯСНЕНИЯ%_fReset%
-@echo.      
-@echo   Опция %_fBGreen%Автотест скорости Wi-Fi со значениями по умолчанию%_fReset% предназначена для упрощенного запуска
-@echo   теста скорости и просадок. Будет запущен тест с автоматически подставленными значениями
-@echo   по умолчанию, а по завершении теста проанализированы результаты.
+@echo        %_fBYellow%Продвинутые настройки и параметры тестирования%_fReset%
+@echo        ==============================================
 @echo.
-@echo   Опция %_fBGreen%Мультитест скорости Wi-Fi со значениями из файла%_fReset% позволяет провести подряд несколько
-@echo   тестов с различными значениями %_fBYellow%интервала, потоков, длительности и битрейта%_fReset% для каждого теста.
-@echo   Для этого создайте текстовый файл с именем %_fBYellow%multitest.txt%_fReset% и положите его рядом с %_fBYellow%Quas.%_fReset%
-@echo   Формат файла: в первой строке параметры, в последующих строках - значения. %_fBYellow%Например:%_fReset%
+@echo   Опция %_fBGreen%Стандартный тест скорости Wi-Fi с выбором значений в MultiTest Editor%_fReset% позволяет провести
+@echo   один или несколько тестов с различными значениями %_fBYellow%интервала, потоков, длительности и битрейта%_fReset%
+@echo   для каждого теста. В окне %_fBYellow%Multitest Editor%_fReset% нажмите кнопку %_fBYellow%manual%_fReset%, введите желаемые значения
+@echo   параметров и выберите протокол. При необходимости добавьте столько строк, сколько тестов
+@echo   планируете провести. Можно отключить тесты, сняв галку рядом с метокй, не удаляя сами строки.
+@echo   После этого нажмите кнопку %_fBYellow%Confirm%_fReset% для подтверждения и запуска тестов.
 @echo.
-@echo       %_fBBlue%Метка            Интервал   Потоки   Длит   Битрейт%_fReset%
-@echo       %_fCyan%NoLimit          %_fBCyan%100        1        180    0%_fReset%
-@echo       %_fCyan%Fast500          %_fBCyan%100        1        60     500%_fReset%
-@echo       %_fCyan%StressTestShort  %_fBCyan%100        10       180    0%_fReset%
-@echo       %_fCyan%StressTestLong   %_fBCyan%100        10       1800   0%_fReset%
+@echo   Опция %_fBGreen%Расширенные графические тесты в реальном времени с iPerf Test Configurator%_fReset% запустит
+@echo   Конфигуратор, в котором установите необходимы нестройки и параметры тестов или выберите их
+@echo   из шаблонов. После этого сохраните параметры кнопками %_fBYellow%Save Profile%_fReset% и %_fBYellow%Save INI %_fReset%запустите
+@echo   тестирование кнопками  %_fBYellow%Run%_fReset% (обычный тест) или %_fBYellow%Run Live%_fReset% (тест в реальном времени).
 @echo.
-@echo    %_fBYellow%Значения должны быть в таких диапазонах:
-@echo       %_fCyan%Интервал%_fReset%		: %_fBCyan%от 100 до 5000 миллисекунд%_fReset%
-@echo       %_fCyan%Потоки%_fReset%		: %_fBCyan%от 1 до 10%_fReset%
-@echo       %_fCyan%Длительность%_fReset%	: %_fBCyan%от 1 до 7200 секунд%_fReset%
-@echo       %_fCyan%Битрейт%_fReset%		: %_fBCyan%от 0 (неогрниченно) до 2000%_fReset%
+@echo   Опция %_fBGreen%Автоматический подбор максимального битрейта при нулевой потере пакетов%_fReset%
+@echo   запускает серию тестов для подбора стабильного битрейта при отсутствии потерь пакетов.
 @echo.
-@echo    %_fBYellow%Все значения, параметры и названия в файле указываются через один или несколько пробелов.%_fReset%
-@echo    Также в создании файла поможет %_fBYellow%Quas%_fReset%: в меню тестов наберите "%_fBYellow%be%_fReset%" без кавычек и рядом
-@echo    появится файл %_fBYellow%Examplemultitest.txt%_fReset%. Переименуйте его в %_fBYellow%multitest.txt%_fReset% и поменяйте содержимое
-@echo    на те параметры и имена, которые хотите. Если появится необходимость пропустить один из тестов,
-@echo    это можно сделать, не удаляя строку, просто поставьте в начале строки c точку с запятой:
+@echo   Опция %_fBGreen%Запустить Визуальный анализатор логов iPerf Visual Analyzer%_fReset% позволяет
+@echo   проанализировать результаты тестов по графикам %_fBYellow%битрейта, джиттера и потерь пакетов%_fReset%.
 @echo.
-@echo       %_fBYellow%;%_fCyan%Fast500          %_fBCyan%100        1        60     500%_fReset%
+@echo   Опция %_fBGreen%Назначить метку (префикс) имени архива для результатов тестов%_fReset% используется для
+@echo   идентификации результатов при большом количестве тестов. Метка будет добавлена в начале имени
+@echo   архива с результатами тестов и сохранена на скринщоте с результатами.
 @echo.
-@echo    После запуска мультитеста файл проверяется на корректность. При обнаружении ошибок выводятся
-@echo    строки с ошибками и их пояснения. Если файл корректен, отображается его содержимое. При наличии 
-@echo    строк с пропускаемыми тестами об этом делается соответствующая пометка. Также выводятся
-@echo    количество тестов и их общая длительность. После подтверждения мультитест запускается.
+@echo   Опция %_fBGreen%Назначить метку (префикс) имени архива для результатов тестов  и забэкапить результаты%_fReset%
+@echo   как и предыдущий пункт, но еще бэкапит результаты предыдущих тестов, если они есть.
 @echo.
-@echo   Опция %_fBGreen%Стандартный тест скорости Wi-Fi с выбором значений%_fReset% дает возможность ввести желаемые
-@echo   параметры или можно просто нажимать Enter, для ввода значений по умолчанию:
-@echo.      
-@echo     - %_fCyan%Интервал между проверками в миллисекундах, от %_fBCyan%100 %_fCyan%до %_fBCyan%1000%_fReset%  ( %_fCyan%по умолчанию - %_fBCyan%100%_fReset% )
-@echo     - %_fCyan%Количество потоков, от %_fBCyan%1 %_fCyan%до %_fBCyan%10%_fReset% 				 ( %_fCyan%по умолчанию - %_fBCyan%1%_fReset% )
-@echo     - %_fCyan%Длительность каждого теста в секундах, от %_fBCyan%1 %_fCyan%до %_fBCyan%3600%_fReset% 	 ( %_fCyan%по умолчанию - %_fBCyan%180%_fReset% )
-@echo.      
-@echo   %_fBYellow%Для выявления просадок и потерь пакетов, рекемендуется интервал проверок оставить по умолчанию.%_fReset%
-@echo   Чтобы прервать ввод данных и вернуться в меню, вместо значений введите %_fBYellow%0%_fReset%
-@echo   ----------------------------------------------------------------------------------------
-@echo.      
-@echo        %_fBYellow%--- Нажмите что-нибудь для продолжения ---%_fReset%
+@echo   Опция %_fBGreen%Переключить протоколы TCP/UDP%_fReset% переключает протоколы тестирования для текущего сеанса.
+@echo   -----------------------
+@echo.
+@echo               %_fBYellow%=== Нажмите что-нибудь для возврата в меню ===%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo        %_fBYellow%Advanced settings and test parameters%_fReset%
+rem @echo        ==============================================
+rem @echo.
+rem @echo   The %_fBGreen%Standard Wi-Fi speed test with selectable values in MultiTest Editor%_fReset% option allows
+rem @echo   running one or several tests with different values for %_fBYellow%interval, streams, duration, and bitrate%_fReset%
+rem @echo   for each test. In the %_fBYellow%Multitest Editor%_fReset% window, click the %_fBYellow%manual%_fReset% button, enter desired parameter
+rem @echo   values, and select the protocol. If needed, add as many lines as tests you plan to run. You can
+rem @echo   disable tests by unchecking the box next to the label without deleting lines. Then click the
+rem @echo   %_fBYellow%Confirm%_fReset% button to confirm and run the tests.
+rem @echo.
+rem @echo   The %_fBGreen%Advanced real-time graphical tests with iPerf Test Configurator%_fReset% option will launch
+rem @echo   the Configurator, where you set necessary settings and test parameters or choose them
+rem @echo   from templates. After that, save parameters using the %_fBYellow%Save Profile%_fReset% and %_fBYellow%Save INI%_fReset% buttons,
+rem @echo   then start testing using the %_fBYellow%Run%_fReset% (standard test) or %_fBYellow%Run Live%_fReset% (real-time test) buttons.
+rem @echo.
+rem @echo   The %_fBGreen%Automatic selection of maximum bitrate with zero packet loss%_fReset% option
+rem @echo   launches a series of tests to find a stable bitrate with no packet loss.
+rem @echo.
+rem @echo   The %_fBGreen%Launch iPerf Visual Analyzer log analyzer%_fReset% option allows
+rem @echo   analyzing test results using graphs for %_fBYellow%bitrate, jitter, and packet loss%_fReset%.
+rem @echo.
+rem @echo   The %_fBGreen%Assign a label (prefix) to the test result archive name%_fReset% option is used to
+rem @echo   identify results when running a large number of tests. The label will be added to
+rem @echo   the beginning of the result archive name and saved on the screenshot with results.
+rem @echo.
+rem @echo   The %_fBGreen%Assign a label (prefix) to the archive name and back up test results%_fReset% option works
+rem @echo   like the previous option, but also backs up previous test results if present.
+rem @echo.
+rem @echo   The %_fBGreen%Toggle TCP/UDP protocols%_fReset% option switches testing protocols for the current session.
+rem @echo   -----------------------
+rem @echo.
+rem @echo               %_fBYellow%=== Press any key to return to menu ===%_fReset%
+rem EndEngTextBlock
 pause >nul
+exit /b
+
+:_ServiceWFTestHelp
 cls
 @echo.
-@echo   Опция %_fBGreen%Проанализировать результаты тестирования%_fReset% анализирует уже имеющиеся csv-файлы
-@echo   с результатами тестов, выводит итоговую таблицу и создает ее скриншот.
-@echo.    
+@echo.
+rem StartRusTextBlock
+@echo        %_fBYellow%Решение проблем с подключением и запуском тестов%_fReset%
+@echo        ================================================
+@echo.
 @echo   Опция %_fBGreen%Работа с файрволлом при ошибке Bad file descriptor%_fReset% поможет в работае с файрволлом.
 @echo   Если программа не работает или вылетает, смотрите текст ошибки в файле %_fBYellow%errorcl.txt%_fReset%.
 @echo   При ошибке %_fBYellow%Bad file descriptor%_fReset% отключите файрволл на ПК или воспользуйтесь этой опцией. 
@@ -23047,7 +25397,7 @@ cls
 @echo   целях. Ее длительность %_fBYellow%10%_fReset% секунд с интервалом %_fBYellow%1%_fReset% секунда. %_fBYellow%НЕ ИСПОЛЬЗУЙТЕ ДЛЯ ТЕСТИРОВАНИЯ^^!%_fReset%
 @echo. 
 @echo   Опция %_fBGreen%Запустить сервер iperf отдельным процессом%_fReset% запускает сервер iperf в отдельном окне
-@echo   в режиме ожидания подключения клиента, после чего можно запустить тест обычным образом из меню,
+@echo   в режиме ожидания подключения шлема, после чего можно запустить тест обычным образом из меню,
 @echo   он подхватится сервером. В иных случая это помогает, если тест не начинается или зависает.
 @echo.
 @echo   Опция %_fBGreen%Временно установить %_fBYellow%%SYSTEMDRIVE%\Temp%_fBGreen% каталогом запуска сервера iperf%_fReset% используется когда iperf 
@@ -23057,9 +25407,93 @@ cls
 @echo   Опция %_fBGreen%Записать каталог %_fBYellow%%SYSTEMDRIVE%\Temp%_fBGreen% в реестр и сделать его постоянным%_fReset% пригодится на случай
 @echo   многократных тестов, чтобы не нужно было каждый раз использовать предыдущую опцию.
 @echo.
+@echo   Опция %_fBGreen%Дать полные права доступа к каталогу %_fBYellow%%SYSTEMDRIVE%\Temp%_fReset% решает одну из проблем запуска
+@echo   тестов. Если тест не начинается, попробуйте испльзовать эту опцию вместе с пунктом %_fBYellow%V%_fReset%. 
+@echo.
+@echo   Опция %_fBGreen%Переключить протоколы TCP/UDP%_fReset% переключает протоколы тестирования для текущего сеанса.   
+@echo   -----------------------
+@echo.
+@echo               %_fBYellow%=== Нажмите что-нибудь для возврата в меню ===%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo        %_fBYellow%Troubleshooting connection and test launch issues%_fReset%
+rem @echo        ================================================
+rem @echo.
+rem @echo   The %_fBGreen%Firewall management for Bad file descriptor error%_fReset% option helps with firewall setup.
+rem @echo   If the program does not work or crashes, check the error message in the %_fBYellow%errorcl.txt%_fReset% file.
+rem @echo   If you encounter the %_fBYellow%Bad file descriptor%_fReset% error, disable the firewall on your PC or
+rem @echo   use this option. If the error persists, try changing the check duration value.
+rem @echo   The %_fBYellow%unable to send control message: Broken pipe%_fReset% error indicates a dropped connection.
+rem @echo.
+rem @echo   The %_fBGreen%Service connection check%_fReset% option is intended %_fBYellow%ONLY FOR CONNECTION TESTING%_fReset% for diagnostic
+rem @echo   purposes. Its duration is %_fBYellow%10%_fReset% seconds with an interval of %_fBYellow%1%_fReset% second. %_fBYellow%DO NOT USE FOR ACTUAL TESTING^^!%_fReset%
+rem @echo. 
+rem @echo   The %_fBGreen%Launch iperf server as a separate process%_fReset% option starts the iperf server in a separate window
+rem @echo   waiting for the headset to connect, after which you can launch the test normally from menu; it
+rem @echo   will be picked up by the server. In some cases, this helps if the test does not start or freezes.
+rem @echo.
+rem @echo   The %_fBGreen%Temporarily set %_fBYellow%%SYSTEMDRIVE%\Temp%_fBGreen% as the iperf server launch directory%_fReset% option is used when iperf 
+rem @echo   starts, but the connection fails to establish due to missing permissions. Try applying this
+rem @echo   option. Upon completion, you can delete the %_fBYellow%iperf3.exe%_fReset% and %_fBYellow%cygwin1.dll%_fReset% files from this directory.
+rem @echo.
+rem @echo   The %_fBGreen%Write %_fBYellow%%SYSTEMDRIVE%\Temp%_fBGreen% directory to registry to make it permanent%_fReset% option is useful for
+rem @echo   multiple tests so you do not have to apply the previous option every time.
+rem @echo.
+rem @echo   The %_fBGreen%Grant full access permissions to the %_fBYellow%%SYSTEMDRIVE%\Temp%_fReset% directory resolves one of the test launch
+rem @echo   issues. If the test does not start, try using this option along with option %_fBYellow%V%_fReset%. 
+rem @echo.
+rem @echo   The %_fBGreen%Toggle TCP/UDP protocols%_fReset% option switches testing protocols for the current session.   
+rem @echo   -----------------------
+rem @echo.
+rem @echo               %_fBYellow%=== Press any key to return to menu ===%_fReset%
+rem EndEngTextBlock
+pause >nul
+exit /b
+
+:_GeneralWFTestHelp
+cls
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo         %_fBYellow%ОБЩИЕ ПОЯСНЕНИЯ%_fReset%
+@echo.
+@echo   Опция %_fBGreen%Автотест скорости Wi-Fi со значениями по умолчанию%_fReset% предназначена для упрощенного запуска
+@echo   теста скорости и просадок. Будет запущен тест с автоматически подставленными значениями
+@echo   по умолчанию, а по завершении теста проанализированы результаты.
+@echo.
+@echo         Значения по умолчанию:
+@echo     - %_fCyan%Интервал между проверками в миллисекундах	: от %_fBCyan%100 %_fCyan%до %_fBCyan%1000%_fReset%   ( %_fCyan%по умолчанию - %_fBCyan%100%_fReset% )
+@echo     - %_fCyan%Количество потоков			: от %_fBCyan%1 %_fCyan%до %_fBCyan%10%_fReset%       ( %_fCyan%по умолчанию - %_fBCyan%1%_fReset% )
+@echo     - %_fCyan%Длительность каждого теста в секундах	: от %_fBCyan%1 %_fCyan%до %_fBCyan%3600%_fReset%     ( %_fCyan%по умолчанию - %_fBCyan%180%_fReset% )
+@echo.
+@echo   %_fBYellow%Для выявления просадок и потерь пакетов, рекемендуется интервал проверок оставить по умолчанию.%_fReset%
+@echo   Чтобы прервать ввод данных и вернуться в меню, вместо значений введите %_fBYellow%0%_fReset%
+@echo.
+@echo   Опция %_fBGreen%Продвинутые настройки и параметры тестирования%_fReset% говорит сама за себя.
+@echo   См. Help в этой опции для подробностей.
+@echo.
+@echo   Опция %_fBGreen%Проанализировать результаты тестирования (Табличный вариант)%_fReset% анализирует уже имеющиеся
+@echo    csv-файлы с результатами тестов, выводит итоговую таблицу и создает ее скриншот.
+@echo.
+@echo   Опция %_fBGreen%Проанализировать результаты тестирования (Графический визуализатор)%_fReset% запускает Visual
+@echo   Analyzer и подгружает результаты тестов. Также можно вручную загрузить в него файлы результатов.
+@echo.
+@echo   Опция %_fBGreen%Построить гистограмму или вычислить тренд по результатам тестов%_fReset% позволяет
+@echo   визуально оценить уровень просадок по результатам тестирования.
+@echo.
 @echo   Опция %_fBGreen%Назначить метку (префикс) имени архива для результатов тестов%_fReset% используется для
 @echo   идентификации результатов при большом количестве тестов. Метка будет добавлена в начале имени
 @echo   архива с результатами тестов и сохранена на скринщоте с результатами.
+@echo.
+@echo   Опция %_fBGreen%Решение проблем с подключением и запуском тестов%_fReset% поможет решить различные проблемы
+@echo.
+@echo   Опция %_fBGreen%Переключить протоколы TCP/UDP%_fReset% переключает протоколы тестирования для текущего сеанса.   
+@echo   -----------------------
+@echo.
+@echo               %_fBYellow%=== Нажмите что-нибудь для продолжения ===%_fReset%
+pause >nul
+cls
+@echo.
 @echo.
 @echo   %_fBYellow%Тестирование представляет собой следующую процедуру:%_fReset%
 @echo   Будет проведено два теста, %_fBYellow%Реверсивный%_fReset%: от ПК к шлему, и %_fBYellow%Прямой%_fReset%: от шлема к ПК. 
@@ -23084,79 +25518,45 @@ cls
 @echo               %_fBYellow%=== Нажмите что-нибудь для возврата в меню ===%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo          %_fBYellow%GENERAL EXPLANATIONS%_fReset%
-rem @echo.      
-rem @echo    The %_fBGreen%Wi-Fi Speed Autotest with default values%_fReset% option is designed for a simplified
-rem @echo    launch of speed and drop tests. The test will run with automatically pre-filled default
-rem @echo    values, and results will be analyzed once the test is complete.
+rem @echo         %_fBYellow%GENERAL EXPLANATIONS%_fReset%
 rem @echo.
-rem @echo    The %_fBGreen%Wi-Fi Speed Multitest with values from file%_fReset% option allows you to run several
-rem @echo    tests in a row with different %_fBYellow%interval, threads, duration, and bitrate%_fReset% values for each test.
-rem @echo    To do this, create a text file named %_fBYellow%multitest.txt%_fReset% and place it next to %_fBYellow%Quas.%_fReset%
-rem @echo    File format: parameters in the first line, values in subsequent lines. %_fBYellow%For example:%_fReset%
+rem @echo   The %_fBGreen%Wi-Fi speed autotest with default values%_fReset% option is designed for a simplified launch
+rem @echo   of speed and drop tests. A test will run with automatically substituted default
+rem @echo   values, and upon completion, the results will be analyzed.
 rem @echo.
-rem @echo        %_fBBlue%Label            Interval   Threads   Dur    Bitrate%_fReset%
-rem @echo        %_fCyan%NoLimit          %_fBCyan%100        1        180    0%_fReset%
-rem @echo        %_fCyan%Fast500          %_fBCyan%100        1        60     500%_fReset%
-rem @echo        %_fCyan%StressTestShort  %_fBCyan%100        10       180    0%_fReset%
-rem @echo        %_fCyan%StressTestLong   %_fBCyan%100        10       1800   0%_fReset%
+rem @echo        Default values:
+rem @echo     - %_fCyan%Check interval in milliseconds	: from %_fBCyan%100 %_fCyan%to %_fBCyan%1000%_fReset%    ( %_fCyan%default is %_fBCyan%100%_fReset% )
+rem @echo     - %_fCyan%Number of streams			: from %_fBCyan%1 %_fCyan%to %_fBCyan%10%_fReset%        ( %_fCyan%default is %_fBCyan%1%_fReset% )
+rem @echo     - %_fCyan%Duration of each test in seconds	: from %_fBCyan%1 %_fCyan%to %_fBCyan%3600%_fReset%      ( %_fCyan%default is %_fBCyan%180%_fReset% )
 rem @echo.
-rem @echo     %_fBYellow%Values must be within the following ranges:
-rem @echo        %_fCyan%Interval%_fReset%      : %_fBCyan%from 100 to 5000 milliseconds%_fReset%
-rem @echo        %_fCyan%Threads%_fReset%       : %_fBCyan%from 1 to 10%_fReset%
-rem @echo        %_fCyan%Duration%_fReset%      : %_fBCyan%from 1 to 7200 seconds%_fReset%
-rem @echo        %_fCyan%Bitrate%_fReset%       : %_fBCyan%from 0 (unlimited) to 2000%_fReset%
+rem @echo   %_fBYellow%To detect drops and packet loss, it is recommended to leave the check interval at default.%_fReset%
+rem @echo   To abort input and return to the menu, enter %_fBYellow%0%_fReset% instead of values.
 rem @echo.
-rem @echo     %_fBYellow%All values, parameters, and names in the file are separated by one or more spaces.%_fReset%
-rem @echo    %_fBYellow%Quas%_fReset% can also help create the file: in the test menu, type "%_fBYellow%be%_fReset%" (no quotes) and
-rem @echo    the file %_fBYellow%Examplemultitest.txt%_fReset% will appear. Rename it to %_fBYellow%multitest.txt%_fReset% and change
-rem @echo    the content to your desired parameters and names. If you need to skip a test,
-rem @echo    you can do so without deleting the line—just put a semicolon at the start of the line:
+rem @echo   The %_fBGreen%Advanced settings and test parameters%_fReset% option speaks for itself.
+rem @echo   See Help inside this option for details.
 rem @echo.
-rem @echo        %_fBYellow%;%_fCyan%Fast500          %_fBCyan%100        1        60     500%_fReset%
+rem @echo   The %_fBGreen%Analyze test results (Table view)%_fReset% option analyzes existing
+rem @echo   csv files with test results, displays a summary table, and takes a screenshot of it.
 rem @echo.
-rem @echo    After starting the multitest, the file is checked for validity. If errors are found,
-rem @echo    the lines with errors and their explanations are displayed. If the file is valid, its content
-rem @echo    is shown. Skipped lines will be marked accordingly. The total number of tests
-rem @echo    and their total duration are also displayed. The multitest starts after confirmation.
+rem @echo   The %_fBGreen%Analyze test results (Graphical visualizer)%_fReset% option launches Visual
+rem @echo   Analyzer and loads the test results. You can also manually load result files into it.
 rem @echo.
-rem @echo    The %_fBGreen%Standard Wi-Fi Speed Test with manual values%_fReset% option allows you to enter desired
-rem @echo    parameters or simply press Enter to use the default values:
-rem @echo.      
-rem @echo      - %_fCyan%Interval between checks in ms, from %_fBCyan%100 %_fCyan%to %_fBCyan%1000%_fReset%   ( %_fCyan%default - %_fBCyan%100%_fReset% )
-rem @echo      - %_fCyan%Number of threads, from %_fBCyan%1 %_fCyan%to %_fBCyan%10%_fReset%                   ( %_fCyan%default - %_fBCyan%1%_fReset% )
-rem @echo      - %_fCyan%Duration of each test in seconds, from %_fBCyan%1 %_fCyan%to %_fBCyan%3600%_fReset%  ( %_fCyan%default - %_fBCyan%180%_fReset% )
-rem @echo.      
-rem @echo    %_fBYellow%To detect drops and packet loss, it is recommended to keep the interval at its default.%_fReset%
-rem @echo    To cancel data entry and return to the menu, enter %_fBYellow%0%_fReset% instead of a value.
-rem @echo    ----------------------------------------------------------------------------------------
-rem @echo.      
-rem @echo         %_fBYellow%--- Press any key to continue ---%_fReset%
+rem @echo   The %_fBGreen%Build histogram or calculate trend from test results%_fReset% option allows
+rem @echo   visually evaluating the level of drops based on testing results.
+rem @echo.
+rem @echo   The %_fBGreen%Assign a label (prefix) to the test result archive name%_fReset% option is used to
+rem @echo   identify results when running a large number of tests. The label will be added
+rem @echo   to the beginning of the result archive name and saved on the screenshot with results.
+rem @echo.
+rem @echo   The %_fBGreen%Troubleshooting connection and test launch issues%_fReset% option helps resolve various issues.
+rem @echo.
+rem @echo   The %_fBGreen%Toggle TCP/UDP protocols%_fReset% option switches testing protocols for the current session.   
+rem @echo   -----------------------
+rem @echo.
+rem @echo               %_fBYellow%=== Press any key to continue ===%_fReset%rem EndMarker
 rem pause >nul
 rem cls
 rem @echo.
-rem @echo    The %_fBGreen%Analyze test results%_fReset% option analyzes existing csv files
-rem @echo    containing test results, displays a summary table, and creates a screenshot of it.
-rem @echo.    
-rem @echo    The %_fBGreen%Firewall handling for "Bad file descriptor" error%_fReset% option helps with firewall issues.
-rem @echo    If the program fails or crashes, check the error text in the %_fBYellow%errorcl.txt%_fReset% file. If you see a 
-rem @echo    %_fBYellow%Bad file descriptor%_fReset% error, disable the PC firewall or use this option. If the error persists,
-rem @echo    try changing the check duration value.
-rem @echo    The %_fBYellow%unable to send control message: Broken pipe%_fReset% error indicates a lost connection.
-rem @echo.
-rem @echo    The %_fBGreen%Service connection check%_fReset% option is intended %_fBYellow%ONLY FOR CONNECTION CHECK%_fReset% for service
-rem @echo    purposes. Its duration is %_fBYellow%10%_fReset% seconds with a %_fBYellow%1%_fReset% second interval. %_fBYellow%DON'T USE FOR TESTING^^!%_fReset%
-rem @echo. 
-rem @echo    The %_fBGreen%Run iperf server as a separate process%_fReset% option launches the iperf server in a separate
-rem @echo    window in listener mode. You can then start a test normally from the menu, and it will
-rem @echo    connect to this server. This helps if the test fails to start or hangs.
-rem @echo.
-rem @echo    The %_fBGreen%Temporarily set %_fBYellow%%SYSTEMDRIVE%\Temp%_fBGreen% as the iperf server startup directory%_fReset% option is used when iperf
-rem @echo    starts but the connection fails due to a lack of access permissions. Try using this option.
-rem @echo    Once finished, you can delete the %_fBYellow%iperf3.exe%_fReset% and %_fBYellow%cygwin1.dll%_fReset% files from that directory.
-rem @echo.
-rem @echo    The %_fBGreen%Save %_fBYellow%%SYSTEMDRIVE%\Temp%_fBGreen% to registry as permanent%_fReset% option is useful for
-rem @echo    repeated tests, so you don't have to use the previous temporary option every time.
 rem @echo.
 rem @echo    %_fBYellow%The testing procedure is as follows:%_fReset%
 rem @echo    Two tests will be conducted: %_fBYellow%Reverse%_fReset% (PC to headset) and %_fBYellow%Direct%_fReset% (headset to PC). A server will
@@ -23280,6 +25680,7 @@ if not defined choice goto _BuildHistogramMenu
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO _iperftest)
 if /i "%choice%"=="r" (set vector=reverse&&set "VectorMessage=Histogram of Reverse Test Results [From PC to Headset]"&&GOTO _BuildHistogramAction)
 if /i "%choice%"=="d" (set vector=direct&&set "VectorMessage=Histogram of Direct Test Results [From Headset to PC]"&&GOTO _BuildHistogramAction)
 if /i "%choice%"=="e" (goto _BuildDiagramActionG)
@@ -23511,6 +25912,7 @@ if not defined choice goto _FirewallPortSetting
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
 if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="`" (GOTO :_iPerfTestTroubleShooting)
 if /i "%choice%"=="w" (GOTO _iperftest)
 if /i "%choice%"=="a" (GOTO _DisableFirewall)
 if /i "%choice%"=="b" (GOTO _EnableFirewall)
@@ -23638,63 +26040,42 @@ call :_cdc
 if not exist ipaddr.txt call :_CreateIPaddressTxt
 call :_ExtractIPaddress
 set iinterval=
-call :_SetIperTestInterval
-call :_IperfTestProcedure
-call :_WiFiTestCSVAnalyzer
-goto _iperftest
-
-
-:_SetIperTestInterval
+rem endlocal
+rem set curdir=%~dp0
+set curdir=%cd%
+powershell -ExecutionPolicy Bypass -NoProfile -NoLogo -File "%myfiles%\multitest.v1.11.ps1" -WorkDir %curdir%
+if not exist mt.flag (
+@echo   ---------------
 rem StartRusTextBlock
-@set /p iinterval="Введите интервал в миллисекундах и нажмите Enter: "
+@echo   Запуск теста прерван.
+@echo.
+@echo ^>^>^> Нажмите любую кнопку для возврата в меню тестирования ^<^<^<
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @set /p iinterval="Enter the interval in milliseconds and press Enter (0 - Exit) : "
-rem EndEngTextBlock
-if [%iinterval%]==[] set iinterval=100
-if %iinterval%==0 goto _iperftest
-if %iinterval% LSS 100 goto _lssinterval
-set ointerval=%iinterval%
-call :_Division
-@echo %ointerval%
-@echo.
-@set qstreams=
-rem StartRusTextBlock
-@set /p qstreams="Введите количество потоков и нажмите Enter: "
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @set /p qstreams="Enter the number of streams and press Enter (0 - Exit) : "
-rem EndEngTextBlock
-if [%qstreams%]==[] set qstreams=1
-if %qstreams%==0 goto _iperftest
-@echo %qstreams%
-@echo.
-set itime=
-rem StartRusTextBlock
-@set /p itime="Введите длительность проверки в секундах и нажмите Enter: "
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @set /p itime="Enter the duration of the check in seconds and press Enter (0 - Exit) : "
-rem EndEngTextBlock
-if [%itime%]==[] set itime=180
-if %itime%==0 goto _iperftest
-@echo %itime%
-@echo.
-
-rem set bndwidth=
-rem set width=
-rem rem StartRusTextBlock
-rem @set /p width="Введите величину ограничения битрейта в мегабитах и нажмите Enter (0 - без ограничений) : "
-rem rem EndRusTextBlock
-rem rem StartEngTextBlock
-rem rem @set /p width="Enter the bandwidth limit and press Enter (0 - no limit) : "
-rem rem EndEngTextBlock
-rem set /a bndwidth=%width%*1000000
-rem if [%bndwidth%]==[] set bndwidth=0
-rem if %bndwidth%==0 goto _iperftest
-rem @echo %bndwidth%
+rem @echo    Test execution aborted.
 rem @echo.
-exit /b
+rem @echo ^>^>^> Press any key to return to the testing menu ^<^<^<
+rem EndEngTextBlock
+@pause >nul
+GOTO _iperftest
+)
+set AnalizeStandalone=1
+for /f "skip=1 eol=* tokens=1-5 delims= " %%A in (%cd%\multitest.txt) do (
+set skiptest=
+set "WiFitestLabelCheck=%%A"
+set "iinterval=%%B"
+set "qstreams=%%C"
+set "itime=%%D"
+set "bndwidth=%%E"
+call :_Division
+)
+
+call :_IperfTestProcedure
+if defined udpparam call :_UDPResultsSave
+call :_WiFiTestCSVAnalyzer
+call :_BackupPrevWiFiTestFiles
+call :_prevmenu
+goto _iperftest
 
 
 :_SwithIperfToTempMessage
@@ -23728,30 +26109,36 @@ md %iperfdir% 1>nul 2>nul
 exit /b
 
 :_DebugWiFiTestConnection
+set autofiting=1
 @echo   = pushing iperf to headset
 %MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>debuglogwf.txt 2>clientpushlog.txt
 @echo   = iperf chmod 
-%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>>debuglogwf.txt 2>clientchlog.txt
+%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>>debuglogwf.json 2>clientchlog.txt
 @echo   = copying iperf files to start directory
 
 call :_CopyingIperfToTemp
 @echo   = start server iperf
 
-start cmd /c "mode con:cols=80 lines=50 &%iperfdir%\iperf3.exe -s"
+start cmd /c "mode con:cols=90 lines=50 &%iperfdir%\iperf3.exe -s"
 rem start cmd /c "mode con:cols=80 lines=50 &%MYFILES%\iperf3.exe -s"
 
 @ping localhost -n 5 1>nul 2>nul
 @echo   = start client iperf
 rem @echo.
-set bndwidth=250
-set itime=5
-set iinterval=1
+set bndwidth=300
+set itime=180
+set iinterval=0.1
+set tcpnodelay=-N
 rem if not defined bndwidth set bndwidth=0
 rem set ipaddrtxt=10.0.0.30
-rem set "udpparam=-u"
+set "udpparam=-u"
+rem set "jsonparam=-J"
+rem set "reverse=-R"
+set "servoutput=--get-server-output"
 set qstreams=1
-
-%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -f m %udpparam% 2>errorst.txt 1>clientprclog.txt
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 %servoutput% -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -f m -N %udpparam% %jsonparam% 2>ErrorsDirect.txt 1>ClientLogDirect.txt
+set "reverse=-R"
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 %servoutput%  -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -f m -N %udpparam% %jsonparam% 2>ErrorsReverse.txt 1>ClientLogReverse.txt
 
 rem %MYFILES%\adb shell /data/local/tmp/iperf3.18 -t 10 -i 1 -b 0 -c %ipaddrtxt% -P 1 -R -f m 1>clientprclog.txt 2>clientstlog.txt
 @ping localhost -n 2 1>nul 2>nul
@@ -23773,7 +26160,7 @@ rem )
 
 call :_settime
 rem @if exist %~dp0WiFiConnectTestReverse*.* call :_BackupPrevWiFiTestFiles
-@if exist %cd%\WiFiConnectTestReverse*.* call :_BackupPrevWiFiTestFiles
+@if exist %cd%\WiFiConnectTest*.* call :_BackupPrevWiFiTestFiles
 
 setlocal enableextensions enabledelayedexpansion
 rem for /f "delims=" %%a in ('dir /b /a-d %cd%\*.csv 2^>nul 1^>nul') do (
@@ -23798,6 +26185,7 @@ rem @if exist WiFiTestRezult*.* @md WiFiTestFiles 1>nul 2>nul &@move WiFiTestRez
 set wfclogd=WiFiConnectTestDirect
 set wfclogdt=%wfclogd%-%dt%.txt
 @echo ------------------------------------------------------
+if not defined autofiting (
 rem StartRusTextBlock
 @echo В окне сервера можно наблюдать процесс тестирования.
 @echo По завершению тестов окно сервера будет закрыто
@@ -23822,8 +26210,8 @@ rem @echo  The analysis of the results is based on the following files:
 rem @echo    bitrate-direct-%dt%.csv
 rem @echo    bitrate-reverse-%dt%.csv
 rem EndEngTextBlock
+)
 @echo.
-
 
 %MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>nul 2>errorhs.txt
 %MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>nul 2>errorch.txt
@@ -23845,7 +26233,10 @@ rem start cmd /c "mode con:cols=80 lines=50 &d:\Quest\_Cmd\__Quas\Source\iperf3.
 rem echo %iperfdir%
 rem pause
 
-start "IPERF_TEST" cmd /c "mode con:cols=80 lines=50 &%iperfdir%\iperf3.exe -s"
+if "%protocol%"=="UDP" (set cols=85) else (set cols=80)
+rem @mode con:cols=%cols% lines=39
+
+start /min "IPERF_TEST" cmd /c "mode con:cols=%cols% lines=50 &%iperfdir%\iperf3.exe -s"
 rem ++++++++++++++++++++++++++++
 
 
@@ -23857,11 +26248,13 @@ rem StartRusTextBlock
 @echo +   Измерение пропускной способности Wi-Fi   + >>%wfclogdt%
 @echo +           между шлемом и ПК                + >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
-@echo  ===   Обычная проверка (от шлема к ПК)   === >>%wfclogdt%
+@echo  ===   Прямая проверка (от шлема к ПК)   === >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo  Interval	: %ointerval% ms >>%wfclogdt%
 @echo  Streams	: %qstreams% >>%wfclogdt%
 @echo  Duration	: %itime% s >>%wfclogdt%
+@echo  Protocol	: %protocol% >>%wfclogdt%
+@echo  Label		: %WiFitestLabel% >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo. >>%wfclogdt%
 rem EndRusTextBlock
@@ -23872,11 +26265,13 @@ rem @echo ---------------------------------------------- >>%wfclogdt%
 rem @echo +   Measuring Wi-Fi throughput   + >>%wfclogdt%
 rem @echo +   between the headset and PC   + >>%wfclogdt%
 rem @echo ---------------------------------------------- >>%wfclogdt%
-rem @echo  ===   Regular check (from headset to PC)   === >>%wfclogdt%
+rem @echo  ===   Direct check (from headset to PC)   === >>%wfclogdt%
 rem @echo ---------------------------------------------- >>%wfclogdt%
-rem @echo  Interval		: %ointerval% ms >>%wfclogdt%
-rem @echo  Streams		: %qstreams% >>%wfclogdt%
-rem @echo  Duration		: %itime% s >>%wfclogdt%
+rem @echo  Interval	: %ointerval% ms >>%wfclogdt%
+rem @echo  Streams	: %qstreams% >>%wfclogdt%
+rem @echo  Duration	: %itime% s >>%wfclogdt%
+rem @echo  Protocol	: %protocol% >>%wfclogdt%
+rem @echo  Label		: %WiFitestLabel% >>%wfclogdt%
 rem @echo ---------------------------------------------- >>%wfclogdt%
 rem @echo. >>%wfclogdt%
 rem EndEngTextBlock
@@ -23890,7 +26285,8 @@ rem >>>>>>>>>>>>>>>>>>>>>>>
 
 
 rem %MYFILES%\adb shell /data/local/tmp/iperf3.9 -t %itime% -i %iinterval% -c %ipaddrtxt% -P %qstreams% >> %wfclogdt% 2>error.txt
-%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -f m %udpparam%>> %wfclogdt% 2>errorst.txt
+rem %MYFILES%\adb shell /data/local/tmp/iperf3.18 --get-server-output -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -f m -N %udpparam% >> %wfclogdt% 2>errorst.txt
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -f m -N %udpparam% >> %wfclogdt% 2>errorst.txt
 
 if %errorlevel% == 1 goto _iperferror
 @echo. >>%wfclogdt%
@@ -23909,6 +26305,8 @@ rem StartRusTextBlock
 @echo  Intervals	: %ointerval% ms >>%wfclogdt%
 @echo  Streams	: %qstreams% >>%wfclogdt%
 @echo  Duration	: %itime% s >>%wfclogdt%
+@echo  Protocol	: %protocol% >>%wfclogdt%
+@echo  Label		: %WiFitestLabel% >>%wfclogdt%
 @echo ---------------------------------------------- >>%wfclogdt%
 @echo. >>%wfclogdt%
 rem EndRusTextBlock
@@ -23924,10 +26322,14 @@ rem @echo ---------------------------------------------- >>%wfclogdt%
 rem @echo  Intervals	: %ointerval% ms >>%wfclogdt%
 rem @echo  Streams	: %qstreams% >>%wfclogdt%
 rem @echo  Duration	: %itime% s >>%wfclogdt%
+rem @echo  Protocol	: %protocol% >>%wfclogdt%
+rem @echo  Label		: %WiFitestLabel% >>%wfclogdt%
 rem @echo ---------------------------------------------- >>%wfclogdt%
 rem @echo. >>%wfclogdt%
 rem EndEngTextBlock
-%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -R -f m %udpparam%>> %wfclogdt% 2>errorcl.txt
+rem %MYFILES%\adb shell /data/local/tmp/iperf3.18 --get-server-output -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -R -f m -N %udpparam%>> %wfclogdt% 2>errorcl.txt
+
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% -R -f m -N %udpparam%>> %wfclogdt% 2>errorcl.txt
 if %errorlevel% == 1 goto _iperferror
 @taskkill /F /IM iperf3.exe 1>nul 2>nul
 for /f "delims=" %%A in ('dir /b /a-d %cd%\error*.txt') do (
@@ -23950,7 +26352,7 @@ rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>
 rem for /f "usebackq skip=15 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" WiFiConnectTestReverse-2025-02-12_04-47-06.txt`) do (
 rem >>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-for /f "usebackq skip=14 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" %wfclogd%-%dt%.txt`) do (
+for /f "usebackq skip=16 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" %wfclogd%-%dt%.txt`) do (
 set bitrated=%%a
 for /f "tokens=1,2 delims=." %%A in ("!bitrated!") do (
 set "whole=%%A"
@@ -23968,7 +26370,7 @@ set /a whole+=1
 
 rem For /F "skip=16 tokens=7 eol=- delims= " %%a In (%wfclogr%-%dt%.txt) Do (
 
-for /f "usebackq skip=15 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" %wfclogr%-%dt%.txt`) do (
+for /f "usebackq skip=17 tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" %wfclogr%-%dt%.txt`) do (
 set bitrater=%%a
 for /f "tokens=1,2 delims=." %%A in ("!bitrater!") do (
 set "whole=%%A"
@@ -23997,7 +26399,7 @@ ren !csvfileforren! !csvfileforren!.old 1>nul 2>nul
 )
 echo   ----------------
 if not exist %cd%\iperflog.txt echo   = Iperf log 'iperflog.txt' not found. Press key to exit&&pause >nul&& goto _iperftestmenu
-echo   = Start parsing..
+@echo   = Start parsing..
 for /f "usebackq tokens=7" %%a in (`findstr /i /v /c:"Transfer" /c:"Sum" /c:"Connected" /c:"- - - - - -" /c:"sender" /c:"receiver" iperflog.txt`) do (
 set bitrated=%%a
 for /f "tokens=1,2 delims=." %%A in ("!bitrated!") do (
@@ -24026,6 +26428,7 @@ set ointerval=100
 set qstreams=1
 call :_IperfTestProcedure
 call :_WiFiTestCSVAnalyzer
+if defined udpparam call :_UDPResultsSave
 call :_BackupPrevWiFiTestFiles
 call :_prevmenu
 goto :_iperftestmenu
@@ -24038,12 +26441,80 @@ set ointerval=1000
 set qstreams=1
 call :_IperfTestProcedure
 call :_WiFiTestCSVAnalyzer
+if defined udpparam call :_UDPResultsSave
 call :_BackupPrevWiFiTestFiles
+cls
+@echo.
+@echo.
+@echo.
+@echo.
+@echo =================================================================
+@echo.
+rem StartRusTextBlock
+@echo            %_fBGreen%Проверка соединения прошла успешно. 
+@echo         Можно запускать полноценное тестирование.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo      %_fBGreen%Connection check completed successfully.
+rem @echo         Full testing can now be started.%_fReset%
+rem EndEngTextBlock
+@echo.
+call :_prevmenu
+goto _iperftestmenu
+
+
+
+:_IperfMutliTestParametersCheck
+cls
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo            %_fBGreen%===  Использование Multitest Editor ===
+@echo.
+@echo   %_fBYellow%Для проведения одного теста (%_fYellow%реверсивного и прямого) %_fBYellow%с дефолтными значениями нажмите кнопку
+@echo   %_fYellow%Confirm%_fBYellow%. Дефолтные значения указаны в таблице.
+@echo   Для настрой желаемых значений нажмите кнопку %_fYellow%manual %_fBYellow%и измените значения.
+@echo.
+@echo   Для запуска серии тестов нажмите кнопку %_fYellow%+Add %_fBYellow%и добавьте столько строк, сколько тестов
+@echo   требуется провести. Чтобы отключить тест из серии, не удаляя строку параметров, снимите галку
+@echo   слева от названия теста, он будет пропущен. После нажатия %_fYellow%Confirm %_fBYellow%будет выведено общее время 
+@echo   тестов, их количество, а также их список с выбранными параметрами.
+@echo.
+@echo   Кнопка %_fYellow%Save %_fBYellow%служит для сохранения значений в файл %_fYellow%multitest.txt.
+@echo   %_fBYellow%Кнопка %_fYellow%Reload %_fBYellow%загружает данные из файла %_fYellow%multitest.txt %_fBYellow%в %_fYellow%Multitest Editor.
+@echo   %_fBYellow%Кнопка %_fYellow%Remove %_fBYellow%удаляет по одной последней строке в списке тестов.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo             %_fBGreen%=== Using Multitest Editor ===
+rem @echo.
+rem @echo    %_fBYellow%To run a single test (%_fYellow%reverse and direct) %_fBYellow%with default values, click the
+rem @echo    %_fYellow%Confirm %_fBYellow%button. Default values are listed in the table.
+rem @echo    To configure desired values, click the %_fYellow%manual %_fBYellow%button and adjust the values.
+rem @echo.
+rem @echo    To run a series of tests, click the %_fYellow%+Add %_fBYellow%button and add as many rows as tests you need to run.
+rem @echo    To disable a test from the series without deleting its parameter row, uncheck the box
+rem @echo    to the left of the test name; it will be skipped. After clicking %_fYellow%Confirm%_fBYellow%, the total test
+rem @echo    time, total count, and a list of tests with chosen parameters will be displayed.
+rem @echo.
+rem @echo    The %_fYellow%Save %_fBYellow%button is used to save values to the %_fYellow%multitest.txt %_fBYellow%file.
+rem @echo    %_fBYellow%The %_fYellow%Reload %_fBYellow%button loads data from the %_fYellow%multitest.txt %_fBYellow%file into %_fYellow%Multitest Editor.
+rem @echo    %_fBYellow%The %_fYellow%Remove %_fBYellow%button deletes the last row in the test list one by one.%_fReset%
+rem EndEngTextBlock
+rem set "curdir=%~dp0"
+set "curdir=%cd%"
+powershell -ExecutionPolicy Bypass -NoProfile -NoLogo -File "%myfiles%\multitest.v1.12.ps1" -WorkDir %curdir%
+if not exist mt.flag (
+@echo  ============================
+rem StartRusTextBlock
+@echo   %_fRed%Запуск мультитеста прерван%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fRed%Test execution aborted%_fReset%
+rem EndEngTextBlock
 call :_prevmenu
 goto :_iperftestmenu
-
-:_IperfMutliTesParametersCheck
-cls
+)
 @echo.
 @echo.
 @echo.
@@ -24061,30 +26532,30 @@ goto :_iperftest
 )
 
 rem === Threshold ===
-set MIN_INTERVAL=100
-set MAX_INTERVAL=5000
+rem set MIN_INTERVAL=100
+rem set MAX_INTERVAL=5000
 
-set MIN_STREAMS=1
-set MAX_STREAMS=10
+rem set MIN_STREAMS=1
+rem set MAX_STREAMS=10
 
-set MIN_DURATION=1
-set MAX_DURATION=7200
+rem set MIN_DURATION=1
+rem set MAX_DURATION=7200
 
-set MIN_BW=0
-set MAX_BW=2000
+rem set MIN_BW=0
+rem set MAX_BW=2000
 
-set ERRORS=0
+rem set ERRORS=0
 set LINE=0
 set TOTAL_DURATION=0
 
-rem StartRusTextBlock
-@echo   %_fBYellow%Проверка параметров и нормализация файла %_fYellow%multitest.txt...%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fBYellow%Checking parameters in the file %_fYellow%multitest.txt...%_fReset%
-rem EndEngTextBlock
-@echo   ------------------------------------------------------------
-@echo.
+rem rem StartRusTextBlock
+rem @echo   %_fBYellow%Проверка параметров и нормализация файла %_fYellow%multitest.txt...%_fReset%
+rem rem EndRusTextBlock
+rem rem StartEngTextBlock
+rem rem @echo   %_fBYellow%Checking parameters in the file %_fYellow%multitest.txt...%_fReset%
+rem rem EndEngTextBlock
+rem @echo   ------------------------------------------------------------
+rem @echo.
 for /f "tokens=1-5 delims= " %%A in (%cd%\multitest.txt) do (
 if /i NOT "%%A"=="Label" (
 set /a LINE+=1
@@ -24094,10 +26565,13 @@ set "Interval=%%B"
 set "Streams=%%C"
 set "Duration=%%D"
 set "BandWidth=%%E"
-call :_CheckMultitest Interval  !MIN_INTERVAL! !MAX_INTERVAL!
-call :_CheckMultitest Streams   !MIN_STREAMS!  !MAX_STREAMS!
-call :_CheckMultitest Duration  !MIN_DURATION! !MAX_DURATION!
-call :_CheckMultitest BandWidth !MIN_BW!       !MAX_BW!
+
+rem call :_CheckMultitest Interval  !MIN_INTERVAL! !MAX_INTERVAL!
+rem call :_CheckMultitest Streams   !MIN_STREAMS!  !MAX_STREAMS!
+rem call :_CheckMultitest Duration  !MIN_DURATION! !MAX_DURATION!
+rem call :_CheckMultitest BandWidth !MIN_BW!       !MAX_BW!
+
+
 rem Если Duration корректный — добавляем
 @echo(!Duration!| findstr /r "^[0-9][0-9]*$" >nul
 if not errorlevel 1 (
@@ -24105,31 +26579,35 @@ set /a TOTAL_DURATION+=Duration
 )
 )
 )
-echo.
-if !ERRORS! GTR 0 (
-@echo   ============================================================
-rem StartRusTextBlock
-@echo   %_fRed%Найдено ошибок: !ERRORS!
 @echo.
-@echo   %_fBYellow%Перед запуском тестов следует исправить ошибки в параметрах.%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fRed%Errors found: !ERRORS!
-@echo.
-rem @echo   %_fBYellow%Before starting the tests, you need to fix the parameter errors.%_fReset%
-rem EndEngTextBlock
-@echo   ============================================================
-call :_prevmenu
-goto :_iperftestmenu
-)
+if "!LINE!"== "1" set AnalizeStandalone=1
+
+rem if !ERRORS! GTR 0 (
+rem @echo   ============================================================
+rem rem StartRusTextBlock
+rem @echo   %_fRed%Найдено ошибок: !ERRORS!
+rem @echo.
+rem @echo   %_fBYellow%Перед запуском тестов следует исправить ошибки в параметрах.%_fReset%
+rem rem EndRusTextBlock
+rem rem StartEngTextBlock
+rem rem @echo   %_fRed%Errors found: !ERRORS!
+rem @echo.
+rem rem @echo   %_fBYellow%Before starting the tests, you need to fix the parameter errors.%_fReset%
+rem rem EndEngTextBlock
+rem @echo   ============================================================
+rem call :_prevmenu
+rem goto :_iperftestmenu
+rem )
 rem === Расчёт времени ===
 set /a TOTAL_SECONDS=TOTAL_DURATION*2
 set /a TOTAL_MINUTES=TOTAL_SECONDS/60
 set /a REMAINDER_SECONDS=TOTAL_SECONDS%%60
+set TEST_COUNT=!LINE!
+set REMAINING_SECONDS=!TOTAL_SECONDS!
+set TEST_NUM=0
 @echo   ============================================================
 rem StartRusTextBlock
-@echo   %_fBGreen%Все параметры корректны, можно запускать серию тестов.%_fReset%
-@echo   %_fCyan%Количество тестов%_fReset% 	: %_fBCyan%!LINE!%_fReset%
+@echo   %_fCyan%Количество тестов%_fReset% 	: %_fBCyan%2x!LINE! (прямой и реверсивный%_fReset%)
 @echo   %_fCyan%Общая длительность%_fReset%	: %_fBCyan%!TOTAL_MINUTES! мин !REMAINDER_SECONDS! сек%_fReset%
 @echo   ------------------------------------------------------------
 @echo.
@@ -24139,7 +26617,6 @@ rem StartRusTextBlock
 @echo   ------------------------------------------------------------
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   %_fBGreen%All parameters are correct, you can start the test series.%_fReset%
 rem @echo   %_fCyan%Number of tests: %_fBCyan%!LINE!%_fReset%
 rem @echo   %_fCyan%Total duration:%_fReset% %_fBCyan%!TOTAL_MINUTES! min !REMAINDER_SECONDS! sec%_fReset%
 rem @echo   ------------------------------------------------------------
@@ -24174,99 +26651,19 @@ rem @echo   %_fBYellow%Press %_fYellow%Enter%_fBYellow% to start the tests, or %
 rem EndEngTextBlock
 @echo   ============================================================
 for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "KEY=%%K"
-if "!KEY!"=="27" goto :_iperftestmenu
-if "!KEY!"=="13" goto :_IperfMutliTesParametersTest
+if "!KEY!"=="27" del /q mt.flag /f 1>nul 2>nul& goto :_iperftestmenu
+if "!KEY!"=="13" goto :_IperfMutliTestParametersTest
 call :_prevmenu
 goto :_iperftestmenu
 
 
-:_CheckMultitest
-set "TMPFILE=multitest_tmp.txt"
-del "%TMPFILE%" 2>nul
-for /f "usebackq delims= eol=*" %%L in ("multitest.txt") do (
-set "linet=%%L"
-set "linet=!linet:	= !"
-echo(!linet!>>"%TMPFILE%"
-)
-move /y "%TMPFILE%" "multitest.txt" >nul
-set "var=%1"
-set "min=%2"
-set "max=%3"
-call set "val=%%%var%%%"
-rem === Проверка TAB ===
-rem @echo(%val%| findstr /c:"	" >nul
-rem if not errorlevel 1 (
-rem @echo %_fRed%[[Строка !LINE!] %_fCyan%Метка: %_fBCyan%!WiFitestLabelCheck!%_fReset% : Значение параметра %_fBYellow%%var%%_fReset%  содержит TAB
-rem set /a ERRORS+=1
-rem exit /b
-rem )
-
-echo(%val%| findstr /r "^[0-9][0-9]*$" >nul
-if errorlevel 1 (
-rem StartRusTextBlock
-@echo   %_fRed%[Строка !LINE!] %_fCyan%Метка: %_fBCyan%!WiFitestLabelCheck!%_fReset% : Значение параметра %_fBYellow%%var%="%val%"%_fReset% НЕ число
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fRed%[Line !LINE!] %_fCyan%Label: %_fBCyan%!WiFitestLabelCheck!%_fReset% : Parameter value %_fBYellow%%var%="%val%"%_fReset% is NOT a number
-rem EndEngTextBlock
-set /a ERRORS+=1
-exit /b
-)
-
-if %val% LSS %min% (
-rem StartRusTextBlock
-@echo   %_fRed%[Строка !LINE!]%_fReset% %_fCyan%Метка: %_fBCyan%!WiFitestLabelCheck!%_fReset% : Параметр %_fBYellow%%var%="%val%"%_fReset% меньше минимального (%_fBYellow%%min%%_fReset%^)
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fRed%[Line !LINE!]%_fReset% %_fCyan%Label: %_fBCyan%!WiFitestLabelCheck!%_fReset% : Parameter %_fBYellow%%var%="%val%"%_fReset% is less than the minimum allowed (%_fBYellow%%min%%_fReset%^)
-rem EndEngTextBlock
-set /a ERRORS+=1
-)
-
-if %val% GTR %max% (
-rem StartRusTextBlock
-@echo   %_fRed%[Строка !LINE!] %_fCyan%Метка: %_fBCyan%!WiFitestLabelCheck!%_fReset% : Параметр %_fBYellow%%var%="%val%"%_fReset% больше максимального (%_fBYellow%%max%%_fReset%^)
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fRed%[Line !LINE!] %_fCyan%Label: %_fBCyan%!WiFitestLabelCheck!%_fReset% : Parameter %_fBYellow%%var%="%val%"%_fReset% exceeds the maximum allowed (%_fBYellow%%max%%_fReset%^)
-rem EndEngTextBlock
-    set /a ERRORS+=1
-)
-exit /b
-
-
-
-:_CreateExampletultitestTxt
-set MultitestExample=Examplemultitest.txt
-> %MultitestExample% echo Label             Interval Streams Duration BandWidth
->> %MultitestExample% echo NoLimit          100      1       180      0
->> %MultitestExample% echo Fast500          100      1       60       500
->> %MultitestExample% echo StressTestShort  100      10      180      0
->> %MultitestExample% echo StressTestLong   100      10      1800     0
-rem StartRusTextBlock
-@echo.
-@echo   -----------------------------------------------------------------
-@echo   %_fBYellow%Файл-пример для мультитеста создан.
-@echo   Он называется %_fYellow%Examplemultitest.txt %_fBYellow%и находится рядом с программой.
-@echo.
-@echo   Если захотите его использовать, переименуйте файл в %_fYellow%multitest.txt%_fReset%
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo   %_fBYellow%Sample file for multitest has been created.
-rem @echo   It is named %_fYellow%Examplemultitest.txt %_fBYellow%and is located next to the program.
-rem @echo.
-rem @echo   If you want to use it, rename the file to %_fYellow%multitest.txt%_fReset%
-rem EndEngTextBlock
-call :_prevmenu
-goto _iperftestmenu
-
-
-:_IperfMutliTesParametersTest
+:_IperfMutliTestParametersTest
 cls
 @echo.
 @echo.
 @echo.
 @echo.
+set TEST_NUM=0
 set multitest=1
 @echo =================================================================
 rem StartRusTextBlock
@@ -24280,40 +26677,78 @@ set "WiFitestLabel=%%A"
 rem set "mlabel=%%A"
 set "ointerval=%%B"
 set "qstreams=%%C"
-set "itime=%%D"
+set "Duration=%%D"
+set "itime=!Duration!"
 set "bndwidth=%%E"
 set "protocol=%%F"
 set "iinterval=!ointerval!"
 call :_Division
-if defined protocol (
+if "!protocol!"=="UDP" (
 set "udpparam=-u"
 rem StartRusTextBlock
-set "pmessage=%_fCyan%Протокол: %_fBCyan%UDP%_fReset%"
+set "pmessage=UDP"
 ) else (
 set "udpparam="
-set "pmessage=%_fCyan%Протокол: %_fBCyan%TCP%_fReset%"
+set "pmessage=TCP"
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem set "pmessage=%_fCyan%Protocol: %_fBCyan%UDP%_fReset%"
+rem set "pmessage=UDP"
 rem ) else (
 rem set "udpparam="
-rem set "pmessage=%_fCyan%Protocol: %_fBCyan%TCP%_fReset%"
+rem set "pmessage=TCP"
 rem EndEngTextBlock
 )
 echo   ----------------
+set /a TEST_NUM+=1
+
+rem Длительность текущего профиля
+set /a CUR_PROFILE_SEC=!Duration!*2
+set /a CUR_MIN=CUR_PROFILE_SEC/60
+set /a CUR_SEC=CUR_PROFILE_SEC%%60
+
+rem Остаток после завершения текущего профиля
+set /a AFTER_SEC=REMAINING_SECONDS-CUR_PROFILE_SEC
+if !AFTER_SEC! LSS 0 set AFTER_SEC=0
+
+set /a REM_MIN=AFTER_SEC/60
+set /a REM_SEC=AFTER_SEC%%60
+
+@echo.
+@echo  ==========================================
 rem StartRusTextBlock
-@echo   %_fBYellow%Выполняется тест с меткой %_fYellow%!WiFitestLabel!%_fReset%    !pmessage!
+@echo   %_fCyan%Номер теста	: %_fBCyan%!TEST_NUM! %_fBBlue%из %_fBCyan%!TEST_COUNT!
+@echo   %_fCyan%Метка		: %_fBCyan%!WiFitestLabel!
+@echo   %_fCyan%Текущий  	: %_fBCyan%!CUR_MIN! %_fBBlue%мин %_fBCyan%!CUR_SEC! %_fBBlue%сек
+@echo   %_fCyan%Осталось	: %_fBCyan%!REM_MIN! %_fBBlue%мин %_fBCyan%!REM_SEC! %_fBBlue%сек
+@echo   %_fCyan%Протокол	: %_fBCyan%!pmessage!%_fReset% 
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo    %_fBYellow%Running test with label %_fYellow%!WiFitestLabel!%_fReset%
+rem @echo   %_fCyan%Test		: %_fBCyan%!TEST_NUM! %_fBBlue%of %_fBCyan%!TEST_COUNT!
+rem @echo   %_fCyan%Label		: %_fBCyan%!WiFitestLabel!
+rem @echo   %_fCyan%Current  	: %_fBCyan%!CUR_MIN! %_fBBlue%min %_fBCyan%!CUR_SEC! %_fBBlue%sec
+rem @echo   %_fCyan%Remaining	: %_fBCyan%!REM_MIN! %_fBBlue%min %_fBCyan%!REM_SEC! %_fBBlue%sec
+rem @echo   %_fCyan%Protocol	: %_fBCyan%!pmessage!%_fReset%
 rem EndEngTextBlock
-call :_IperfTestProcedure
+@echo  ==========================================
 
+call :_IperfTestProcedure
+set /a REMAINING_SECONDS=AFTER_SEC
 if defined udpparam call :_UDPResultsSave
+
+rem if defined autobrute call :_AitoBruteParametersCheck
 
 rem set "WiFitestLabel=!mlabel!-"
 
+rem echo !TEST_NUM!
+rem echo !TEST_COUNT!
+rem if "!TEST_NUM!" == "!TEST_COUNT!" set AnalizeStandalone=1
+rem echo %AnalizeStandalone%
+rem echo !AnalizeStandalone!
+rem pause
+if "!TEST_NUM!" == "!TEST_COUNT!" set AnalizeStandalone=1
+set "ssexitcode=-Exit"
 call :_WiFiTestCSVAnalyzer
+set viewpack=1
 call :_BackupPrevWiFiTestFiles
 )
 if defined udpparam @echo ------------------------------------------------------------------->>udpout.txt
@@ -24332,46 +26767,736 @@ rem @echo                       %_fBGreen%Multi-test completed
 rem @echo.
 rem @echo    %_fBYellow%Result files have been archived and are located in the %_fYellow%WiFiTestFiles %_fBYellow%directory%_fReset%
 rem EndEngTextBlock
+del /q mt.flag /f 1>nul 2>nul
 call :_prevmenu
 goto _iperftestmenu
 
+
+:_AutoFitingTestsBegin
+cls
+@echo.
+rem StartRusTextBlock
+@echo    %_fBGreen%Автоподбор стабильного битрейта: Алгоритм тестирования%_fReset%
+@echo    ======================================================================
+@echo.
+@echo    %_fBYellow%1. Начальные условия и первый прогон теста:
+@echo       %_fYellow%- Протокол	: UDP
+@echo       %_fYellow%- Битрейт		: Неограничен
+@echo       %_fYellow%- Время теста	: 30 сек (настраиваемое)
+@echo    %_fBYellow%2. Получаем максимальный стабильный битрейт.
+@echo    %_fBYellow%3. Если есть потери пакетов:
+@echo       %_fYellow%- уменьшаем битрейт на 20 мегабит (настраиваемое)
+@echo       %_fYellow%- повторяем тест
+@echo    %_fBYellow%4. Как только потери становятся нулевыми:
+@echo       %_fYellow%- увеличиваем длительность на 30 сек (настраиваемое)
+@echo       %_fYellow%- снова тестируем
+@echo    %_fBYellow%5. Если на новой длительности появились потери пакетов:
+@echo       %_fYellow%- уменьшаем битрейт на 20 мегабит (настраиваемое)
+@echo       %_fYellow%- повторяем тест на этой же длительности
+@echo    %_fBYellow%6. Продолжаем до 180 секунд без потерь. (настраиваемое)%_fReset%
+@echo  ========================================================================
+@echo.
+@echo    %_fCyan%Тестирование займет большое количество времени
+@echo    в зависимости от качества соединения - от %_fBCyan%30 минут %_fCyan%до %_fBCyan%2 часов.%_fReset%
+@echo.
+@echo   %_fBGreen%Стартовая длительность теста %_fBYellow%- продолжительность каждого теста в начале тестирования
+@echo   в секундах. Это значит, что тесты начнутся именно с такой длительностью.
+@echo.
+@echo   %_fBGreen%Шаг снижения битрейта %_fBYellow%- значение в мегабитах, на которое будет снижен битрейт
+@echo   после каждого теста, если при тестировании обнаружатся потери пакетов.
+@echo   Например, если на битрейте %_fYellow%637 мегабит %_fBYellow%обнаружены потери пакетов, то при шаге
+@echo   в %_fYellow%20 мегабит %_fBYellow%следующий тест пойдет на битрейте %_fYellow%637-20=617 мегабит%_fBYellow%.
+@echo.
+@echo   %_fBGreen%Шаг увеличения продолжительсности теста %_fBYellow%- значение в секундах, на которое будет увеличено
+@echo   время каждого теста от стартовой длительности, если при тестировании потерь пакетов
+@echo   не будет. Например, стартовое время теста %_fYellow%30 секунд%_fBYellow%, шаг %_fYellow%10 секунд%_fBYellow%. Если при %_fYellow%30-секундном
+@echo   %_fBYellow%тестировании  потери не обнаружатся, длительность следующего теста будет %_fYellow%30+10=40 секунд%_fBYellow%.
+@echo.
+@echo   %_fBGreen%Целевая продолжительность тестов %_fBYellow%- значение в секундах, до которого будет постепенно
+@echo   увеличиваться длительность каждого теста %_fYellow%при отсутствии потерь пакетов%_fBYellow%. После достижения этого
+@echo   значения тестирование завершится. Например, целевая продолжительность %_fYellow%180 секунд%_fBYellow%.
+@echo   Если стартовая длительность теста %_fYellow%30 секунд, %_fBYellow%а шаг увеличения %_fYellow%30 секунд%_fBYellow%, то тесты будут
+@echo   выполняться с длительностью  %_fYellow%30, 60, 90, 120, 150 и 180 секунд%_fBYellow%. После успешного
+@echo   прохождения %_fYellow%180-секундного %_fBYellow%теста поиск максимального стабильного битрейта будет завершен.%_fReset%
+@echo   -------------
+@echo.
+@echo   %_fBYellow%Для запуска тестов нажмите %_fYellow%Enter%_fBYellow%, для возврата в меню - %_fYellow%Esc
+@echo   %_fBYellow%Нажмите %_fYellow%Пробел %_fBYellow%для настройкия параметров тестирования.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo         %_fBGreen%Testing Algorithm%_fReset%
+rem @echo  ==============================================
+rem @echo.
+rem @echo    %_fBYellow%1. Initial conditions and first test run:
+rem @echo       %_fYellow%- Protocol	: UDP
+rem @echo       %_fYellow%- Bitrate	: Unlimited
+rem @echo       %_fYellow%- Test time	: 30 sec (customizable)
+rem @echo    %_fBYellow%2. Obtaining maximum stable bitrate.
+rem @echo    %_fBYellow%3. If there are packet losses:
+rem @echo       %_fYellow%- decrease bitrate by 20 mbit (customizable)
+rem @echo       %_fYellow%- repeat test
+rem @echo    %_fBYellow%4. As soon as losses drop to zero:
+rem @echo       %_fYellow%- increase duration by 30 sec (customizable)
+rem @echo       %_fYellow%- test again
+rem @echo    %_fBYellow%5. If losses occur at the new duration:
+rem @echo       %_fYellow%- decrease bitrate by 20 mbit (customizable)
+rem @echo       %_fYellow%- repeat test at this same duration
+rem @echo    %_fBYellow%6. Continue up to 180 seconds without losses (customizable)%_fReset%
+rem @echo  ==============================================
+rem @echo.
+rem @echo    %_fCyan%Testing will take a significant amount of time
+rem @echo    depending on connection quality — from %_fBCyan%30 minutes %_fCyan%to %_fBCyan%2 hours.%_fReset%
+rem @echo.
+rem @echo   %_fBGreen%Starting test duration %_fBYellow%- the length of each test at the beginning of testing
+rem @echo   in seconds. This means tests will start with this exact duration.
+rem @echo.
+rem @echo   %_fBGreen%Bitrate decrease step %_fBYellow%- the value in megabits by which the bitrate will be reduced
+rem @echo   after each test if packet loss is detected during testing.
+rem @echo   For example, if packet loss is detected at a bitrate of %_fYellow%637 megabits%_fBYellow%, then with a step
+rem @echo   of %_fYellow%20 megabits%_fBYellow%, the next test will run at a bitrate of %_fYellow%637-20=617 megabits%_fBYellow%.
+rem @echo.
+rem @echo   %_fBGreen%Test duration increment step %_fBYellow%- the value in seconds by which the duration of each test
+rem @echo   will be increased from the starting duration if no packet loss occurs during testing.
+rem @echo   For example, starting test duration is %_fYellow%30 seconds%_fBYellow%, step is %_fYellow%10 seconds%_fBYellow%. If no loss
+rem @echo   is detected during the %_fYellow%30-second test%_fBYellow%, the duration of the next test will be %_fYellow%30+10=40 seconds%_fBYellow%.
+rem @echo.
+rem @echo   %_fBGreen%Target test duration %_fBYellow%- the value in seconds to which the duration of each test will gradually
+rem @echo   increase %_fYellow%if there is no packet loss%_fBYellow%. After reaching this value, testing will complete.
+rem @echo   For example, target duration is %_fYellow%180 seconds%_fBYellow%. If the starting test duration is %_fYellow%30 seconds%_fBYellow%
+rem @echo   and the increment step is %_fYellow%30 seconds%_fBYellow%, then tests will run with durations of 
+rem @echo   %_fYellow%30, 60, 90, 120, 150, and 180 seconds%_fBYellow%. After successfully passing the %_fYellow%180-second %_fBYellow%test,
+rem @echo   the search for the maximum stable bitrate will complete.%_fReset%
+rem @echo   -------------
+rem @echo.
+rem @echo   %_fBYellow%To start testing press %_fYellow%Enter%_fBYellow%, to return to menu press %_fYellow%Esc%_fReset%
+rem @echo   %_fBYellow%Press %_fYellow%Space %_fBYellow%to configure parameters.%_fReset%
+rem EndEngTextBlock
+for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "keycode=%%K"
+if "%keycode%"=="27" goto :_IperfTesParametersAdvancedMenu
+rem if "%keycode%"=="13" set /a step=20& set itimestep=30& goto :_AutoFitingTestsStart
+if "%keycode%"=="13" goto :_AutoFitingTestsStart
+if "%keycode%"=="32" goto :_AutoFitingDurationSetup
+@echo.
+@echo.
+
+:_AutoFitingMInMaxNumb
+rem StartRusTextBlock
+@echo   %_fCyan%Число вне диапазона. Выберите значение от %_fBCyan%%minnumb%%_fCyan% до %_fBCyan%%maxnumb%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%Number out of range. Please choose a value from %_fBCyan%%minnumb%%_fCyan% to %_fBCyan%%maxnumb%%_fReset%
+rem EndEngTextBlock
+exit /b
+
+
+:_AutoFitingDurationSetup
+set minnumb=1
+set maxnumb=120
+@echo   ======================================
+rem StartRusTextBlock
+@echo   %_fBYellow%Для отмены ввода и возврата в меню введите %_fYellow%0 %_fBYellow%для любого значения%_fReset%
+@echo   --------------------------------------
+set /a itime=30
+set /p itime="Введите стартовую длительность каждого теста (Enter по умолчанию - 30 секунд) :"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%To cancel input and return to the menu enter %_fYellow%0 %_fBYellow%for any value%_fReset%
+rem @echo   --------------------------------------
+rem set /a itime=30
+rem set /p itime="Enter starting duration for each test (press Enter for default - 30 seconds) :"
+rem EndEngTextBlock
+@echo   --------------------------------------
+if %itime%==0 goto :_AutoFitingTestsBegin
+if %itime% LSS 1 call :_AutoFitingMInMaxNumb& goto :_AutoFitingDurationSetup
+if %itime% GTR 120 call :_AutoFitingMInMaxNumb& goto :_AutoFitingDurationSetup
+rem StartRusTextBlock
+@echo   %_fCyan%Новое значение	: %_fBCyan%%itime% %_fCyan%секунд%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%New value	: %_fBCyan%%itime%%_fCyan% seconds%_fReset%
+rem EndEngTextBlock
+@echo   --------------------------------------
+
+
+:_AutoFitingStepSetup
+set minnumb=1
+set maxnumb=50
+rem StartRusTextBlock
+@echo   %_fBYellow%Для отмены ввода и возврата в меню введите %_fYellow%0 %_fBYellow%для любого значения%_fReset%
+@echo   --------------------------------------
+set /a step=20
+set /p step="Введите шаг снижения битрейта (Enter по умолчанию - 20 мегабит) :"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%To cancel input and return to the menu enter %_fYellow%0 %_fBYellow%for any value%_fReset%
+rem @echo   --------------------------------------
+rem set /a step=20
+rem set /p step="Enter bitrate decrease step (press Enter for default - 20 mbit) :"
+rem EndEngTextBlock
+@echo   --------------------------------------
+if %step%==0 goto :_AutoFitingTestsBegin
+
+if %step% LSS 1 call :_AutoFitingMInMaxNumb& goto :_AutoFitingStepSetup
+if %step% GTR 50 call :_AutoFitingMInMaxNumb& goto :_AutoFitingStepSetup
+rem StartRusTextBlock
+@echo   %_fCyan%Новое значение	: %_fBCyan%%step% %_fCyan%мегабит%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%New value	: %_fBCyan%%step%%_fCyan% megabits%_fReset%
+rem EndEngTextBlock
+@echo   --------------------------------------
+
+:_AutoFitingTimeSetup
+set minnumb=1
+set maxnumb=60
+rem StartRusTextBlock
+@echo   %_fBYellow%Для отмены ввода и возврата в меню введите %_fYellow%0 %_fBYellow%для любого значения%_fReset%
+@echo   --------------------------------------
+set /a itimestep=30
+set /p itimestep="Введите шаг увеличения продолжительности теста (Enter по умолчанию - 30 секунд) :"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%To cancel input and return to the menu enter %_fYellow%0 %_fBYellow%for any value%_fReset%
+rem @echo   --------------------------------------
+rem set itimestep=30
+rem set /p itimestep="Enter test duration increment step (press Enter for default - 30 sec) :"
+rem EndEngTextBlock
+@echo   --------------------------------------
+if %itimestep%==0 goto :_AutoFitingTestsBegin
+if %itimestep% LSS 1 call :_AutoFitingMInMaxNumb& goto :_AutoFitingTimeSetup
+if %itimestep% GTR 60 call :_AutoFitingMInMaxNumb& goto :_AutoFitingTimeSetup
+rem StartRusTextBlock
+@echo   %_fCyan%Новое значение	: %_fBCyan%%itimestep%%_fCyan% секунд%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%New value	: %_fBCyan%%itimestep%%_fCyan% seconds%_fReset%
+rem EndEngTextBlock
+@echo   --------------------------------------
+
+
+:_AutoFitingMaxTimeSetup
+set minnumb=60
+set maxnumb=3600
+rem StartRusTextBlock
+@echo   %_fBYellow%Для отмены ввода и возврата в меню введите %_fYellow%0 %_fBYellow%для любого значения%_fReset%
+@echo   --------------------------------------
+set /a maxtime=180
+set /p maxtime="Введите целевую продолжительность тестов (Enter по умолчанию - 180 секунд) :"
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%To cancel input and return to the menu enter %_fYellow%0 %_fBYellow%for any value%_fReset%
+rem @echo   --------------------------------------
+rem set maxtime=180
+rem set /p maxtime="Enter target duration tests (press Enter for default - 180 sec) :"
+rem EndEngTextBlock
+@echo   --------------------------------------
+if %maxtime%==0 goto :_AutoFitingTestsBegin
+if %maxtime% LSS 60 call :_AutoFitingMInMaxNumb& goto :_AutoFitingMaxTimeSetup
+if %maxtime% GTR 3600 call :_AutoFitingMInMaxNumb& goto :_AutoFitingMaxTimeSetup
+rem StartRusTextBlock
+@echo   %_fCyan%Новое значение	: %_fBCyan%%maxtime%%_fCyan% секунд%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fCyan%New value	: %_fBCyan%%maxtime%%_fCyan% seconds%_fReset%
+rem EndEngTextBlock
+
+:_AutoFitingInputLossLimit
+set "TempLossLimit=0"
+rem StartRusTextBlock
+set /p "TempLossLimit=Введите допустимые потери пакетов (0.001-10%%, Enter - 0 ): "
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set /p "tmp=Enter acceptable packet loss (0.001-10%%, Enter - 0 ): "
+rem EndEngTextBlock
+
+if %TempLossLimit% == 0 goto :_AutoFitingInputLossLimitZero
+
+set "TempLossLimit=%TempLossLimit:,=.%"
+echo(%TempLossLimit%| findstr /R "^[0-9][0-9]*$ ^[0-9][0-9]*\.[0-9][0-9]*$" >nul
+if errorlevel 1 (
+rem StartRusTextBlock
+@echo   %_fBRed%Ошибка^^! Введите число от 0.001 до 10%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Error^^! Enter a number between 0.001 and 10%_fReset%
+rem EndEngTextBlock
+goto :_AutoFitingInputLossLimit
+)
+for /f "tokens=1,2 delims=." %%A in ("%TempLossLimit%") do (
+set "int=%%A"
+set "frac=%%B"
+)
+if not defined frac set "frac=0"
+set "frac=%frac%000000"
+set "frac=%frac:~0,6%"
+set /a frac=1%frac%-1000000
+set /a LossLimit=int*1000000+frac
+if %LossLimit% LSS 1000 (
+rem StartRusTextBlock
+@echo   %_fBRed%Ошибка^^! Минимальное значение 0.001%%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Error^^! Minimum value is 0.001%%%_fReset%
+rem EndEngTextBlock
+goto :_AutoFitingInputLossLimit
+)
+if %LossLimit% GTR 10000000 (
+rem StartRusTextBlock
+@echo   %_fBRed%Ошибка^^! Максимальное значение 10%%%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Error^^! Maximum value is 10%%%_fReset%
+rem EndEngTextBlock
+goto :_AutoFitingInputLossLimit
+)
+
+:_AutoFitingInputLossLimitZero
+rem set /a losslimitview=%losslimit%/1000000
+set losslimitview=%TempLossLimit%
+@echo   --------------------------------------
+rem StartRusTextBlock
+@echo   %_fBYellow%Новые параметры установлены:
+@echo   %_fCyan%Стартовая длительность теста	: %_fBCyan%%itime% мегабит
+@echo   %_fCyan%Шаг снижения битрейта		: %_fBCyan%%step% мегабит
+@echo   %_fCyan%Шаг увеличения времени теста	: %_fBCyan%%itimestep% секунд%_fReset%
+@echo   %_fCyan%Целевая продолжительность	: %_fBCyan%%maxtime% секунд%_fReset%
+@echo   %_fCyan%Допустимые потери пакетов	: %_fBCyan%%losslimitview%%% %_fReset%
+@echo   --------------------------------------
+@echo   %_fBYellow%Для запуска тестов нажмите %_fYellow%Enter%_fBYellow%, для возврата в меню - %_fYellow%Esc%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%New parameters set:
+rem @echo   %_fCyan%Starting test duration	: %_fBCyan%%itime% megabits
+rem @echo   %_fCyan%Bitrate decrease step		: %_fBCyan%%step% megabits
+rem @echo   %_fCyan%Test duration increment step	: %_fBCyan%%itimestep% seconds%_fReset%
+rem @echo   %_fCyan%Maximum test duration		: %_fBCyan%%maxtime% seconds%_fReset%
+rem @echo   %_fCyan%Acceptable packet loss	: %_fBCyan%%losslimitview%%% %_fReset%
+rem @echo   --------------------------------------
+rem @echo    %_fBYellow%To start testing press %_fYellow%Enter%_fBYellow%, to return to menu press %_fYellow%Esc%_fReset%
+rem EndEngTextBlock
+@echo.
+rem for /f "delims=" %%K in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "keycode=%%K"
+for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "keycode=%%K"
+
+if "%keycode%"=="27" goto :_IperfTesParametersAdvancedMenu
+if "%keycode%"=="13" goto :_AutoFitingTestsStart
+goto :_IperfTesParametersAdvancedMenu
+
+
+
+:_AutoFitingTestsStart
+rem ===== (Параметры для Production) =====
+:: стартовая длительность
+rem set /a durationtest=30
+if not defined itime set /a itime=30
+
+:: шаг длительности
+if not defined itimestep set /a itimestep=30
+rem set itimestep=30
+rem ===== (Параметры для Production) =====
+
+
+rem ===== (только для тестов) =====
+rem set /a itime=5 
+:: шаг длительности
+
+rem set itimestep=5
+rem ===== (только для тестов) =====
+
+
+:: максимальная длительность
+if not defined maxtime set /a maxtime=180
+rem set /a maxtime=180
+:: шаг уменьшения битрейта
+if not defined step set /a step=20
+
+:: допустимые потери пакетов
+if not defined losslimit set /a losslimit=0 & set /a losslimitview=0
+
+set datalabel=%dt%
+set autofiting=1
 cls
 @echo.
 @echo.
 @echo.
 @echo.
-@echo =================================================================
-@echo.
+rem set "udpparam=-u"
+rem set multitest=1
+%MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>nul 2>errorhs.txt
+%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>nul 2>errorch.txt
+if %errorlevel% == 1 goto _iperferror
+
+:_AutoFitingBitrateTestStartAllProcess
+set viewpack=1
+@echo  ====================================================================================
 rem StartRusTextBlock
-@echo            Проверка соединения прошла успешно. 
-@echo         Можно запускать полноценное тестирование.
+@echo     %_fBYellow%Автоподбор битрейта по протоколу UDP запущен с параметрами:
+@echo.
+@echo     %_fCyan%Стартовая длительность теста	: %_fBCyan%%itime% секунд%_fReset%
+@echo     %_fCyan%Шаг уменьшения битрейта		: %_fBCyan%%step% мегабит%_fReset%
+@echo     %_fCyan%Шаг увеличения времени теста	: %_fBCyan%%itimestep% секунд%_fReset%
+@echo     %_fCyan%Максимальное время тестов		: %_fBCyan%%maxtime% секунд%_fReset%
+@echo     %_fCyan%Допустимые потери пакетов		: %_fBCyan%%losslimitview%%% %_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo      Connection check completed successfully.
-rem @echo         Full testing can now be started.
+rem @echo      %_fBYellow%UDP bitrate auto-selection started with parameters:
+rem @echo.
+rem @echo      %_fCyan%Starting test duration		: %_fBCyan%%itime% seconds%_fReset%
+rem @echo      %_fCyan%Bitrate decrease step		: %_fBCyan%%step% megabits%_fReset%
+rem @echo      %_fCyan%Test duration increment step	: %_fBCyan%%itimestep% seconds%_fReset%
+rem @echo      %_fCyan%Maximum test duration		: %_fBCyan%%maxtime% seconds%_fReset%
+rem @echo      %_fCyan%Acceptable packet loss		: %_fBCyan%%losslimitview%%% %_fReset%
 rem EndEngTextBlock
-@echo.
+@echo  ====================================================================================
+
+
+rem Набор подпрограмм для Direct
+rem Direction - Direct
+set vardirection=Direct
+set "direction="
+set "testset=1"
+call :_AutoFitingBitrateTestStartSettings
+call :_AutoFitingBitrateTestMaxRate
+call :_AutoFitingBitrateTestMainProcess
+
+rem Набор подпрограмм для Reverse
+rem Direction - Reverse
+set vardirection=Reverse
+set "testset=1"
+set "direction=-R"
+call :_AutoFitingBitrateTestStartSettings
+call :_AutoFitingBitrateTestMaxRate
+call :_AutoFitingBitrateTestMainProcess
+
+%MYFILES%\adb shell rm /data/local/tmp/iperf3.18 1>nul 2>nul
 call :_prevmenu
 goto _iperftestmenu
 
 
+
+:_AutoFitingBitrateTestStartSettings
+set wfclog=WiFiConnectTestUDP-%vardirection%
+set wfclogdt=%wfclog%-%dt%.txt
+:: -----------------------------
+:: НАСТРОЙКИ
+:: -----------------------------
+set "protocol=UDP"
+set "udpparam=-u"
+set /a bndwidth=0
+set /a qstreams=1
+set "iinterval=0.1"
+set /a total_tests=0
+set /a total_time=0
+set /a msec=0
+set /a mmin=0
+exit /b
+
+:_AutoFitingBitrateTestMaxRate
+rem @echo ==== INITIAL MAX TEST ====
+rem StartRusTextBlock
+@echo  %_fBYellow%= Запуск контрольного теста%_fReset%
+@echo  -------------------------------
+@echo  %_fCyan%= Длительность теста	: %_fBCyan%30 сек%_fReset%
+@echo  %_fCyan%= Текущий битрейт	: %_fBCyan%Неограничено%_fReset%
+@echo  %_fCyan%= Направление теста	: %_fBCyan%!vardirection!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBYellow%= Starting control test%_fReset%
+rem @echo  -------------------------------
+rem @echo  %_fCyan%= Test duration	: %_fBCyan%30 sec%_fReset%
+rem @echo  %_fCyan%= Current bitrate	: %_fBCyan%Unlimited%_fReset%
+rem @echo  %_fCyan%= Test direction	: %_fBCyan%!vardirection!%_fReset%
+rem EndEngTextBlock
+
+:: -----------------------------
+:: ПЕРВЫЙ ТЕСТ
+:: -----------------------------
+call :_IperfTestProcedureAutoFiting
+:: Парсинг лога первого теста
+call :_UDPAutoFitingLogParsing
+rem StartRusTextBlock
+@echo  %_fBGreen%= Контрольный тест завершен, стартуем серию тестов%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Control test completed, starting test series%_fReset%
+rem EndEngTextBlock
+
+rem if "%bndwidth%"=="0" (
+set /a bndwidth=%maxrate%
+rem )
+exit /b
+
+:: -----------------------------
+:: ОСНОВНОЙ ЦИКЛ
+:: -----------------------------
+:_AutoFitingBitrateTestMainProcess
+rem if loss not defined (set "perc=") else (set "perc=%%%")
+@echo  %_fCyan%=========================================%_fReset%
+call :_IperfTestProcedureAutoFitingDirection
+call :_UDPAutoFitingLogParsing
+rem StartRusTextBlock
+@echo  %_fBGreen%= Тест %_fBCyan%!total_tests! %_fBGreen%завершен с результатами:%_fReset%
+@echo  ---------------------------------
+@echo  %_fCyan%= Длительность теста	: %_fBCyan%!itime! сек%_fReset%
+@echo  %_fCyan%= Текущий битрейт	: %_fBCyan%!bndwidth! мбит%_fReset%
+@echo  %_fCyan%= Потеряно пакетов	: %_fBCyan%!loss!%perc%%_fReset%
+@echo  %_fCyan%= Общее время тестов	: %_fBCyan%!mmin! мин !msec! сек%_fReset%
+@echo  %_fCyan%= Количество тестов	: %_fBCyan%!total_tests!%_fReset%
+@echo  %_fCyan%= Направление теста	: %_fBCyan%!vardirection!%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Test %_fBCyan%!total_tests! %_fBGreen%completed with results:%_fReset%
+rem @echo  ---------------------------------
+rem @echo  %_fCyan%= Test duration	: %_fBCyan%!itime! sec%_fReset%
+rem @echo  %_fCyan%= Current bitrate	: %_fBCyan%!bndwidth! Mbps%_fReset%
+rem @echo  %_fCyan%= Packet loss		: %_fBCyan%!loss!%perc%%_fReset%
+rem @echo  %_fCyan%= Total test time	: %_fBCyan%!mmin! min !msec! sec%_fReset%
+rem @echo  %_fCyan%= Number of tests	: %_fBCyan%!total_tests!%_fReset%
+rem @echo  %_fCyan%= Test direction	: %_fBCyan%!vardirection!%_fReset%
+rem EndEngTextBlock
+
+:: --------------------------------
+:: Если есть потери уменьшаем битрейт
+:: --------------------------------
+if !lossbig! GTR !losslimit! (
+@echo  %_fCyan%=========================================%_fReset%
+rem StartRusTextBlock
+@echo  %_fBRed%= Потери пакетов превышают допустимый предел.%_fReset%
+@echo    %_fBYellow%Уменьшаем битрейт на %_fBCyan%%step% мбит%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBRed%= Packet loss exceeds acceptable limit.%_fReset%
+rem @echo    %_fBYellow%Reducing bitrate by %_fBCyan%%step% Mbps%_fReset%
+rem EndEngTextBlock
+set /a bndwidth-=step
+if !bndwidth! LSS !step! call :_LowBitrateWarning & exit /b
+goto :_AutoFitingBitrateTestMainProcess
+)
+
+:: --------------------------------
+:: Потерь нет
+:: --------------------------------
+@echo  %_fCyan%=========================================%_fReset%
+rem StartRusTextBlock
+@echo  %_fBGreen%= Потери пакетов пакетов ниже допустимого предела или не обнаружены%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Packet loss is below acceptable limit or not detected%_fReset%
+rem EndEngTextBlock
+@echo  %_fCyan%=========================================%_fReset%
+:: дошли до максимальной длительности?
+if !itime! GEQ %maxtime% (
+@echo.
+@echo  -----------------------------------------
+rem StartRusTextBlock
+@echo  %_fBGreen%= Автоподбор по направлению %_fBCyan%%vardirection% %_fBGreen%завершен%_fReset%
+@echo  %_fCyan%= Стабильный битрейт	: %_fBCyan%!bndwidth! мбит%_fReset%
+@echo  %_fCyan%= Длительность теста	: %_fBCyan%!itime! сек%_fReset%
+@echo  %_fCyan%= Общее время тестов	: %_fBCyan%!mmin! мин !msec! сек%_fReset%
+@echo  %_fCyan%= Количество тестов	: %_fBCyan%!total_tests!%_fReset%
+@echo  %_fCyan%= Направление теста	: %_fBCyan%!vardirection!%_fReset%
+@echo  %_fCyan%= Потери пакетов		: %_fBCyan%!loss!%_fReset%%perc%
+@echo   ======================================== >>AutoBitrate_results_%datalabel%.txt
+@echo   Результаты автоподбора: >>AutoBitrate_results_%datalabel%.txt
+@echo  ----------------------------------------- >>AutoBitrate_results_%datalabel%.txt
+@echo  = Направление теста	: !vardirection! >>AutoBitrate_results_%datalabel%.txt
+@echo  = Стабильный битрейт	: !bndwidth! мбит >>AutoBitrate_results_%datalabel%.txt
+@echo  = Длительность теста	: !itime! сек >>AutoBitrate_results_%datalabel%.txt
+@echo  = Общее время тестов	: !mmin! мин !msec! сек >>AutoBitrate_results_%datalabel%.txt
+@echo  = Количество тестов	: !total_tests! >>AutoBitrate_results_%datalabel%.txt
+@echo  = Потери пакетов		: !loss!%_fReset%%perc% >>AutoBitrate_results_%datalabel%.txt
+@echo  -----------------------------------------
+@echo.
+@echo    %_fBYellow%= Результаты теста %_fYellow%!vardirection! %_fBYellow%сохранены в файл %_fYellow%AutoBitrate_results_%datalabel%.txt%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Auto-selection for %_fBCyan%%vardirection% %_fBGreen%direction completed%_fReset%
+rem @echo  %_fCyan%= Stable bitrate	: %_fBCyan%!bndwidth! Mbps%_fReset%
+rem @echo  %_fCyan%= Test duration	: %_fBCyan%!itime! sec%_fReset%
+rem @echo  %_fCyan%= Total test time	: %_fBCyan%!mmin! min !msec! sec%_fReset%
+rem @echo  %_fCyan%= Number of tests	: %_fBCyan%!total_tests!%_fReset%
+rem @echo  %_fCyan%= Test direction	: %_fBCyan%!vardirection!%_fReset%
+rem @echo  %_fCyan%= Packet loss	: %_fBCyan%!loss!%_fReset%
+rem @echo    ======================================== >>AutoBitrate_results_%datalabel%.txt
+rem @echo    Auto-selection results: >>AutoBitrate_results_%datalabel%.txt
+rem @echo  ----------------------------------------- >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Test direction	: !vardirection! >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Stable bitrate	: !bndwidth! Mbps >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Test duration	: !itime! sec >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Total test time	: !mmin! min !msec! sec >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Number of tests	: !total_tests! >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Packet loss	: !loss!%perc% >>AutoBitrate_results_%datalabel%.txt
+rem @echo  -----------------------------------------
+rem @echo.
+rem @echo    %_fBYellow%= Results for test %_fYellow%!vardirection! %_fBYellow%saved to file %_fYellow%AutoBitrate_results_%datalabel%.txt%_fReset%
+rem EndEngTextBlock
+@echo   -----------------------------------------
+rem @echo.
+if "%vardirection%"=="Direct" (
+rem StartRusTextBlock
+@echo  %_fBGreen%= Продолжаем автоподбор по направлению %_fBCyan%Reverse%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBGreen%= Continuing auto-selection for %_fBCyan%Reverse%_fBGreen% direction%_fReset%
+rem EndEngTextBlock
+timeout 5 >nul
+exit /b
+) else (
+call :_prevmenu
+goto :_IperfTesParametersAdvancedMenu
+)
+)
+
+
+:: увеличиваем время
+set /a itime+=%itimestep%
+rem StartRusTextBlock
+@echo  %_fBYellow%= Увеличиваем длительность теста до %_fBCyan%!itime! сек%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBYellow%= Increasing test duration to %_fBCyan%!itime! sec%_fReset%
+rem EndEngTextBlock
+goto :_AutoFitingBitrateTestMainProcess
+
+
+:_LowBitrateWarning
+@echo =================================================================
+rem StartRusTextBlock
+@echo  %_fBRed%= Слишком низкий битрейт для направления Direct^^! Дальше уменьшать некуда.
+@echo    %_fBYellow%Прерываем тест и переходим к тестированию направления Reverse%_fReset%
+@echo  = Слишком низкий битрейт для направления Direct^^! Дальше уменьшать некуда. >AutoBitrate_results_%datalabel%.txt
+@echo    Прерываем тест и переходим к тестированию направления Reverse >>AutoBitrate_results_%datalabel%.txt
+@echo      Текущие параметры: >>AutoBitrate_results_%datalabel%.txt
+@echo  = Текущий битрейт	: !bndwidth! мбит >>AutoBitrate_results_%datalabel%.txt
+@echo  = Потеряно пакетов	: !loss!%perc% >>AutoBitrate_results_%datalabel%.txt
+@echo  = Общее время тестов	: !total_time! сек >>AutoBitrate_results_%datalabel%.txt
+@echo  = Количество тестов	: !total_tests! >>AutoBitrate_results_%datalabel%.txt
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBRed%= Bitrate too low for Direct direction^^! Nowhere left to decrease.
+rem @echo    %_fBYellow%Aborting test and moving to Reverse direction testing%_fReset%
+rem @echo  = Bitrate too low for Direct direction^^! Nowhere left to decrease. >AutoBitrate_results_%datalabel%.txt
+rem @echo    Aborting test and moving to Reverse direction testing >>AutoBitrate_results_%datalabel%.txt
+rem @echo      Current parameters: >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Current bitrate	: !bndwidth! Mbps >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Packet loss	: !loss!%perc% >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Total test time	: !total_time! sec >>AutoBitrate_results_%datalabel%.txt
+rem @echo  = Number of tests	: !total_tests! >>AutoBitrate_results_%datalabel%.txt
+rem EndEngTextBlock
+@echo =================================================================
+@echo.
+timeout 5 >nul
+exit /b
+
+
+:_UDPAutoFitingLogParsing
+for /F "tokens=7,8,9,10,11,12 delims= " %%a in ('type %wfclogdt% ^| findstr "receiver"') do (
+set "maxrate=%%a"
+set "loss=%%f"
+set "loss=!loss:~1,-2!"
+for /f "tokens=1,2 delims=." %%i in ("!loss!") do (
+set "int=%%i"
+set "frac=%%j"
+)
+if not defined frac set "frac=0"
+set "frac=!frac!000000"
+set "frac=!frac:~0,6!"
+set /a frac=1!frac!-1000000
+set /a lossbig=int*1000000+frac
+)
+exit /b
+
+
+:_IperfTestProcedureAutoFitingDirection
+set wfclog=WiFiConnectTestUDP-%vardirection%
+set wfclogdt=%wfclog%-%dt%.txt
+rem set "direction="
+set testset=
+set /a total_tests+=1
+call :_IperfTestProcedureAutoFiting
+set /a total_time+=itime
+set /a mmin=total_time/60
+set /a mrate=mmin*60
+set /a msec=total_time-mrate
+exit /b
+
+
+:_IperfTestProcedureAutoFiting
+if not defined testset set /a numbnexttest=%total_tests%
+if defined numbnexttest set "spaceset= "
+call :_settime
+rem @if exist %~dp0WiFiConnectTestReverse*.* call :_BackupPrevWiFiTestFiles
+@if exist %cd%\WiFiConnectTest*.* call :_BackupPrevWiFiTestFiles
+rem StartRusTextBlock
+@echo  %_fBYellow%= Тест%_fBCyan%%spaceset%%numbnexttest%%_fBYellow% запущен%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo  %_fBYellow%= Test%_fBCyan%%spaceset%%numbnexttest%%_fBYellow% started%_fReset%
+rem EndEngTextBlock
+
+
+%MYFILES%\adb push %MYFILES%\iperf3.18 /data/local/tmp 1>nul 2>errorhs.txt
+%MYFILES%\adb shell chmod +x /data/local/tmp/iperf3.18 1>nul 2>errorch.txt
+rem if %errorlevel% == 1 goto _iperferror
+
+rem echo %copytotemp%
+if "%copytotemp%"=="1" (set "iperfdir=%SYSTEMDRIVE%\Temp"&&call :_CopyingIperfToTempS) else (set iperfdir=%MYFILES%)
+
+if "%protocol%"=="UDP" (set cols=85) else (set cols=80)
+rem @mode con:cols=%cols% lines=39
+
+start /min "IPERF_TEST" cmd /c "mode con:cols=%cols% lines=50 &%iperfdir%\iperf3.exe -s"
+
+
+@ping localhost -n 2 1>nul 2>nul
+rem echo on
+@echo. >>%wfclogdt%
+
+rem %MYFILES%\adb shell /data/local/tmp/iperf3.18 --get-server-output -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% %direction% -f m -N %udpparam%>> %wfclogdt% 2>errorcl.txt
+%MYFILES%\adb shell /data/local/tmp/iperf3.18 -t %itime% -i %iinterval% -b %bndwidth%M -c %ipaddrtxt% -P %qstreams% %direction% -f m -N %udpparam%>> %wfclogdt% 2>errorcl.txt
+if %errorlevel% == 1 goto _iperferror
+@taskkill /F /IM iperf3.exe 1>nul 2>nul
+for /f "delims=" %%A in ('dir /b /a-d %cd%\error*.txt') do (
+rem for %%A IN (%cd%\errorcl.txt) DO (
+ if %%~zA EQU 0 (del %%A)
+)
+rem %MYFILES%\adb shell rm /data/local/tmp/iperf3.18 1>nul 2>nul
+exit /b
+
+
 :_UDPResultsSave
+rem set wfclogdt=WiFiConnectTestReverse-2026-05-07_04-04-55.txt
+rem set "WiFitestLabel=LabelForTest"
 for /F "tokens=7,8,9,10,11,12 delims= " %%a in ('type %wfclogdt% ^| findstr "receiver"') do (
     set bitrate=%%a
     set jitter=%%c
     set lost=%%f
 set lost=!lost:~1,-2!
+)
+
+if defined WiFitestLabel (
+set "WiFitestLabelf=%WiFitestLabel%                   "
+set "WiFitestLabelf=!WiFitestLabelf:~0,18!"
+) else (
+rem StartRusTextBlock
+set "WiFitestLabelf=Без метки         "
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set "WiFitestLabelf=No label         "
+rem EndEngTextBlock
+)
+
 if not exist %cd%\udpout.txt (
 @echo ------------------------------------------------------------------->>udpout.txt
 rem StartRusTextBlock
-@echo   Метка 	^| Битрейт 	^| Джиттер, ms	^| Потери пакетов, %%%  >>udpout.txt
+@echo   Метка             ^| Битрейт 	^| Джиттер, ms	^| Потери пакетов, %%%  >>udpout.txt
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo   Label 	^| Bitrate 	^| Jitter, ms	^| Packets lost, %%%  >>udpout.txt
+rem @echo   Label             ^| Bitrate 	^| Jitter, ms	^| Packets lost, %%%  >>udpout.txt
 rem EndEngTextBlock
 @echo ------------------------------------------------------------------->>udpout.txt
 )
-@echo   %WiFitestLabel% 	^| !bitrate!		^| !jitter!		^| !lost! >>udpout.txt
+@echo   %WiFitestLabelf%^| !bitrate!	^| !jitter!		^| !lost! >>udpout.txt
 exit /b
 
 
@@ -24414,6 +27539,8 @@ rem if not exist *.csv goto _notestcsvfiles
 if not exist *.csv call :_WiFiTestCSVAnalyzeExtract
 
 rem set csvfile=%%i
+rem if "%protocol%"=="UDP" (set cols=90) else (set cols=87)
+rem @mode con:cols=%cols% lines=39
 @mode con:cols=87 lines=39
 for /f "delims=" %%a in ('dir /b /a-d *.csv') do (
 set csvfile=%%a
@@ -24428,17 +27555,17 @@ rem @echo !csvfile! | findstr /i /c:"direct" > NUL 2>&1 && set "vector=%_fBlack%
 rem @echo !csvfile! | findstr /i /c:"reverse" > NUL 2>&1 && set "vector=%_fBlack%%_bCyan%Results of reverse check [from PC to headset]                                   %_fReset%"
 rem @echo !csvfile! | findstr /i /c:"iperflog" 1>NUL 2>&1 && @set "vector=%_fBlack%%_bCyan% iperf logs parsing                                %_fReset%" 1>NUL 2>&1
 rem EndEngTextBlock
+if not "%protocol%"=="UDP" (
 call :_WifiTestTableMax
 call :_WifiTestTableNumb
 call :_PercentChecksNumb
 call :_WifiTestTableView
 call :_WiFiTestParametersExtract
+) else (
+goto :_WiFiTestScreenshot
 )
-rem @echo ====================================================================================
-rem @echo  Длительность	: %fduration%	: Потоки: %fstreams%	: Интервал: %fintervals%
-rem @echo ====================================================================================
-rem @echo  Длительность тестов: %fduration%	: Потоки: %fstreams%	: Интервал: %fintervals%
 
+)
 
 rem StartRusTextBlock
 @echo ====================================================================================
@@ -24451,28 +27578,54 @@ rem @echo  %_fCyan%Duration:%_fBCyan%%fduration%%_fReset% ^| %_fCyan%Streams:%_f
 rem @echo ====================================================================================
 rem EndEngTextBlock
 
-call :_settime
+:_WiFiTestScreenshot
+rem echo %protocol%
+rem pause
+set "resultsfiles=%~dp0"
+set workdir=%cd%
+
+rem call :_settime
 rem title Quas Wi-Fi Test Results
 rem @ping localhost -n 1 2>nul 1>nul
 rem powershell -NoProfile -Command "$h=(Get-Process -Id $pid).MainWindowHandle; Add-Type '[DllImport(\"user32.dll\")]public static extern bool SetForegroundWindow(IntPtr h);' -Name W -Namespace N; [N.W]::SetForegroundWindow($h)"
+if "%protocol%"=="UDP" (
+if defined AnalizeStandalone set ssexitcode=
+start "" powershell -WindowStyle Hidden -NoProfile -NoLogo -File "%myfiles%\iPerf3VisualAnalyzer.v3.49.ps1" -WorkDir %workdir% -SavePath %workdir% ^
+-TBitrate %bndwidth% ^
+-AView "Direct" ^
+-BView "Reverse" ^
+-Label %WiFitestLabel% ^
+-Interval %ointerval% ^
+-Streams %qstreams% ^
+-Protocol %protocol% ^
+-Duration %itime% ^
+-Screenshot -FileName "WiFiConnectTestUDP-%dt%" %ssexitcode%  1>nul
+) else (
 powershell -NoProfile -ExecutionPolicy Bypass -File "%myfiles%\screenshot.ps1" -FullPath WiFiTestRezult-%dt%.png 1>nul 2>nul
+)
 @ping localhost -n 2 2>nul 1>nul
 rem %scr%
 rem %myfiles%\nircmdc.exe savescreenshotwin %cd%\WiFiTestRezult-%dt%.png 1>nul 2>nul
+if defined AnalizeStandalone (
+set AnalizeStandalone=
+del /q mt.flag /f 1>nul 2>nul
+@echo Press any key for exit menu
+if not defined udpparam pause >nul
+@mode con:cols=100 lines=52
+cls
+exit /b
+)
 if defined multitest (
 set multitest=
 @mode con:cols=100 lines=52
+del /q mt.flag /f 1>nul 2>nul
 cls
 exit /b
-)
-if defined AnalizeStandalone (
-set AnalizeStandalone=
-@echo Press any key for exit menu
-pause >nul
 )
 @mode con:cols=100 lines=52
 cls
 exit /b
+
 
 :_tabchoice
 set choice=m
@@ -24740,7 +27893,7 @@ rem StartRusTextBlock
 @echo  %_fBlack%%_fBRed%09.    !numb10! - !numb20! мбит		: !pnumb10!   	: Если значения отличаются от нуля,%_fReset%
 @echo  %_fBlack%%_fBRed%10.    0 - !numb10! мбит		: !pnumb0!    	: значит есть серьезные просадки.%_fReset%
 @echo  -----------------------------------------------------------------------------------
-@echo  %_fCyan%Максимальный битрейт%_fReset%		^| %_fBCyan%!maxnumb! мбит%_fReset%	^| !rouqua!
+@echo  %_fCyan%Пиковый битрейт%_fReset%: %_fBCyan%!maxnumb! мбит%_fReset%  ^| %_fCyan%Протокол%_fReset%: %_fBCyan%%protocol%%_fReset%	^| !rouqua!
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo  Bitrate measurement subranges	: Checks, %prct%	: Note 
@@ -24785,9 +27938,11 @@ goto _iperftestmenu
 
 :_BackupPrevWiFiTestFiles
 echo off
+timeout 3 >nul
 rem @chcp 1251 >nul
-for /f %%a in ('dir /B WiFiConnectTestReverse* 2^>nul') do set filename=%%a
+for /f %%a in ('dir /B WiFiConnectTest*.* 2^>nul') do set filename=%%a
 if not defined filename (
+if defined viewexit exit /b
 @echo   ----------------------------------------------------
 rem StartRusTextBlock
 @echo   %_fBYellow%Файлы предыдущих тестов не найдены, нечего архивировать.%_fReset%
@@ -24836,24 +27991,23 @@ rem set "second=!createDate:~12,2!"
 rem set archivedata=!year!-!month!-!day!_!hour!-!minute!-!second!
 rem :_BackupPrevWiFiTestFiles
 @md WiFiTestFiles 1>nul 2>nul
-%myfiles%\7z.exe a -mx7 -tzip %WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip bitrate*.csv 1>nul 2>nul
-%myfiles%\7z.exe a -mx7 -tzip %WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip WiFiTestRezult*.* 1>nul 2>nul
-%myfiles%\7z.exe a -mx7 -tzip %WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip WiFiConnectTest*.* 1>nul 2>nul
-
-@move %WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip %cd%\WiFiTestFiles\ 1>nul 2>nul
+%myfiles%\7z.exe a -mx7 -tzip "%WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip" bitrate*.csv 1>nul 2>nul
+%myfiles%\7z.exe a -mx7 -tzip "%WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip" WiFiTestRezult*.* 1>nul 2>nul
+%myfiles%\7z.exe a -mx7 -tzip "%WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip" WiFiConnectTest*.* 1>nul 2>nul
+@move "%WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip" %cd%\WiFiTestFiles\ 1>nul 2>nul
 @del bitrate*.csv /Q /F 1>nul 2>nul
 @del WiFiConnectTest*.* /Q /F 1>nul 2>nul
 @del WiFiTestRezult*.* /Q /F 1>nul 2>nul
 rem @chcp 65001 >nul
-@echo.
-@echo   ---------------------------------
+rem @echo.
+rem @echo   ---------------------------------
 rem StartRusTextBlock
-@echo   %_fBYellow%Файлы тестов запакованы:%_fReset%
+if not defined viewpack @echo  %_fBYellow%= Файлы тестов запакованы%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem @echo    %_fBYellow%Test files are archived:%_fReset%
+rem if not defined viewpack @echo    %_fBYellow%Test files are archived%_fReset%
 rem EndEngTextBlock
-@echo   %_fYellow%%cd%\WiFiTestFiles\%WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip%_fReset%
+if not defined viewpack @echo   %_fYellow%%cd%\WiFiTestFiles\%WiFitestLabel%%WiFiHyphen%WiFiTests-%archivedata%.zip%_fReset%
 exit /b
 
 
@@ -24960,20 +28114,6 @@ Set nd=%Delim%%nD%
 rem @echo %nC%%nD%
 set iinterval=%nC%%nD%
 exit /b
-
-:_lssinterval
-@echo -------------------------------
-rem StartRusTextBlock
-@echo  +++ Интервал слишком маленький  +++
-@echo     Он должен быть 100 или выше
-rem EndRusTextBlock
-rem StartEngTextBlock
-rem @echo  +++ Interval is too small +++
-rem @echo    It must be 100 and higher
-rem EndEngTextBlock
-@echo -------------------------------
-goto _setinterval
-rem exit /b
 
 :_shownetstatall
 @%verbecho%
@@ -25471,6 +28611,9 @@ if /i "%choice%"=="c" (GOTO _CamDiagLogStream)
 if /i "%choice%"=="h" (call :_CamDiagHelp)
 goto :_camtest
 
+
+:_CamDiagLogStreamClear
+%myfiles%\adb logcat -c
 
 :_CamDiagLogStream
 @echo   ------------------------------------------------------------------------------
@@ -26230,6 +29373,26 @@ rem StartRusTextBlock
 @echo       %_fBRed%++++ Шлем не авторизован! ++++%_fReset%
 @echo.
 @echo.
+@echo   Для авторизации следуйте инструкции:
+@echo.
+@echo   1. Отключить кабель от ПК или от шлема, как удобней.
+@echo   2. Перезагрузить шлем.
+@echo   3. %_fBRed%НЕ НАЖИМАТЬ на уведомление %_fBYellow%"Предоставить доступ к файлам по USB"%_fReset%. 
+@echo      Еще раз - на уведомление в шлеме %_fBRed%НЕ НАЖИМАТЬ%_fReset% после перезагрузки.
+@echo   4. Запустить программу Quas, появится окно "%_fBYellow%Шлем не обнаружен%_fReset%".
+@echo   5. В меню выбрать пункт %_fBYellow%A%_fReset% (Включить Автообнаружение шлема), нажать %_fBYellow%Enter%_fReset%
+@echo   6. Появится сообщение "%_fBYellow%Включено автообнаружение шлема. Как только он будет найден,
+@echo      Quas запустится сам%_fReset%"
+@echo   7. Надеть шлем.
+@echo   8. Закрыть все открытые окна в шлеме.
+@echo   9. Подключить кабель наощупь.
+@echo  10. Во всплывшем окне "%_fBYellow%Разрешить отладку по USB для этого компьютера?%_fReset%"
+@echo      ответить "%_fBYellow%Разрешать всегда%_fReset%".
+@echo  11. Если вы один из тех "счастливчиков," умудрившихся застрять в MTP режиме, 
+@echo      долистайте в шлеме в Настройках до меню %_fBYellow%Разработчик%_fReset% и отключите рычаг 
+@echo      "%_fBYellow%Уведомление MTP%_fReset%". Далее начните с пункта %_fBYellow%2%_fReset%.
+@echo.
+@echo   %_fBYellow%Или%_fReset%:
 @echo.
 @echo   Наденьте гарнитуру и нажмите на клавиатуре любую клавишу.
 @echo   Программа отправит на шлем команду adb devices
@@ -26294,6 +29457,7 @@ rem StartRusTextBlock
 @echo       - подключите кабель от шлема к ПК в %_fYellow%задний%_fBYellow% USB порт ПК или смените порт.
 @echo       - переверните разъем %_fYellow%Type-C%_fBYellow% на 180 градусов, погладьте кота и подключите шлем снова.
 @echo       - перезагрузите шлем и компьютер
+@echo       - запустите программу Quas с правами Администратора
 @echo       - обязательно запустите %_fBGreen%Интерактивный тест подключения%_fBYellow% из меню ниже
 @echo         Если тест проходит успешно, но шлем не обнаруживается, отправьте конфигурационные данные
 @echo         на диагностику, используя пункт K.
@@ -26535,6 +29699,8 @@ rem StartRusTextBlock
 @echo     D.  Открыть Диспетчер устройств
 @echo     K.  Собрать и отправить диагностические данные
 @echo     %_fBGreen%I.  Запустить интерактивный тест подключения шлема к ПК%_fReset%
+@echo     W.  Открыть меню беспроводного подключения шлема к ПК%_fReset%
+
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo        You can run the program, but some functions will not work
@@ -26553,6 +29719,7 @@ rem @echo     T.  Run with table
 rem @echo     D.  Open Device Manager
 rem @echo     K.  Collect and send diagnostic data
 rem @echo     %_fBGreen%I.  Run Interactive test of connecting the headset to the PC%_fReset%
+rem @echo     W.  Open wireless headset-to-PC connection menu%_fReset%
 rem EndEngTextBlock
 @echo.
 @echo.
@@ -26560,7 +29727,7 @@ rem EndEngTextBlock
 call :_MenuChoiceEnter
 rem <nul set /p "=Введите пункт меню: "
 rem set /p choice=
-echo(%choice%| findstr /i "^[0asdtik][0]*$" >nul || goto _waitChoice
+echo(%choice%| findstr /i "^[0asdtikw][0]*$" >nul || goto _waitChoice
 if not defined choice goto _RunMenuNoDevice
 if "%choice%"=="0" (exit)
 if /i "%choice%"=="00" (goto _RestartQUAS)
@@ -26570,6 +29737,8 @@ if /i "%choice%"=="t" (GOTO _tabBegin)
 if /i "%choice%"=="d" (start mmc.exe devmgmt.msc)
 if /i "%choice%"=="i" (GOTO :_interacttestconnect)
 if /i "%choice%"=="k" (goto _DiagnosticInformationSendComplex)
+if /i "%choice%"=="w" (GOTO :_mDNSConnectorMenu)
+
 rem @cls
 rem call :_cdc
 rem goto _RunMenuNoDevice
@@ -26577,6 +29746,8 @@ rem goto _RunMenuNoDevice
 rem powershell -NoProfile -ExecutionPolicy Bypass -Command "& { %myfiles%\survey.ps1; exit $LASTEXITCODE }"
 
 rem powershell -NoProfile -ExecutionPolicy Bypass -File %myfiles%\survey.ps1 >nul
+
+rem Для добавления в это меню см. скрипт survey.ps1 и добавить букву пункта в строку [asdtikw]
 set RET=%ERRORLEVEL%
 rem echo %RET%
 
@@ -26588,6 +29759,7 @@ if "%RET%"=="5"  (start mmc.exe devmgmt.msc)
 if "%RET%"=="6"  (goto _DiagnosticInformationSendComplex)
 if "%RET%"=="7"  (GOTO :_interacttestconnect)
 if "%RET%"=="8"  (goto _RestartQUAS)
+if "%RET%"=="9"  (goto _mDNSConnectorMenu)
 
 
 :_RunMenuNoDeviceCall
@@ -26632,6 +29804,214 @@ rem @echo     K.  Collect and send diagnostic data
 rem EndEngTextBlock
 exit /b
 
+:_mDNSConnectorMenu
+cls
+call :_hat
+call :_hatmenu
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo        МЕНЮ ПОДКЛЮЧЕНИЯ mDNS
+@echo        =====================
+@echo.
+@echo.
+@echo    %_fBGreen%A.  Автоподключение шлема к ПК по TLS через mDNS%_fReset%
+@echo    B.  Запуск графического mDNS конфигуратора параметров
+@echo.
+@echo    F.  Определить IP и порт без подключения
+@echo    G.  Слушатель портов mDNS
+@echo    I.  Перезапуск ADB сервера
+@echo    J.  Просмотр дампа mDNS пакетов
+@echo    K.  Просмотр сетевых адаптеров
+@echo    L.  Просмотр версии ADB
+@echo    N.  Просмотр диагностических данных
+@echo    O.  Ручной ввод адресов шлема и ПК для подключения
+@echo.
+@echo    %_fBYellow%H.  Описание опций%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo        mDNS CONNECTION MENU
+rem @echo        ====================
+rem @echo.
+rem @echo.
+rem @echo    %_fBGreen%A.  Auto-connect headset to PC via TLS using mDNS%_fReset%
+rem @echo    B.  Launch graphical mDNS parameter configurator
+rem @echo.
+rem @echo    F.  Detect IP and port without connecting
+rem @echo    G.  mDNS port listener
+rem @echo    I.  Restart ADB server
+rem @echo    J.  View mDNS packet dump
+rem @echo    K.  View network adapters
+rem @echo    L.  View ADB version
+rem @echo    N.  View diagnostic data
+rem @echo    O.  Manual entry of headset and PC addresses for connection
+rem @echo.
+rem @echo    %_fBYellow%H.  Description of options%_fReset%
+rem EndEngTextBlock
+@echo.
+@echo.
+@echo.
+set "mdnsparams="
+call :_MenuChoiceEnter
+if not defined choice goto :_mDNSConnectorMenu
+if /i "%choice%"=="0" (exit)
+if /i "%choice%"=="00" (goto _RestartQUAS)
+if /i "%choice%"=="m" (GOTO _beginn)
+if /i "%choice%"=="a" (set "mdnsparams=-autoconnect 1"& goto :_mDNSScriptRun)
+if /i "%choice%"=="b" (GOTO :_mDNSScriptRunGui)
+if /i "%choice%"=="f" (set "mdnsparams=-autoconnect 0"& goto :_mDNSScriptRun)
+if /i "%choice%"=="g" (set "mdnsparams=-listener"& goto :_mDNSScriptRun)
+if /i "%choice%"=="i" (set "mdnsparams=-adbserver"& goto :_mDNSScriptRun)
+if /i "%choice%"=="j" (set "mdnsparams=-dumper"& goto :_mDNSScriptRun)
+if /i "%choice%"=="k" (set "mdnsparams=-adapter -TimeSleep 0"& goto :_mDNSScriptRun)
+if /i "%choice%"=="l" (set "mdnsparams=-adbversion -TimeSleep 0"& goto :_mDNSScriptRun)
+if /i "%choice%"=="n" (set "mdnsparams=-verbose -console -listener"& goto :_mDNSScriptRun)
+rem if /i "%choice%"=="o" (GOTO _mdnsconfigurator)
+if /i "%choice%"=="o" (GOTO _mdnscustomIP)
+if /i "%choice%"=="h" (GOTO :_mDNSHelp)
+goto :_mDNSConnectorMenu
+
+:_mDNSHelp
+cls
+@echo.
+@echo.
+rem StartRusTextBlock
+set langscript=-lang RU
+@echo  %_fYellow% mDNS Connector %_fBYellow% предназначен для поиска и подключения шлема %_fYellow% Meta Quest по Wi-Fi через mDNS %_fBYellow% — 
+@echo   без USB-кабеля и без необходимости вручную вводить IP-адрес шлема. Сочетает в себе 
+@echo   консольный инструмент (для скриптов и автоматизации) и графический конфигуратор, 
+@echo   который сам собирает команду для запуска из выбранных параметров.
+@echo.
+@echo   %_fBGreen%Автоподключение шлема к ПК через mDNS%_fReset% Обнаруживает Quest в сети через mDNS
+@echo   и автоматически подключается к нему по ADB — без кабеля и без ручного ввода IP-адреса.
+@echo.
+@echo   %_fBGreen%Запуск графического mDNS-конфигуратора параметров%_fReset%, где режим и параметры выбираются 
+@echo   из выпадающих списков и переключателей, а не запоминаются в виде флагов командной строки — 
+@echo   конфигуратор сам собирает и запускает нужную команду.
+@echo.
+@echo   %_fBGreen%Определить IP и порт без подключения %_fReset%Тот же поиск по mDNS, но без подключения — 
+@echo   показывает только IP, порт и информацию о сервисе шлема. Удобно, чтобы убедиться, 
+@echo   что Quest вообще виден в сети, прежде чем что-либо делать дальше.
+@echo.
+@echo   %_fBGreen%Слушатель портов mDNS %_fReset%Прослушивает mDNS-трафик в сети в реальном времени, показывая 
+@echo   оповещения по мере их появления.
+@echo.
+@echo   %_fBGreen%Перезапуск ADB-сервера %_fReset%Перезапускает локальный ADB-сервер и показывает его версию — 
+@echo   стандартное первое действие, если устройство не определяется.
+@echo.
+@echo   %_fBGreen%Просмотр дампа mDNS-пакетов %_fReset%Перехватывает и показывает "сырые" mDNS-пакеты 
+@echo   в шестнадцатеричном виде — для более глубокой диагностики проблем с обнаружением.
+@echo.
+@echo   %_fBGreen%Просмотр сетевых адаптеров %_fReset%Показывает сетевые адаптеры ПК и их IPv4-адреса — удобно, 
+@echo   чтобы выбрать нужный, если активно несколько сетевых интерфейсов.
+@echo.
+@echo   %_fBGreen%Просмотр версии ADB %_fReset%Показывает версию используемого adb.exe.
+@echo.
+@echo   %_fBGreen%Просмотр диагностических данных %_fReset%Подробный режим с пошаговой диагностикой mDNS/ADB — 
+@echo   для устранения проблем с подключением.
+@echo.
+@echo   %_fBGreen%Ручной ввод адресов шлема и ПК для подключения %_fReset%Позволяет вручную указать IP-адрес Quest 
+@echo   и/или сетевой интерфейс ПК — на случай, если автоматическое определение выбирает не тот 
+@echo   адрес (например, при нескольких адаптерах или нескольких устройствах в сети).
+@echo.
+@echo     ===   Нажмите что-нибудь для продолжения   ===
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set langscript=-lang EN
+rem @echo  %_fYellow% mDNS Connector %_fBYellow% is designed to find and connect a %_fYellow% Meta Quest headset via Wi-Fi using mDNS %_fBYellow% — 
+rem @echo   without a USB cable and without having to manually enter the headset's IP address. Combines 
+rem @echo   a console tool (for scripts and automation) and a graphical configurator 
+rem @echo   that builds the launch command from selected parameters.
+rem @echo.
+rem @echo   %_fBGreen%Auto-connect headset to PC via mDNS%_fReset% Detects Quest on the network via mDNS
+rem @echo   and automatically connects to it via ADB — without cables or manual IP entry.
+rem @echo.
+rem @echo   %_fBGreen%Launch graphical mDNS parameter configurator%_fReset%, where mode and options are selected 
+rem @echo   from drop-down lists and toggles instead of memorizing command-line flags — 
+rem @echo   the configurator builds and executes the required command automatically.
+rem @echo.
+rem @echo   %_fBGreen%Detect IP and port without connecting %_fReset%Same mDNS search without connecting — 
+rem @echo   shows only the IP, port, and service information of the headset. Useful to verify 
+rem @echo   that Quest is visible on the network before proceeding further.
+rem @echo.
+rem @echo   %_fBGreen%mDNS port listener %_fReset%Listens to network mDNS traffic in real time, displaying 
+rem @echo   notifications as they appear.
+rem @echo.
+rem @echo   %_fBGreen%Restart ADB server %_fReset%Restarts the local ADB server and shows its version — 
+rem @echo   the standard first step if a device is not detected.
+rem @echo.
+rem @echo   %_fBGreen%View mDNS packet dump %_fReset%Captures and displays raw mDNS packets 
+rem @echo   in hexadecimal view — for deeper diagnostic of detection issues.
+rem @echo.
+rem @echo   %_fBGreen%View network adapters %_fReset%Shows PC network adapters and their IPv4 addresses — convenient 
+rem @echo   for selecting the right one when multiple network interfaces are active.
+rem @echo.
+rem @echo   %_fBGreen%View ADB version %_fReset%Displays the version of adb.exe being used.
+rem @echo.
+rem @echo   %_fBGreen%View diagnostic data %_fReset%Detailed mode with step-by-step mDNS/ADB diagnostics — 
+rem @echo   for troubleshooting connection issues.
+rem @echo.
+rem @echo   %_fBGreen%Manual entry of headset and PC addresses for connection %_fReset%Allows you to manually specify 
+rem @echo   the Quest IP address and/or PC network interface — in case automatic detection picks
+rem @echo   the wrong  address (for example, with multiple adapters or devices on the network).
+rem @echo.
+rem @echo     ===   Press any key for continue   ===
+rem EndEngTextBlock
+pause >nul
+cls
+start powershell -ExecutionPolicy Bypass -NoProfile -NoLogo -File "%MYFILES%\QuasMdnsConnector_v3.3.ps1" %langscript% -help -TimeSleep 0
+rem call :_prevmenu
+goto :_mDNSConnectorMenu
+
+:_mDNSScriptRunGUI
+rem StartRusTextBlock
+set langscript=-lang RU
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set langscript=-lang EN
+rem EndEngTextBlock
+rem start powershell -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -NoLogo -File "QuasMdnsConnector_v3.1A.ps1" %mdnsparams% %mdnsipquest% %mdnsippc%
+start /min powershell -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -NoLogo -File "%MYFILES%\QuasMdnsConnector_v3.3.ps1" %mdnsparams% %langscript%
+rem start powershell -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -NoLogo -File "QuasMdnsConnector_v3.1A.ps1" -lang EN %mdnsparams% %mdnsipquest% %mdnsippc%
+call :_prevmenu
+goto :_mDNSConnectorMenu
+
+:_mDNSScriptRun
+rem StartRusTextBlock
+set langscript=-lang RU
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set langscript=-lang EN
+rem EndEngTextBlock
+start powershell -ExecutionPolicy Bypass -NoProfile -NoLogo -File "%MYFILES%\QuasMdnsConnector_v3.3.ps1" %mdnsparams% %langscript%
+rem start powershell -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -NoLogo -File "QuasMdnsConnector_v3.1A.ps1" -lang EN %mdnsparams% %mdnsipquest% %mdnsippc%
+call :_prevmenu
+goto :_mDNSConnectorMenu
+
+:_mDNSCustomIP
+set IPPC=
+set IPQuest=
+rem StartRusTextBlock
+set langscript=-lang RU
+set /p "IPQuest=Введите IP адрес шлема. Для автоматической установки нажмите Enter: "
+set /p "IPPC=Введите IP адрес сетевого адаптера ПК. Для автоматической установки нажмите Enter: "
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem set langscript=-lang EN
+rem set /p "IPQuest=Enter headset IP address. Press Enter for automatic detection: "
+rem set /p "IPPC=Enter PC network adapter IP address. Press Enter for automatic detection: "
+rem EndEngTextBlock
+set "MDNS_ARGS=-console -autoconnect 1  %langscript%"
+if not "%IPQuest%"=="" set "MDNS_ARGS=%MDNS_ARGS% -IPQuest "%IPQuest%""
+if not "%IPPC%"=="" set "MDNS_ARGS=%MDNS_ARGS% -IPPC "%IPPC%""
+start powershell -ExecutionPolicy Bypass -NoProfile -NoExit -NoLogo -File "%MYFILES%\QuasMdnsConnector_v3.3.ps1" %MDNS_ARGS%
+
+rem start /min powershell -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -NoLogo -File "QuasMdnsConnector_v3.1A.ps1" -lang RU -IPQuest %IPQuest% -IPPC %IPPC%
+rem start powershell -ExecutionPolicy Bypass -NoProfile -NoExit -NoLogo -File "QuasMdnsConnector_v3.1A.ps1" -lang RU -IPQuest "%IPQuest%" -IPPC "%IPPC%"
+rem start powershell -ExecutionPolicy Bypass -WindowStyle Hidden -NoProfile -NoLogo -File "QuasMdnsConnector_v3.1A.ps1" -lang EN %mdnsparams% %mdnsipquest% %mdnsippc%
+call :_prevmenu
+goto :_mDNSConnectorMenu
 
 :_DoubleConnect
 cls
@@ -27062,8 +30442,8 @@ rem set ocmsn=%%b
 set ocmsc=%%a
 set sfn=!ocmsc:~1,4!
 )
-rem set sfn=
-if not defined sfn set "sfn=   %_fBYellow%0%_fReset%"
+rem set sfn=1234
+if not defined sfn (set "sfn=   %_fBYellow%0%_fReset%") else (set "sfn=%_fBCyan%%sfn%%_fReset%")
 rem if not defined sfn set "sfn=%_fBYellow%1234%_fReset%"
 
 :_tabSizeCheck
@@ -27194,6 +30574,8 @@ rem pause
 call :_ControllersColorBat
 
 @For /F %%a In ('@%MYFILES%\adb shell getprop ro.hzos.build.display_name 2^<nul') Do set hzos=%%a
+rem @For /F %%a In ('@%MYFILES%\adb shell getprop ro.hzos.build.display_name 2^<nul') Do set hzosfull=%%a
+rem set hzos=%hzos:~0,3%
 
 %MYFILES%\adb shell dumpsys bluetooth_manager | findstr /R /C:"^[ ]*state: ON" >nul
 if not errorlevel 1 (
@@ -27261,18 +30643,31 @@ rem set "DevModelNm=Meta Quest 3S Xbox"
 rem set "DevModelNm=Meta Quest 3"
 rem set "DevModelNm=Quest 3S Xbox"
 rem set "DevModelNm=Meta Quest 3"
-rem set fwnumb=207.0.0.65
+rem set fwnumb=207.0.0.1111
+rem set sfn=1234
+rem set ip=10.0.0.5
+rem set ip=192.168.111.111
+rem set hzos=2.3.1
+rem set "batinfo=[Зарядка]"
+
+set "DevModelNmf=%DevModelNm%                    "
+set "DevModelNmf=%DevModelNmf:~0,18%"
+
+
+set "ipf=%ip%                "
+set "ipf=%ipf:~0,15%"
 
 rem StartRusTextBlock
-@echo  %_fCyan%Дата%_fReset%        : %qdt%	^| %_fCyan%Общий объем%_fReset%  : %_fBCyan%!aa:~,-1!!sz!%_fReset%	^| %_fCyan%Емкость акк.%_fReset%	: %_fBCyan%%opcouprom% %mahh%%_fReset%
-@echo  %_fCyan%S/N%_fReset%         : %_fBCyan%%sn%%_fReset%		^| %_fCyan%Занято%_fReset%       : %_fBCyan%!bb:~,-1!!sz!%_fReset%	^| %_fCyan%Потеряно емк.%_fReset%	: %_fBCyan%%izgcou% %mahh%%_fReset%
-@echo  %_fCyan%Среда%_fReset%       : %_fBCyan%%fwsys%%_fReset%	^| %_fCyan%Свободно%_fReset%     : %_fBCyan%!cc:~,-1!!sz!%_fReset%	^| %_fCyan%Деградация%_fReset%	: %_fBCyan%%degostcou%%pr%%_fReset%
-@echo  %_fCyan%Прошивка%_fReset%    : %_fBCyan%%fwnumb%(%sfn%%_fBCyan%) [%_fBYellow%%hzos%%_fBCyan%]%_fReset%	^| %_fCyan%Заполнено%_fReset%    : !dc!	^| %_fCyan%Заряд%_fReset%		: %colorbat%%batinfo%
-@echo  %_fCyan%IP шлема%_fReset%    : %_fBCyan%%ip%%_fReset%     		^| %_fCyan%Подключение%_fReset%  : %ctype%^| %_fCyan%Контроллеры%_fReset%   : %_fCyan%L%_fReset%:%LeftColor%  %_fCyan%R%_fReset%:%RightColor%%_fReset%
-@echo  %_fCyan%Модель%_fReset%      : %_fBCyan%%DevModelNm%%_fReset%		^| %_fCyan%EnvVar TEMP%_fReset%  : %evt%^| %_fCyan%От админа?%_fReset%	: %adminaccess%
-@echo  %_fCyan%Драйверы%_fReset%    : %drvmsg%       	^| %_fCyan%Bluetooth%_fReset%    : %bts%^| %_fCyan%Обновления%_fReset%    : %updstatus%
+@echo  %_fCyan%Дата%_fReset%      : %qdt%	^| %_fCyan%Общий объем%_fReset%  : %_fBCyan%!aa:~,-1!!sz!%_fReset%	^| %_fCyan%Емкость акк.%_fReset%	: %_fBCyan%%opcouprom% %mahh%%_fReset%
+@echo  %_fCyan%S/N%_fReset%       : %_fBCyan%%sn%%_fReset%		^| %_fCyan%Занято%_fReset%       : %_fBCyan%!bb:~,-1!!sz!%_fReset%	^| %_fCyan%Потеряно емк.%_fReset%	: %_fBCyan%%izgcou% %mahh%%_fReset%
+@echo  %_fCyan%Среда%_fReset%     : %_fBCyan%%fwsys%%_fReset%		^| %_fCyan%Свободно%_fReset%     : %_fBCyan%!cc:~,-1!!sz!%_fReset%	^| %_fCyan%Деградация%_fReset%	: %_fBCyan%%degostcou%%pr%%_fReset%
+@echo  %_fCyan%Прошивка%_fReset%  : %_fBCyan%%fwnumb%%_fCyan%(%sfn%%_fCyan%) [%_fBCyan%%hzos%%_fCyan%]%_fReset%	^| %_fCyan%Заполнено%_fReset%    : !dc!	^| %_fCyan%Заряд%_fReset%		: %colorbat% %batinfo%
+@echo  %_fCyan%IP шлема%_fReset%  : %_fBCyan%%ipf%%_fReset%            ^| %_fCyan%Подключение%_fReset%  : %ctype%^| %_fCyan%Контроллеры%_fReset%   : %_fCyan%L%_fReset%:%LeftColor%  %_fCyan%R%_fReset%:%RightColor%%_fReset%
+@echo  %_fCyan%Модель%_fReset%    : %_fBCyan%%DevModelNmf%%_fReset%         ^| %_fCyan%EnvVar TEMP%_fReset%  : %evt%^| %_fCyan%От админа?%_fReset%	: %adminaccess%
+@echo  %_fCyan%Драйверы%_fReset%  : %drvmsg%       		^| %_fCyan%Bluetooth%_fReset%    : %bts%^| %_fCyan%Обновления%_fReset%    : %updstatus%
 rem EndRusTextBlock
-
+rem quas 6.1.0
+rem @echo  %_fCyan%Прошивка%_fReset%    : %_fBCyan%%fwnumb%(%sfn%%_fBCyan%) [%_fBYellow%%hzos%%_fBCyan%]%_fReset%	^| %_fCyan%Заполнено%_fReset%    : !dc!	^| %_fCyan%Заряд%_fReset%		: %colorbat%%batinfo%
 rem quas 6.0.0
 rem @echo  %_fCyan%Дата в шлеме%_fReset%	: %qdt%	^| %_fCyan%Общий объем%_fReset% : %_fBCyan%!aa:~,-1!!sz!%_fReset%	^| %_fCyan%Емкость акк.%_fReset%	: %_fBCyan%%opcouprom% %mahh%%_fReset%
 rem @echo  %_fCyan%Серийный номер%_fReset%	: %_fBCyan%%sn%%_fReset%	^| %_fCyan%Занято%_fReset%      : %_fBCyan%!bb:~,-1!!sz!%_fReset%	^| %_fCyan%Потеряно емк.%_fReset%	: %_fBCyan%%izgcou% %mahh%%_fReset%
@@ -27283,6 +30678,18 @@ rem @echo  %_fCyan%Модель шлема%_fReset%	: %_fBCyan%%DevModelNm%%_fRe
 rem @echo  %_fCyan%Драйверы%_fReset%    	: %drvmsg%       	^| reserve     : reserve	^| %_fCyan%Обновления%_fReset%    : %updstatus%
 
 rem StartEngTextBlock
+rem @echo  %_fCyan%Date%_fReset%      : %qdt%	^| %_fCyan%Total volume%_fReset%	: %_fBCyan%!aa:~,-1!!sz!%_fReset%	  ^| %_fCyan%Batt capacity%_fReset% : %_fBCyan%%opcouprom%%mahh%%_fReset%
+rem @echo  %_fCyan%S/N%_fReset%       : %_fBCyan%%sn%%_fReset%		^| %_fCyan%Occupied%_fReset%      : %_fBCyan%!bb:~,-1!!sz!%_fReset%   ^| %_fCyan%Lost capacity%_fReset% : %_fBCyan%%izgcou% %mahh%%_fReset%
+rem @echo  %_fCyan%Env%_fReset%       : %_fBCyan%%fwsys%%_fReset%		^| %_fCyan%Free space%_fReset%    : %_fBCyan%!cc:~,-1!!sz!%_fReset%   ^| %_fCyan%Degradation%_fReset%	  : %_fBCyan%%degostcou%%pr%%_fReset%
+rem @echo  %_fCyan%FW%_fReset%        : %_fBCyan%%fwnumb%%_fCyan%(%sfn%%_fCyan%) [%_fBCyan%%hzos%%_fCyan%]%_fReset%	^| %_fCyan%Filled%_fReset%        : !dc!	  ^| %_fCyan%Charge%_fReset%	  : %colorbat% %batinfo%
+rem @echo  %_fCyan%IP%_fReset%        : %_fBCyan%%ipf%%_fReset%		^| %_fCyan%Connection%_fReset% 	: %ctype% ^| %_fCyan%Controllers%_fReset%	  : %_fBCyan%L%_fReset%:%LeftColor%  %_fBCyan%R%_fReset%:%RightColor%%_fReset%
+rem @echo  %_fCyan%Model%_fReset%     : %_fBCyan%%DevModelNmf%%_fReset%		^| %_fCyan%EnvVar TEMP%_fReset%	: %evt% ^| %_fCyan%From admin?%_fReset%	  : %adminaccess%
+rem @echo  %_fCyan%Drivers%_fReset%   : %drvmsg%      	 	^| %_fCyan%Bluetooth%_fReset%     : %bts%^| %_fCyan%Updates%_fReset%	  : %updstatus%
+rem EndEngTextBlock
+
+rem quas 6.2.0 todo
+rem @echo  %_fCyan%FW version%_fReset%	: %_fBCyan%%fwnumb%%_fCyan%(%sfn%%_fCyan%) [%_fBCyan%%hzos%%_fCyan%]%_fReset%	^| %_fCyan%Filled%_fReset%        : !dc!	  ^| %_fCyan%Charge%_fReset%	  : %colorbat% %batinfo%
+rem quas 6.1.0
 rem @echo  %_fCyan%Headset date%_fReset%	: %qdt%	^| %_fCyan%Total volume%_fReset%	: %_fBCyan%!aa:~,-1!!sz!%_fReset%	  ^| %_fCyan%Batt capacity%_fReset% : %_fBCyan%%opcouprom%%mahh%%_fReset%
 rem @echo  %_fCyan%Serial number%_fReset%	: %_fBCyan%%sn%%_fReset%	^| %_fCyan%Occupied%_fReset%      : %_fBCyan%!bb:~,-1!!sz!%_fReset%   ^| %_fCyan%Lost capacity%_fReset% : %_fBCyan%%izgcou% %mahh%%_fReset%
 rem @echo  %_fCyan%System version%_fReset%	: %_fBCyan%%fwsys%%_fReset%	^| %_fCyan%Free space%_fReset%    : %_fBCyan%!cc:~,-1!!sz!%_fReset%   ^| %_fCyan%Degradation%_fReset%	  : %_fBCyan%%degostcou%%pr%%_fReset%
@@ -27290,7 +30697,7 @@ rem @echo  %_fCyan%FW version%_fReset%	: %_fBCyan%%fwnumb% (%sfn%%_fBCyan%)%_fRe
 rem @echo  %_fCyan%Headset IP%_fReset%	: %_fBCyan%%ip%%_fReset%     	^| %_fCyan%Connection%_fReset% 	: %ctype% ^| %_fCyan%Controllers%_fReset%	  : %_fBCyan%L%_fReset%:%LeftColor%  %_fBCyan%R%_fReset%:%RightColor%%_fReset%
 rem @echo  %_fCyan%Headset model%_fReset%	: %_fBCyan%%DevModelNm%%_fReset%  	^| %_fCyan%EnvVar TEMP%_fReset%	: %evt% ^| %_fCyan%From admin?%_fReset%	  : %adminaccess%
 rem @echo  %_fCyan%Drivers%_fReset%    	: %drvmsg%       	^| %_fCyan%Bluetooth%_fReset%     : %bts%^| %_fCyan%Updates%_fReset%	  : %updstatus%
-rem EndEngTextBlock
+
 
 rem @echo  %_fCyan%Drivers%_fReset%    	: %drvmsg%       	^| %_fCyan%AirPlane Mode%_fReset% : %apm%^| %_fCyan%Updates%_fReset%	  : %updstatus%
 rem quas 6.0.0
@@ -27600,7 +31007,7 @@ exit /b
 :_BatteryStatsCheck
 rem set sn=
 rem @For /F %%r In ('%MYFILES%\adb shell getprop ro.boot.serialno') Do set sn=%%r
-%MYFILES%\adb shell getprop ro.boot.serialno >nul
+%MYFILES%\adb shell getprop ro.boot.serialno 2>nul 1>nul
 if %errorlevel%==1 (
 cls
 call :_EmptyBatParameters
@@ -27695,7 +31102,7 @@ set batestimated=
 set opcouprom=
 set lostestimated=
 set izgcou=
-set degostestimated
+set degostestimated=
 set degostcou=
 set batlevel=
 set mahh=---
@@ -27763,6 +31170,103 @@ rem set model=Unknown
 rem EndEngTextBlock
 exit /b
 
+:_CheckHeadsetConnectionType
+set USBcon=0
+set WIFIcon=0
+set OFFLINE=0
+for /f "usebackq skip=1 tokens=1,2" %%A in (`"%myfiles%\adb.exe" devices`) do (
+
+if "%%B"=="device" (
+@echo %%A | findstr ":" >nul
+if errorlevel 1 (
+set USBcon=1
+) else (
+set WIFIcon=1
+)
+)
+if "%%B"=="offline" (
+set OFFLINE=1
+)
+)
+@echo.
+if %OFFLINE%==1 (
+rem StartRusTextBlock
+@echo   %_fBRed%Шлем в режиме offline
+@echo   %_fBYellow%Подключите кабель, отключите Wi-Fi соединение и перезапустите программу%_fReset%
+@echo.
+@echo   %_fBRed%Не прошивайтесь по Wi-Fi^^! Существует риск серьезных проблем,
+@echo   если шлем уйдет в сон или в режим Offline во время прошивки.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Headset is offline
+rem @echo   %_fBYellow%Switch to cable connection and restart the program%_fReset%
+rem EndEngTextBlock
+goto :_CheckHeadsetConnectionTypeCont
+)
+
+if %USBcon%==1 if %WIFIcon%==1 (
+@echo   -----------------
+rem StartRusTextBlock
+@echo   %_fBRed%Шлем подключен по %_fYellow%USB %_fBRed%и %_fYellow%Wi-Fi %_fBRed%одновременно
+@echo   %_fBYellow%Отключите Wi-Fi соединение и перезапустите программу%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Headset is connected via %_fYellow%USB %_fBRed%and %_fYellow%Wi-Fi
+rem @echo   %_fBYellow%Disconnect the Wi-Fi connection and restart the program%_fReset%
+rem EndEngTextBlock
+goto :_CheckHeadsetConnectionTypeCont
+)
+
+if %USBcon%==1 (
+@echo   -----------------
+rem StartRusTextBlock
+@echo   %_fBGreen%Шлем подключен по %_fGreen%USB%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBGreen%Headset is connected via USB%_fReset%
+rem EndEngTextBlock
+exit /b
+)
+
+if %WIFIcon%==1 (
+@echo   -----------------
+rem StartRusTextBlock
+@echo   %_fBRed%Шлем подключен по %_fYellow%Wi-Fi
+@echo   %_fBYellow%Подключите кабель и перезапустите программу%_fReset%
+@echo.
+@echo   %_fBRed%Не прошивайтесь по Wi-Fi^^! Существует риск серьезных проблем,
+@echo   если шлем уйдет в сон или в режим Offline во время прошивки.%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%Headset is connected via %_fYellow%Wi-Fi
+rem @echo   %_fBYellow%Switch to cable connection and restart the program%_fReset%
+rem EndEngTextBlock
+goto :_CheckHeadsetConnectionTypeCont
+)
+
+@echo   -----------------
+rem StartRusTextBlock
+@echo   %_fBRed%Шлем не подключен
+@echo   %_fBYellow%Проверьте кабельное соединение и перезапустите программу%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBRed%No headset connected
+rem @echo   %_fBYellow%Check the cable connection and restart the program%_fReset%
+rem EndEngTextBlock
+)
+
+:_CheckHeadsetConnectionTypeCont
+rem StartRusTextBlock
+@echo.
+@echo            ---  Нажмите что-нибудь для продолжения  ---
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo.
+rem @echo            ---  Press any key to continue  ---
+rem EndEngTextBlock
+pause >nul
+exit /b
+
 
 :_packageslistcreate
 rem powershell -ExecutionPolicy Bypass -File "%MYFILES%\selector.ps1" "o.txt" "packages-list.txt"
@@ -27777,7 +31281,7 @@ rem set "MODE=file"
 
 rem --- Определяем ключ для PowerShell и заголовок ---
 if /I "%pathmode%"=="file" (
-    set "PSKEY=-sf"
+set "PSKEY=-sf"
 rem StartRusTextBlock
 set "TITLE=Выберите файл"
 rem EndRusTextBlock
@@ -27785,7 +31289,7 @@ rem StartEngTextBlock
 rem set "TITLE=Select a file"
 rem EndEngTextBlock
 ) else if /I "%pathmode%"=="folder" (
-    set "PSKEY=-sfolder"
+set "PSKEY=-sfolder"
 rem StartRusTextBlock
 set "TITLE=Выберите папку"
 rem EndRusTextBlock
@@ -27794,12 +31298,12 @@ rem set "TITLE=Select a folder"
 rem EndEngTextBlock
 ) else (
 rem StartRusTextBlock
-    echo Некорректный режим: %pathmode%
+@echo Некорректный режим: %pathmode%
 rem EndRusTextBlock
 rem StartEngTextBlock
-rem echo Incorrected mode: %pathmode%
+rem @echo Incorrected mode: %pathmode%
 rem EndEngTextBlock
-    exit /b 1
+exit /b 1
 )
 
 rem --- Создаём временный PowerShell-скрипт рядом с батником ---
@@ -27843,12 +31347,6 @@ rem if defined SelectedFile   echo Выбран файл: %SelectedFile%
 rem if defined SelectedFolder echo Выбрана папка: %SelectedFolder%
 rem pause
 exit /b
-
-
-
-
-
-
 
 
 :_userright
@@ -28204,7 +31702,7 @@ IF %ERRORLEVEL% == 0 (
 set edlmode=1
 set s=%_fBlack%%_bRed%EM%_fReset%
 rem @echo EDL
-goto _EDLModeWarning
+goto :_EDLModeMessage
 ) else (
 set edlmode=0
 rem @echo No EDL
@@ -28544,15 +32042,43 @@ rem @echo.    %adminmsg%
 @taskkill /IM adb.exe /F 2>nul 1>nul
 exit /b
 
+rem :_RestartQUAS
+rem @echo.
+rem @echo %_fCyan%...Restarting Quas...%_fReset%
+rem timeout 2 >nul
+if defined forcestart call :_TaskkillADB
+
+rem Если рестарт начнет сбоить, попробовать этот "хирургический" вариант
+:: Получаем PID текущего процесса cmd.exe/exe
+:: В большинстве случаев это работает через %=PID%
+:: set "MY_PID=%=PID%"
+:: Если по какой-то причине %=PID% пуст (старые версии Win), 
+:: PowerShell сам вычислит родителя, как мы делали раньше.
+:: set "PS_CMD=$currentPid = if('%MY_PID%'){$MY_PID}else{(Get-CimInstance Win32_Process -Filter 'ProcessId='+$PID).ParentProcessId}; $a='\"%QUAS_APP%\"'; $arg='%QuasStartParams%'; $cmd=if($arg){$a+' '+$arg}else{$a}; Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList $cmd; Stop-Process -Id $currentPid -Force"
+:: start /min powershell -NoProfile -ExecutionPolicy Bypass -Command "%PS_CMD%"
+
+
+rem set "PS_APP_PATH=\"%QUAS_APP%\""
+rem set "PS_CMD=$pID=(Get-CimInstance Win32_Process -Filter 'ProcessId='+$PID).ParentProcessId; $arg='%QuasStartParams%'; $cmd = if($arg){ '%PS_APP_PATH% ' + $arg }else{ '%PS_APP_PATH%' }; Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList $cmd; Stop-Process -Id $pID -Force"
+rem start /min powershell -NoProfile -NoLogo -WindowStyle Hidden -ExecutionPolicy Bypass -Command "%PS_CMD%"
+rem @echo %_fCyan%...Restarting Quas...%_fReset%
+rem timeout 2 >nul
+rem exit
+
 :_RestartQUAS
 @echo.
-@echo %_fCyan%...Restarting QUAS...%_fReset%
+
 if defined forcestart call :_TaskkillADB
-@timeout 1 >nul
-@taskkill /f /im "%QUAS_APP_NAME%" >nul 
-rem start "" %ComSpec% /d /c ""%QUAS_APP% %QuasStartParams%""
-start "" %ComSpec% /d /c ""%QUAS_APP%" %QuasStartParams%"
-rem start "" ""%QUAS_APP%" %QuasStartParams%"
+
+set "PS_APP_PATH=\"%QUAS_APP%\""
+set "PS_WORK_DIR=%QuasWorkPath%"
+
+set "PS_CMD=$pID=(Get-CimInstance Win32_Process -Filter 'ProcessId='+$PID).ParentProcessId; $arg='%QuasStartParams%'; $cmd = if($arg){ '%PS_APP_PATH% ' + $arg }else{ '%PS_APP_PATH%' }; Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList $cmd,'%PS_WORK_DIR%'; Stop-Process -Id $pID -Force"
+
+start /min powershell -NoProfile -NoLogo -WindowStyle Hidden -ExecutionPolicy Bypass -Command "%PS_CMD%"
+
+@echo %_fCyan%...Restarting Quas...%_fReset%
+timeout 2 >nul
 exit
 
 
@@ -28564,7 +32090,7 @@ rem echo Папка: %~dp0
 :_hat
 @cls
 @echo ╔═════════════════════════════════════════════════════════════════════════════════════════════════╗
-@echo ║   %s%     %_fBWhite%QUest ADB Scripts - created by Varset - v6.1.0%_fReset% - 26.03.26        Web: %_fBCyan%%_bBlack%www.vrcomm.ru%_fReset%    ║
+@echo ║   %s%     %_fBWhite%QUest ADB Scripts - created by Varset - v7.0.0%_fReset% - 22.09.26        Web: %_fBMag%www.vrcomm.ru%_fReset%    ║
 @echo ╚═════════════════════════════════════════════════════════════════════════════════════════════════╝
 @exit /b
 
@@ -28699,27 +32225,13 @@ rem @echo    This will free up approximately 1 GB on the headset storage.
 rem @echo    The following apps will be deleted:
 rem EndEngTextBlock
 @echo.
-@echo    %_fBCyan%Accounts Center
-@echo    Browser
-@echo    Calendar Storage
-@echo    Facebook
-@echo    Files
-@echo    Gallery
-@echo    Guidebook
-@echo    handseducationmodule
-@echo    Help ^& Tips
-@echo    Instagram
-@echo    Media Player
-@echo    Oculus Assistant Service
-@echo    Phone Calls
-@echo    Remote Desktop
-@echo    Steam Link
-@echo    Theater Elsewhere
-@echo    WhatsApp
-@echo    First Encounter
-@echo    Layout
-@echo    Oculus TV
-@echo    Messenger
+@echo    %_fBCyan%Accounts Center	Browser			Calendar Storage
+@echo    Facebook		Files			Gallery
+@echo    Guidebook		handseducationmodule	Help ^& Tips
+@echo    Instagram		Media Player		Oculus Assistant Service
+@echo    Phone Calls		Remote Desktop		Steam Link
+@echo    Theater Elsewhere	WhatsApp		First Encounter
+@echo    Layout		Oculus TV		Messenger
 @echo    Horizon Central
 @echo.
 rem StartRusTextBlock
@@ -28738,6 +32250,9 @@ rem StartRusTextBlock
 @echo    %_fBYellow%Обратите внимание:%_fReset% между именем пакета и названием приложения - %_fYellow%точка с запятой%_fReset%.
 @echo    Расположите файл рядом с программой, и она удалит и эти приложения тоже.
 @echo.
+@echo    Для создания списка только своих собственных приложений создайте файл %_fBYellow%DelMyAppsOnly.txt%_fReset%,
+@echo    в таком же формате. В этом случае будут удалены приложения только из этого списка.
+@echo.
 @echo.
 @echo Для подтверждения удаления нажмите Enter или Esc для отмены и возврата в меню.
 rem EndRusTextBlock
@@ -28754,8 +32269,11 @@ rem @echo      %_fCyan%Facebook%_fReset%;%_fBCyan%com.facebook.horizon%_fReset%
 rem @echo      %_fCyan%Instagram%_fReset%;%_fBCyan%com.oculus.igvr%_fReset%
 rem @echo      %_fCyan%WhatsApp%_fReset%;%_fBCyan%com.whatsapp%_fReset%
 rem @echo.
-rem @echo     %_fBYellow%Please note:%_fReset% use a %_fYellow%semicolon%_fReset% between the app name and the package name.
-rem @echo    Place the file in the same directory as the program, and it will delete these apps as well.rem @echo Press Enter to confirm, or Esc to cancel and return to the menu.
+rem @echo    %_fBYellow%Please note:%_fReset% use a %_fYellow%semicolon%_fReset% between the app name and the package name.
+rem @echo    Place the file in the same directory as the program, and it will delete these apps as well.
+rem @echo.
+rem @echo    To create a list of only your own applications, create the %_fBYellow%DelMyAppsOnly.txt%_fReset% file
+rem @echo    using the same format. Only applications from this list will be removed in this case.
 rem @echo.
 rem @echo.
 rem @echo Press Enter for delete  confirmation or Esc to cancel and return to the menu.
@@ -28769,7 +32287,7 @@ goto :_StartDiagnosticMenu
 @echo   --------------------------------------------------
 rem StartRusTextBlock
 @echo   %_fBYellow%И еще одно подтверждение, пожалуйста.
-@echo   %_fYellow%Enter %_fBYellow%- запуск автоочистки, %_fYellow%Esc %_fBYellow%- отмена и возврат в меню.%_fReset%
+@echo   %_fYellow%Enter %_fBYellow%- ожидание подключения шлема и запуск автоочистки, %_fYellow%Esc %_fBYellow%- отмена и возврат в меню.%_fReset%
 rem EndRusTextBlock
 rem StartEngTextBlock
 rem @echo    %_fBYellow%And one more confirmation, please.
@@ -28777,18 +32295,66 @@ rem @echo    %_fYellow%Enter %_fBYellow%- start auto-cleanup, %_fYellow%Esc %_fB
 rem EndEngTextBlock
 for /f "usebackq delims=" %%K in (`powershell -ExecutionPolicy Bypass -Command "$key = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown'); $key.VirtualKeyCode"`) do set "keycode=%%K"
 if "%keycode%"=="27" goto :_StartDiagnosticMenu
-if "%keycode%"=="13" goto :_SetFreeSpaceHeadsetStart
+if "%keycode%"=="13" goto :_SurveyHeadsetStatusCleaning
 goto :_StartDiagnosticMenu
 
+:_SurveyHeadsetStatusCleaning
+cls
+@echo.
+@echo.
+@echo.
+rem StartRusTextBlock
+@echo            %_fBYellow%Проверка статуса шлема%_fReset%
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo        %_fBYellow%Checking headset status%_fReset%
+rem EndEngTextBlock
+@echo        ===============================
+@echo.
+@%myfiles%\adb devices | findstr "device"$ 1>nul 2>nul
+if %errorlevel% == 0 (
+rem StartRusTextBlock
+@echo       %_fBGreen%Шлем доступен, начинаем очистку%_fReset%
+goto _SetFreeSpaceHeadsetStart
+) else (
+@echo       %_fBYellow%Шлем недоступен, ожидание подключения%_fReset%
+@echo.
+@echo.
+@echo.
+@echo ^>^>^> Для прерывания нажмите любую кнопку ^<^<^<
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem @echo   %_fBYellow%ADB is available, start cleaning%_fReset%
+rem ) else (
+rem @echo   %_fBYellow%Headset is not available, waiting connection%_fReset%
+rem @echo.
+rem @echo.
+rem @echo.
+rem @echo ^>^>^> Press any key to interrupt ^<^<^<
+rem EndEngTextBlock
+goto :_SurveyHeadsetUpdateStatusCln
+)
+:_SurveyHeadsetUpdateStatusCln
+rem StartRusTextBlock
+timeout 1| >nul findstr/e [^^0-9]0 ||  @echo ============================================== ^ & @echo        +++ Процедура прервана +++ ^ & @echo. ^ & call :_prevmenu ^ & @goto _StartDiagnosticMenu
+rem EndRusTextBlock
+rem StartEngTextBlock
+rem timeout 1| >nul findstr/e [^^0-9]0 ||  @echo ============================================== ^ & @echo        +++ Procedure was interrupted +++ ^ & @echo. ^ & call :_prevmenu ^ & @goto _StartDiagnosticMenu
+rem EndEngTextBlock
+goto :_SurveyHeadsetStatusCleaning
+
+
 :_SetFreeSpaceHeadsetStart
+if exist DelMyAppsOnly.txt (
+copy /y DelMyAppsOnly.txt DeleteAppsList.txt >nul
+) else (
 call :_DeleteAppsListClreate
 if exist DelAppsList.txt (
-type DelAppsList.txt >> DeleteAppsList.txt 1>nul 2>nul
+type DelAppsList.txt >> DeleteAppsList.txt
 )
-rem call :_HeadsetSurvey
+)
 call :_SetFreeSpaceHeadsetDelApps
-rem del /q /f DelAppsList.txt 1>nul 2>nul
-del /q /f DeleteAppsList.txt 1>nul 2>nul
+del /q /f DeleteAppsList.txt >nul 2>nul
 @echo   ==================================================
 rem StartRusTextBlock
 @echo   %_fBGreen%= Все приложения удалены%_fReset%
@@ -28798,6 +32364,7 @@ rem @echo   %_fBGreen%= All applications deleted%_fReset%
 rem EndEngTextBlock
 call :_prevmenu
 goto :_StartDiagnosticMenu
+
 
 :_DeleteAppsListClreate
 set fspace=DeleteAppsList.txt
@@ -28849,7 +32416,6 @@ rem EndEngTextBlock
 )
 exit /b
 
-
 :_HeadsetSurvey
 rem StartRusTextBlock
 @echo   %_fBGreen%Включено автообнаружение шлема. Как только он будет найден, Quas запустится сам.%_fReset%
@@ -28862,13 +32428,33 @@ exit /b
 
 
 :_DiagStartNormalMode
+rem echo on
+rem setlocal EnableDelayedExpansion
+rem if /i "%QUAS_APP_NAME:~0,1%"=="d" (
+rem set "NEW_NAME=%QUAS_APP_NAME:~1%"
+rem ren "%QUAS_APP%" "!NEW_NAME!"
+rem start "" "%QUAS_APP_DIR%!NEW_NAME!" %QuasStartParams%
+rem echo QAN %QUAS_APP_NAME%
+rem echo QAN !QUAS_APP_NAME!
+rem echo QA %QUAS_APP%
+rem echo QA !QUAS_APP!
+rem echo %QUAS_APP_DIR%!NEW_NAME!
+rem pause
+rem exit
+rem )
 setlocal EnableDelayedExpansion
-if /i "%QUAS_APP_NAME:~0,1%"=="d" (
 set "NEW_NAME=%QUAS_APP_NAME:~1%"
-ren "%QUAS_APP%" "!NEW_NAME!"
-start "" "%QUAS_APP_DIR%!NEW_NAME!" %QuasStartParams%
-exit
+set "NORMAL_APP=%QUAS_APP_DIR%!NEW_NAME!"
+copy /y "%QUAS_APP%" "%NORMAL_APP%" >nul
+if errorlevel 1 (
+    echo Failed to create normal executable.
+rem   pause
+    exit /b
 )
+start "" "%NORMAL_APP%" %QuasStartParams%
+start "" /b cmd /c "timeout /t 1 /nobreak >nul & del /f /q ""%QUAS_APP%"""
+exit
+
 
 :_DiagStartInCmdConsole
 setlocal EnableDelayedExpansion
