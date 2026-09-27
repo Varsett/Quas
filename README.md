@@ -110,7 +110,7 @@ List of indicators and what they mean:
   - Resuming the headset boot from Bootloader mode
   - Standard/regular headset reboot.
   - Rebooting the headset into Bootloader mode
-
+    
     **_Illustration of the headset information output in Bootloader mode_**
     ![](https://raw.githubusercontent.com/Varsett/pictures/main/bootloader-eng.jpg)
 
