@@ -9,17 +9,18 @@
 
 **Quas Toolkit is a software utility suite that includes tools for working with Meta Quest headsets and other Android devices.**
 
-**Composition of the complex:**
-    - **Quas**
-	- **Quas Safe Code Manager**
-	- **Quas ADB Commander**
-	- **Quas Command Shell**
-	- **Quas mDNS Connector**
-	- **Quas ADB Sender**
-	- **iPerf Test Configurator**
-	- **iPerf Real-Time Monitor**
-	- **iPerf Visual Analyzer**
-	- **Multitest Editor**
+**Composition of the complex:** 
+- **Quas**  
+- **Quas Safe Code Manager**  
+- **Quas ADB Commander**  
+- **Quas Command Shell**  
+- **Quas mDNS Connector**  
+- **Quas ADB Sender**  
+- **iPerf Test Configurator**  
+- **iPerf Real-Time Monitor**  
+- **iPerf Visual Analyzer**  
+- **Multitest Editor**  
+
 
 **Job Description:**
 
